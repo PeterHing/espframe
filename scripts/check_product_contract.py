@@ -626,6 +626,7 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "release_version_pattern",
         "stable_release_version_pattern",
         "firmware_version_placeholder_line",
+        "firmware_local_build_version",
         "release_changelog_fallback_category",
         "public_base_url",
         "support_url",
@@ -912,6 +913,7 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
             except re.error as exc:
                 errors.append(f"project.{field} must be a valid regular expression: {exc}")
     placeholder_versions = project.get("firmware_placeholder_versions", [])
+    local_build_version = str(project.get("firmware_local_build_version", "")).strip()
     if not isinstance(placeholder_versions, list) or not placeholder_versions:
         errors.append("project.firmware_placeholder_versions must be a non-empty list")
     elif any(not isinstance(value, str) or not value.strip() for value in placeholder_versions):
@@ -920,6 +922,8 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         errors.append("project.firmware_placeholder_versions must include 0.0.0")
     elif default_branch and default_branch not in placeholder_versions:
         errors.append("project.firmware_placeholder_versions must include project.github_default_branch")
+    elif local_build_version and local_build_version not in placeholder_versions:
+        errors.append("project.firmware_placeholder_versions must include project.firmware_local_build_version")
     changelog_categories = project.get("release_changelog_categories", [])
     if not isinstance(changelog_categories, list) or not changelog_categories:
         errors.append("project.release_changelog_categories must be a non-empty list")
@@ -3065,6 +3069,7 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
     release_version_pattern = str(project.get("release_version_pattern", "")).strip()
     stable_release_version_pattern = str(project.get("stable_release_version_pattern", "")).strip()
     firmware_version_placeholder = str(project.get("firmware_version_placeholder_line", "")).rstrip("\n")
+    local_build_version = str(project.get("firmware_local_build_version", "")).strip()
     placeholder_versions = [str(value).strip() for value in project.get("firmware_placeholder_versions", []) if str(value).strip()]
     changelog_categories = project.get("release_changelog_categories", [])
     changelog_fallback = str(project.get("release_changelog_fallback_category", "")).strip()
@@ -3283,6 +3288,13 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
                 require_contains(read(ROOT / build_yaml, errors), firmware_version_placeholder, build_yaml, errors)
     if placeholder_versions:
         require_contains(firmware_release_script, "firmware_placeholder_versions", "scripts/firmware_release.py", errors)
+    if local_build_version:
+        require_contains(
+            read(ROOT / "common" / "addon" / "firmware_update.yaml", errors),
+            f'firmware_version: "{local_build_version}"',
+            "common/addon/firmware_update.yaml",
+            errors,
+        )
     if docs_dist_artifact_name:
         require_contains(docs_workflow, f"name: {docs_dist_artifact_name}", ".github/workflows/docs.yml", errors)
     if docs_dist_output_path:
