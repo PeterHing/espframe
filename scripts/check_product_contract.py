@@ -833,7 +833,21 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         errors.append("project.immich_retryable_http_statuses must only contain non-empty strings")
     if not isinstance(project.get("immich_auth_error_status"), int) or isinstance(project.get("immich_auth_error_status"), bool):
         errors.append("project.immich_auth_error_status must be an integer")
+    for field in ("slideshow_interval_default_seconds", "connection_timeout_default_seconds"):
+        if not isinstance(project.get(field), int) or isinstance(project.get(field), bool) or project.get(field) < 1:
+            errors.append(f"project.{field} must be a positive integer")
+    for field in ("slideshow_interval_range_seconds", "connection_timeout_range_seconds"):
+        value = project.get(field)
+        if (
+            not isinstance(value, list)
+            or len(value) != 2
+            or any(not isinstance(item, int) or isinstance(item, bool) or item < 1 for item in value)
+        ):
+            errors.append(f"project.{field} must be a two-item list of positive integers")
+        elif value[0] > value[1]:
+            errors.append(f"project.{field} minimum must not exceed maximum")
     for field in (
+        "slideshow_check_interval",
         "setup_captive_portal_ip",
         "setup_screen_dim_delay",
         "setup_screen_dim_brightness",
@@ -1928,7 +1942,12 @@ def check_photo_source_metadata(product: dict, errors: list[str]) -> None:
 
 def check_connection_resilience_metadata(product: dict, errors: list[str]) -> None:
     project = product["project"]
+    slideshow_check_interval = str(project.get("slideshow_check_interval", "")).strip()
+    slideshow_default_seconds = project.get("slideshow_interval_default_seconds")
+    slideshow_range_seconds = project.get("slideshow_interval_range_seconds", [])
     timeout_default = str(project.get("connection_timeout_default", "")).strip()
+    timeout_default_seconds = project.get("connection_timeout_default_seconds")
+    timeout_range_seconds = project.get("connection_timeout_range_seconds", [])
     timeout_range = str(project.get("connection_timeout_range", "")).strip()
     failure_trigger = str(project.get("connection_failure_trigger", "")).strip()
     invalid_key_title = str(project.get("connection_invalid_api_key_title", "")).strip()
@@ -1940,6 +1959,13 @@ def check_connection_resilience_metadata(product: dict, errors: list[str]) -> No
 
     settings_by_key = {str(setting.get("key", "")).strip(): setting for setting in product["settings"]}
     connection_timeout_setting = settings_by_key.get("conn_timeout")
+    slideshow_interval_setting = settings_by_key.get("interval")
+    if not slideshow_interval_setting:
+        errors.append("product settings must include interval")
+    elif isinstance(slideshow_default_seconds, int) and not isinstance(slideshow_default_seconds, bool):
+        expected_default = f"{slideshow_default_seconds} seconds"
+        if slideshow_interval_setting.get("default") != expected_default:
+            errors.append("project.slideshow_interval_default_seconds must match interval default")
     if not connection_timeout_setting:
         errors.append("product settings must include conn_timeout")
     else:
@@ -1975,7 +2001,6 @@ def check_connection_resilience_metadata(product: dict, errors: list[str]) -> No
     for needle in (
         "Screen: Connection Timeout",
         f'initial_option: "{timeout_default}"',
-        'parse_duration_option_seconds(x, 600, 30, 1800)',
         "connection_failed_overlay",
         "connection_failed_dim",
         "connection_failed_shift",
@@ -1988,6 +2013,34 @@ def check_connection_resilience_metadata(product: dict, errors: list[str]) -> No
             require_contains(screen_yaml, needle, "devices/guition-esp32-p4-jc8012p4a1/device/screen_slideshow.yaml", errors)
     for option in ("30 seconds", "30 minutes"):
         require_contains(screen_yaml, f'      - "{option}"', "devices/guition-esp32-p4-jc8012p4a1/device/screen_slideshow.yaml", errors)
+    if slideshow_check_interval:
+        require_contains(screen_yaml, f'slideshow_check_interval: "{slideshow_check_interval}"', "devices/guition-esp32-p4-jc8012p4a1/device/screen_slideshow.yaml", errors)
+        require_contains(screen_yaml, f"interval: ${{slideshow_check_interval}}", "devices/guition-esp32-p4-jc8012p4a1/device/screen_slideshow.yaml", errors)
+    if isinstance(slideshow_default_seconds, int) and not isinstance(slideshow_default_seconds, bool):
+        require_contains(screen_yaml, f"initial_value: '{slideshow_default_seconds}'", "devices/guition-esp32-p4-jc8012p4a1/device/screen_slideshow.yaml", errors)
+        if isinstance(slideshow_range_seconds, list) and len(slideshow_range_seconds) == 2:
+            require_contains(
+                screen_yaml,
+                f"parse_duration_option_seconds(x, {slideshow_default_seconds}, {slideshow_range_seconds[0]}, {slideshow_range_seconds[1]})",
+                "devices/guition-esp32-p4-jc8012p4a1/device/screen_slideshow.yaml",
+                errors,
+            )
+            require_contains(
+                screen_yaml,
+                "parse_duration_option_seconds(\n                id(slideshow_interval).current_option(), "
+                f"id(slideshow_interval_sec), {slideshow_range_seconds[0]}, {slideshow_range_seconds[1]})",
+                "devices/guition-esp32-p4-jc8012p4a1/device/screen_slideshow.yaml",
+                errors,
+            )
+    if isinstance(timeout_default_seconds, int) and not isinstance(timeout_default_seconds, bool):
+        require_contains(screen_yaml, f"initial_value: '{timeout_default_seconds}'", "devices/guition-esp32-p4-jc8012p4a1/device/screen_slideshow.yaml", errors)
+        if isinstance(timeout_range_seconds, list) and len(timeout_range_seconds) == 2:
+            require_contains(
+                screen_yaml,
+                f"parse_duration_option_seconds(x, {timeout_default_seconds}, {timeout_range_seconds[0]}, {timeout_range_seconds[1]})",
+                "devices/guition-esp32-p4-jc8012p4a1/device/screen_slideshow.yaml",
+                errors,
+            )
 
     if isinstance(max_error_retries, int) and not isinstance(max_error_retries, bool):
         require_contains(helper_header, f"MAX_ERROR_RETRIES = {max_error_retries}", "components/espframe/espframe_helpers.h", errors)
