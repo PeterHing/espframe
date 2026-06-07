@@ -488,6 +488,7 @@
       "docs.workflow_run": ["completed"],
       "release.release": ["published"]
     },
+    "github_docs_workflow_run_success_conclusion": "success",
     "github_workflow_jobs": {
       "compile": {
         "validate": "Validate Generated Files and Docs",

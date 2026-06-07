@@ -635,6 +635,7 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "web_ui_logs_clear_label",
         "node_version",
         "github_actions_runner",
+        "github_docs_workflow_run_success_conclusion",
         "github_release_notes_version_ref",
         "github_release_build_version_ref",
         "github_release_build_ref",
@@ -3055,6 +3056,7 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
     pages_environment = str(project.get("github_pages_environment", "")).strip()
     pages_concurrency_group = str(project.get("github_pages_concurrency_group", "")).strip()
     pages_cancel_in_progress = project.get("github_pages_cancel_in_progress")
+    docs_workflow_success_conclusion = str(project.get("github_docs_workflow_run_success_conclusion", "")).strip()
     release_notes_fetch_depth = project.get("github_release_notes_fetch_depth")
     release_notes_fetch_tags = project.get("github_release_notes_fetch_tags")
     release_notes_version_ref = str(project.get("github_release_notes_version_ref", "")).strip()
@@ -3285,6 +3287,19 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
         require_contains(
             docs_workflow,
             f"cancel-in-progress: {str(pages_cancel_in_progress).lower()}",
+            ".github/workflows/docs.yml",
+            errors,
+        )
+    if docs_workflow_success_conclusion:
+        require_contains(
+            docs_workflow,
+            "github.event_name != 'workflow_run' ||",
+            ".github/workflows/docs.yml",
+            errors,
+        )
+        require_contains(
+            docs_workflow,
+            f"github.event.workflow_run.conclusion == '{docs_workflow_success_conclusion}'",
             ".github/workflows/docs.yml",
             errors,
         )
