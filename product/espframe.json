@@ -438,6 +438,9 @@
       "GH_TOKEN": "${{ github.token }}",
       "GH_REPO": "${{ github.repository }}"
     },
+    "github_release_notes_fetch_depth": 0,
+    "github_release_notes_fetch_tags": true,
+    "github_release_build_ref": "${{ github.event.release.tag_name || github.ref }}",
     "github_workflow_permissions": {
       "compile": { "contents": "read" },
       "docs": { "contents": "read", "pages": "write", "id-token": "write" },

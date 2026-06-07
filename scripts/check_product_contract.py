@@ -635,6 +635,7 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "web_ui_logs_clear_label",
         "node_version",
         "github_actions_runner",
+        "github_release_build_ref",
     ):
         if not str(project.get(field, "")).strip():
             errors.append(f"project.{field} is required")
@@ -854,6 +855,11 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
                 read(ROOT / path, errors)
     if not isinstance(project.get("github_sparse_checkout_cone_mode"), bool):
         errors.append("project.github_sparse_checkout_cone_mode must be true or false")
+    release_notes_fetch_depth = project.get("github_release_notes_fetch_depth")
+    if not isinstance(release_notes_fetch_depth, int) or isinstance(release_notes_fetch_depth, bool) or release_notes_fetch_depth < 0:
+        errors.append("project.github_release_notes_fetch_depth must be a non-negative integer")
+    if not isinstance(project.get("github_release_notes_fetch_tags"), bool):
+        errors.append("project.github_release_notes_fetch_tags must be true or false")
     release_asset_suffixes = project.get("release_asset_suffixes", [])
     if not isinstance(release_asset_suffixes, list) or not release_asset_suffixes:
         errors.append("project.release_asset_suffixes must be a non-empty list")
@@ -3044,6 +3050,9 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
     pages_environment = str(project.get("github_pages_environment", "")).strip()
     pages_concurrency_group = str(project.get("github_pages_concurrency_group", "")).strip()
     pages_cancel_in_progress = project.get("github_pages_cancel_in_progress")
+    release_notes_fetch_depth = project.get("github_release_notes_fetch_depth")
+    release_notes_fetch_tags = project.get("github_release_notes_fetch_tags")
+    release_build_ref = str(project.get("github_release_build_ref", "")).strip()
     sparse_checkout_files = [
         str(path).strip() for path in project.get("github_sparse_checkout_files", []) if str(path).strip()
     ]
@@ -3062,6 +3071,17 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
             (".github/workflows/compile.yml", compile_workflow),
         ):
             require_contains(text, f"runs-on: {actions_runner}", label, errors)
+    if isinstance(release_notes_fetch_depth, int) and not isinstance(release_notes_fetch_depth, bool):
+        require_contains(release_workflow, f"fetch-depth: {release_notes_fetch_depth}", ".github/workflows/release.yml", errors)
+    if isinstance(release_notes_fetch_tags, bool):
+        require_contains(
+            release_workflow,
+            f"fetch-tags: {str(release_notes_fetch_tags).lower()}",
+            ".github/workflows/release.yml",
+            errors,
+        )
+    if release_build_ref:
+        require_contains(release_workflow, f"ref: {release_build_ref}", ".github/workflows/release.yml", errors)
     for label, text in (
         (".github/workflows/release.yml", release_workflow),
         (".github/workflows/docs.yml", docs_workflow),
