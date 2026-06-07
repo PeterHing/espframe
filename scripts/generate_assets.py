@@ -41,6 +41,7 @@ TZ_HEADER_PATH = ROOT / "components" / "espframe" / "tz_data_generated.h"
 TIME_YAML_PATH = ROOT / "common" / "addon" / "time.yaml"
 WEB_SRC_DIR = ROOT / "docs" / "webserver" / "src"
 WEB_TEMPLATE_PATH = WEB_SRC_DIR / "app.template.js"
+WEB_COMPAT_HELPERS_PATH = WEB_SRC_DIR / "compat.js"
 WEB_STYLE_PATH = WEB_SRC_DIR / "style.css"
 WEB_PUBLIC_STYLE_PATH = ROOT / "docs" / "public" / "webserver" / "style.css"
 WEB_APP_PATH = ROOT / "docs" / "public" / "webserver" / "app.js"
@@ -167,10 +168,11 @@ def bootstrap_webserver_sources() -> None:
 
 
 def web_app_bundle() -> str:
-    if not WEB_TEMPLATE_PATH.exists() or not WEB_STYLE_PATH.exists():
+    if not WEB_TEMPLATE_PATH.exists() or not WEB_COMPAT_HELPERS_PATH.exists() or not WEB_STYLE_PATH.exists():
         raise RuntimeError("Webserver sources are missing. Run with --bootstrap-webserver once.")
 
     template = WEB_TEMPLATE_PATH.read_text()
+    compat_helpers = WEB_COMPAT_HELPERS_PATH.read_text().rstrip("\n")
     css = WEB_STYLE_PATH.read_text().rstrip("\n")
     timezones_json = json.dumps(timezone_options(), separators=(",", ":"))
     timezone_labels_json = json.dumps(timezone_labels(), separators=(",", ":"))
@@ -207,6 +209,7 @@ def web_app_bundle() -> str:
         .replace("__ESPFRAME_WEB_UI_LOGS_RETAINED_LINES__", web_ui_logs_retained_lines_json)
         .replace("__ESPFRAME_SUPPORT_URL__", support_url_json)
         .replace("__ESPFRAME_SUPPORT_BUTTON_IMAGE_URL__", support_button_image_url_json)
+        .replace("__ESPFRAME_WEB_COMPAT_HELPERS__", compat_helpers)
         .replace("__ESPFRAME_CSS__", css_json)
     )
 

@@ -370,14 +370,14 @@
     });
   }
 
-  function normalizeNtpServer(value) {
-    return String(value == null ? "" : value).trim();
-  }
-
   function saveNtpServer(key, value) {
     var server = normalizeNtpServer(value);
     S[key] = server;
     return postTextValueSet(endpoints[key] + "/set", server);
+  }
+
+    function normalizeNtpServer(value) {
+    return String(value == null ? "" : value).trim();
   }
 
   function stripUrlTrailingSlashes(value) {
@@ -399,29 +399,6 @@
     } catch (_) {
       return false;
     }
-  }
-
-  function developerPanelEnabledByUrl() {
-    try {
-      var params = new URLSearchParams(window.location.search || "");
-      return params.get("developer") === "experimental" || params.get("dev") === "experimental";
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function isPortraitScreenRotation(value) {
-    return value === "90" || value === "270";
-  }
-
-  function screenRotationOptionsForUi() {
-    var options = productSettingOptions("screen_rotation", S.developer_features_enabled);
-    return options.length ? options : ["0", "180"];
-  }
-
-  function effectiveScreenRotationForUi() {
-    var current = String(S.screen_rotation || "0");
-    return screenRotationOptionsForUi().indexOf(current) !== -1 ? current : "0";
   }
 
   function extractUrlAuthority(value) {
@@ -484,12 +461,16 @@
     }));
   }
 
+  function photoIdFieldLengthLimit() {
+    return typeof MAX_PHOTO_ID_FIELD_LENGTH !== "undefined" ? MAX_PHOTO_ID_FIELD_LENGTH : 255;
+  }
+
   function photoIdFieldTooLong(s) {
-    return String(s != null ? s : "").trim().length > MAX_PHOTO_ID_FIELD_LENGTH;
+    return String(s != null ? s : "").trim().length > photoIdFieldLengthLimit();
   }
 
   function photoLabelFieldTooLong(s) {
-    return String(s != null ? s : "").trim().length > MAX_PHOTO_ID_FIELD_LENGTH;
+    return String(s != null ? s : "").trim().length > photoIdFieldLengthLimit();
   }
 
   var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -514,6 +495,45 @@
       if (Array.isArray(parsed)) return parsed.map(function (label) { return String(label || ""); });
     } catch (_) {}
     return raw.split(",").map(function (label) { return label.trim(); });
+  }
+
+if (typeof module !== "undefined") {
+  module.exports = {
+    extractUrlHost: extractUrlHost,
+    extractUrlPort: extractUrlPort,
+    isValidHttpUrl: isValidHttpUrl,
+    normalizeFirmwareManifestUrl: normalizeFirmwareManifestUrl,
+    normalizeImmichUrl: normalizeImmichUrl,
+    normalizeNtpServer: normalizeNtpServer,
+    parsePhotoLabelList: parsePhotoLabelList,
+    photoIdFieldTooLong: photoIdFieldTooLong,
+    photoLabelFieldTooLong: photoLabelFieldTooLong,
+    splitPhotoIdList: splitPhotoIdList,
+    isValidUuidList: isValidUuidList
+  };
+}
+
+  function developerPanelEnabledByUrl() {
+    try {
+      var params = new URLSearchParams(window.location.search || "");
+      return params.get("developer") === "experimental" || params.get("dev") === "experimental";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function isPortraitScreenRotation(value) {
+    return value === "90" || value === "270";
+  }
+
+  function screenRotationOptionsForUi() {
+    var options = productSettingOptions("screen_rotation", S.developer_features_enabled);
+    return options.length ? options : ["0", "180"];
+  }
+
+  function effectiveScreenRotationForUi() {
+    var current = String(S.screen_rotation || "0");
+    return screenRotationOptionsForUi().indexOf(current) !== -1 ? current : "0";
   }
 
   function buildPhotoLabelList(idInputs, labelInputs) {

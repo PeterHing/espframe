@@ -1527,11 +1527,15 @@ def check_npm_package_metadata(product: dict, errors: list[str]) -> None:
             errors.append("package.json check:backup must run scripts/check_backup_config.py")
         if scripts.get("check:compat") != "python3 scripts/check_compatibility.py":
             errors.append("package.json check:compat must run scripts/check_compatibility.py")
+        if scripts.get("test:web-compat") != "node tests/web_compat_tests.js":
+            errors.append("package.json test:web-compat must run tests/web_compat_tests.js")
         check_all = str(scripts.get("check:all", ""))
         if "npm run check:backup" not in check_all:
             errors.append("package.json check:all must include check:backup")
         if "npm run check:compat" not in check_all:
             errors.append("package.json check:all must include check:compat")
+        if "npm run test:web-compat" not in check_all:
+            errors.append("package.json check:all must include test:web-compat")
     if package_lock.get("name") != expected_name:
         errors.append("package-lock.json name must match project.npm_package_name")
     root_package = package_lock.get("packages", {}).get("", {})
@@ -3670,6 +3674,7 @@ def check_generated_asset_metadata(product: dict, errors: list[str]) -> None:
     expected_sources = {
         "components/espframe/timezones.py",
         "docs/webserver/src/app.template.js",
+        "docs/webserver/src/compat.js",
         "docs/webserver/src/style.css",
         "product/espframe.json",
         "scripts/product_config.py",

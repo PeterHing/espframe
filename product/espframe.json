@@ -445,6 +445,7 @@
     "generated_asset_sources": [
       "components/espframe/timezones.py",
       "docs/webserver/src/app.template.js",
+      "docs/webserver/src/compat.js",
       "docs/webserver/src/style.css",
       "product/espframe.json",
       "scripts/product_config.py"
@@ -466,6 +467,7 @@
       "__ESPFRAME_WEB_UI_LOGS_RETAINED_LINES__",
       "__ESPFRAME_SUPPORT_URL__",
       "__ESPFRAME_SUPPORT_BUTTON_IMAGE_URL__",
+      "__ESPFRAME_WEB_COMPAT_HELPERS__",
       "__ESPFRAME_CSS__"
     ],
     "support_url": "https://www.buymeacoffee.com/jtenniswood",
