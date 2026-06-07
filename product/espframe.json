@@ -440,7 +440,10 @@
     },
     "github_release_notes_fetch_depth": 0,
     "github_release_notes_fetch_tags": true,
+    "github_release_notes_version_ref": "${{ github.event.release.tag_name }}",
+    "github_release_build_version_ref": "${{ github.event.release.tag_name || github.ref_name }}",
     "github_release_build_ref": "${{ github.event.release.tag_name || github.ref }}",
+    "github_release_notes_output": "$RUNNER_TEMP/release-notes.md",
     "github_workflow_permissions": {
       "compile": { "contents": "read" },
       "docs": { "contents": "read", "pages": "write", "id-token": "write" },

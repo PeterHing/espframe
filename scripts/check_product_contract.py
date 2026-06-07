@@ -635,7 +635,10 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "web_ui_logs_clear_label",
         "node_version",
         "github_actions_runner",
+        "github_release_notes_version_ref",
+        "github_release_build_version_ref",
         "github_release_build_ref",
+        "github_release_notes_output",
     ):
         if not str(project.get(field, "")).strip():
             errors.append(f"project.{field} is required")
@@ -3052,7 +3055,10 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
     pages_cancel_in_progress = project.get("github_pages_cancel_in_progress")
     release_notes_fetch_depth = project.get("github_release_notes_fetch_depth")
     release_notes_fetch_tags = project.get("github_release_notes_fetch_tags")
+    release_notes_version_ref = str(project.get("github_release_notes_version_ref", "")).strip()
+    release_build_version_ref = str(project.get("github_release_build_version_ref", "")).strip()
     release_build_ref = str(project.get("github_release_build_ref", "")).strip()
+    release_notes_output = str(project.get("github_release_notes_output", "")).strip()
     sparse_checkout_files = [
         str(path).strip() for path in project.get("github_sparse_checkout_files", []) if str(path).strip()
     ]
@@ -3082,6 +3088,16 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
         )
     if release_build_ref:
         require_contains(release_workflow, f"ref: {release_build_ref}", ".github/workflows/release.yml", errors)
+    if release_notes_version_ref:
+        require_contains(release_workflow, f"VERSION: {release_notes_version_ref}", ".github/workflows/release.yml", errors)
+    if release_build_version_ref:
+        require_contains(release_workflow, f"VERSION: {release_build_version_ref}", ".github/workflows/release.yml", errors)
+    if release_notes_output:
+        for needle in (
+            f'--output "{release_notes_output}"',
+            f'--notes-file "{release_notes_output}"',
+        ):
+            require_contains(release_workflow, needle, ".github/workflows/release.yml", errors)
     for label, text in (
         (".github/workflows/release.yml", release_workflow),
         (".github/workflows/docs.yml", docs_workflow),
