@@ -48,6 +48,24 @@
 
   registerProductSettingStateDefaults();
 
+  function productNumberSettingField(key, field, fallback) {
+    var spec = PRODUCT_SETTINGS && PRODUCT_SETTINGS[key];
+    var value = spec && spec[field] !== undefined ? Number(spec[field]) : NaN;
+    return isFinite(value) ? value : fallback;
+  }
+
+  function productNumberMin(key, fallback) {
+    return productNumberSettingField(key, "min", fallback);
+  }
+
+  function productNumberMax(key, fallback) {
+    return productNumberSettingField(key, "max", fallback);
+  }
+
+  function productNumberStep(key, fallback) {
+    return productNumberSettingField(key, "step", fallback);
+  }
+
   var CSS = __ESPFRAME_CSS__;
   var FAVICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" id="mdi-home-automation" viewBox="0 0 24 24"><path fill="#5c73e7" d="M12,3L2,12H5V20H19V12H22L12,3M12,8.5C14.34,8.5 16.46,9.43 18,10.94L16.8,12.12C15.58,10.91 13.88,10.17 12,10.17C10.12,10.17 8.42,10.91 7.2,12.12L6,10.94C7.54,9.43 9.66,8.5 12,8.5M12,11.83C13.4,11.83 14.67,12.39 15.6,13.3L14.4,14.47C13.79,13.87 12.94,13.5 12,13.5C11.06,13.5 10.21,13.87 9.6,14.47L8.4,13.3C9.33,12.39 10.6,11.83 12,11.83M12,15.17C12.94,15.17 13.7,15.91 13.7,16.83C13.7,17.75 12.94,18.5 12,18.5C11.06,18.5 10.3,17.75 10.3,16.83C10.3,15.91 11.06,15.17 12,15.17Z"/></svg>';
 
@@ -1436,10 +1454,13 @@
     var relativeWrap = el("div", "filter-relative-row");
     var fRelativeAmount = field("Last");
     var relativeAmountInput = document.createElement("input");
+    var relativeAmountMin = productNumberMin("relative_amount", 1);
+    var relativeAmountMax = productNumberMax("relative_amount", 120);
+    var relativeAmountStep = productNumberStep("relative_amount", 1);
     relativeAmountInput.type = "number";
-    relativeAmountInput.min = "1";
-    relativeAmountInput.max = "120";
-    relativeAmountInput.step = "1";
+    relativeAmountInput.min = String(relativeAmountMin);
+    relativeAmountInput.max = String(relativeAmountMax);
+    relativeAmountInput.step = String(relativeAmountStep);
     relativeAmountInput.value = String(S.relative_amount || 1);
     var relativeAmountError = el("div", "field-error");
     fRelativeAmount.appendChild(relativeAmountInput);
@@ -1488,11 +1509,12 @@
         filterError.textContent = "From must not be after Until";
         return null;
       }
-      if (S.date_filter_enabled && modeVal === "Relative Range" && (!amountVal || amountVal < 1 || amountVal > 120)) {
-        relativeAmountError.textContent = "Enter a whole number from 1 to 120";
+      if (S.date_filter_enabled && modeVal === "Relative Range" &&
+          (!amountVal || amountVal < relativeAmountMin || amountVal > relativeAmountMax)) {
+        relativeAmountError.textContent = "Enter a whole number from " + relativeAmountMin + " to " + relativeAmountMax;
         return null;
       }
-      return { from: fromVal, to: toVal, amount: amountVal || 1, unit: unitVal };
+      return { from: fromVal, to: toVal, amount: amountVal || relativeAmountMin, unit: unitVal };
     }
 
     function applyFilterSettings() {
@@ -1603,9 +1625,9 @@
     var rwDay = el("div", "range-wrap");
     var daySlider = document.createElement("input");
     daySlider.type = "range";
-    daySlider.min = 10;
-    daySlider.max = 100;
-    daySlider.step = 5;
+    daySlider.min = productNumberMin("brightness_day", 10);
+    daySlider.max = productNumberMax("brightness_day", 100);
+    daySlider.step = productNumberStep("brightness_day", 5);
     daySlider.value = S.brightness_day;
     var dayVal = el("span", "range-val");
     dayVal.textContent = Math.round(S.brightness_day) + "%";
@@ -1624,9 +1646,9 @@
     var rwNight = el("div", "range-wrap");
     var nightSlider = document.createElement("input");
     nightSlider.type = "range";
-    nightSlider.min = 10;
-    nightSlider.max = 100;
-    nightSlider.step = 5;
+    nightSlider.min = productNumberMin("brightness_night", 10);
+    nightSlider.max = productNumberMax("brightness_night", 100);
+    nightSlider.step = productNumberStep("brightness_night", 5);
     nightSlider.value = S.brightness_night;
     var nightVal = el("span", "range-val");
     nightVal.textContent = Math.round(S.brightness_night) + "%";
@@ -1680,9 +1702,9 @@
     baseLabelL.textContent = "Cooler";
     var baseSlider = document.createElement("input");
     baseSlider.type = "range";
-    baseSlider.min = 0;
-    baseSlider.max = 100;
-    baseSlider.step = 5;
+    baseSlider.min = productNumberMin("base_tone", 0);
+    baseSlider.max = productNumberMax("base_tone", 100);
+    baseSlider.step = productNumberStep("base_tone", 5);
     baseSlider.value = S.base_tone;
     baseSlider.onchange = function () {
       post(endpoints.base_tone + "/set", { value: baseSlider.value });
@@ -1722,9 +1744,9 @@
     warmLabelL.textContent = "Cooler";
     var warmSlider = document.createElement("input");
     warmSlider.type = "range";
-    warmSlider.min = 10;
-    warmSlider.max = 100;
-    warmSlider.step = 5;
+    warmSlider.min = productNumberMin("warm_tone_intensity", 10);
+    warmSlider.max = productNumberMax("warm_tone_intensity", 100);
+    warmSlider.step = productNumberStep("warm_tone_intensity", 5);
     warmSlider.value = S.warm_tone_intensity;
     warmSlider.onchange = function () {
       post(endpoints.warm_tone_intensity + "/set", { value: warmSlider.value });
@@ -1777,7 +1799,9 @@
     var fOnTime = field("On Time");
     var onSel = document.createElement("select");
     onSel.className = "select";
-    for (var h = 0; h < 24; h++) {
+    var scheduleOnMin = productNumberMin("schedule_on_hour", 0);
+    var scheduleOnMax = productNumberMax("schedule_on_hour", 23);
+    for (var h = scheduleOnMin; h <= scheduleOnMax; h++) {
       var o = document.createElement("option");
       o.value = h;
       o.textContent = formatHour(h);
@@ -1794,7 +1818,9 @@
     var fOffTime = field("Off Time");
     var offSel = document.createElement("select");
     offSel.className = "select";
-    for (var h2 = 0; h2 < 24; h2++) {
+    var scheduleOffMin = productNumberMin("schedule_off_hour", 0);
+    var scheduleOffMax = productNumberMax("schedule_off_hour", 23);
+    for (var h2 = scheduleOffMin; h2 <= scheduleOffMax; h2++) {
       var o2 = document.createElement("option");
       o2.value = h2;
       o2.textContent = formatHour(h2);
@@ -1809,8 +1835,18 @@
     schedDetails.appendChild(fOffTime);
 
     var fWakeTimeout = field("When Woken, Idle Time To Screen Off");
+    var scheduleWakeMin = productNumberMin("schedule_wake_timeout", 10);
+    var scheduleWakeMax = productNumberMax("schedule_wake_timeout", 3600);
+    var scheduleWakeOptions = [10, 30, 60, 120, 300, 600, 1800, 3600].filter(function (v) {
+      return v >= scheduleWakeMin && v <= scheduleWakeMax;
+    });
+    var scheduleWakeCurrent = normalizeScheduleWakeTimeout(S.schedule_wake_timeout);
+    if (scheduleWakeOptions.indexOf(scheduleWakeCurrent) === -1) {
+      scheduleWakeOptions.push(scheduleWakeCurrent);
+      scheduleWakeOptions.sort(function (a, b) { return a - b; });
+    }
     fWakeTimeout.appendChild(
-      selectFromOptions([10, 30, 60, 120, 300, 600, 1800, 3600], normalizeScheduleWakeTimeout(S.schedule_wake_timeout), function (v) {
+      selectFromOptions(scheduleWakeOptions, scheduleWakeCurrent, function (v) {
         S.schedule_wake_timeout = normalizeScheduleWakeTimeout(v);
         postScheduleWakeTimeout(S.schedule_wake_timeout);
       }, formatDurationSeconds)
@@ -2175,9 +2211,15 @@
 
   function normalizeScheduleWakeTimeout(value) {
     var seconds = Math.round(Number(value));
-    if (!seconds) seconds = 60;
-    if (seconds < 10) seconds = 10;
-    if (seconds > 3600) seconds = 3600;
+    var fallback = PRODUCT_SETTINGS && PRODUCT_SETTINGS.schedule_wake_timeout &&
+      PRODUCT_SETTINGS.schedule_wake_timeout.default !== undefined
+      ? PRODUCT_SETTINGS.schedule_wake_timeout.default
+      : 60;
+    var min = productNumberMin("schedule_wake_timeout", 10);
+    var max = productNumberMax("schedule_wake_timeout", 3600);
+    if (!seconds) seconds = fallback;
+    if (seconds < min) seconds = min;
+    if (seconds > max) seconds = max;
     return seconds;
   }
 
