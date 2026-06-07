@@ -266,16 +266,34 @@
     return "/" + domain + "/" + encodeURIComponent(name);
   }
 
+  function settingEntityParts(key, fallbackDomain, fallbackName) {
+    var spec = PRODUCT_SETTINGS && PRODUCT_SETTINGS[key];
+    var entity = spec && typeof spec.entity === "string" ? spec.entity : "";
+    var slash = entity.indexOf("/");
+    if (slash > 0) {
+      return {
+        domain: entity.slice(0, slash),
+        name: entity.slice(slash + 1)
+      };
+    }
+    return { domain: fallbackDomain, name: fallbackName };
+  }
+
+  function settingEndpoint(key, fallbackDomain, fallbackName) {
+    var parts = settingEntityParts(key, fallbackDomain, fallbackName);
+    return eid(parts.domain, parts.name);
+  }
+
   var endpoints = {
     immich_url: eid("text", "Connection: Server URL"),
     api_key: eid("text", "Connection: API Key"),
-    clock_format: eid("select", "Clock: Format"),
+    clock_format: settingEndpoint("clock_format", "select", "Clock: Format"),
     timezone: eid("select", "Clock: Timezone"),
     ntp_server_1: eid("text", "Clock: NTP Server 1"),
     ntp_server_2: eid("text", "Clock: NTP Server 2"),
     ntp_server_3: eid("text", "Clock: NTP Server 3"),
-    interval: eid("select", "Photos: Slideshow Interval"),
-    conn_timeout: eid("select", "Screen: Connection Timeout"),
+    interval: settingEndpoint("interval", "select", "Photos: Slideshow Interval"),
+    conn_timeout: settingEndpoint("conn_timeout", "select", "Screen: Connection Timeout"),
     backlight: eid("light", "Screen: Backlight"),
     show_clock: eid("switch", "Clock: Show"),
     firmware: eid("text_sensor", "Firmware: Version"),
@@ -283,7 +301,7 @@
     update_beta: eid("update", "Firmware: Update Beta"),
     auto_update: eid("switch", "Firmware: Auto Update"),
     beta_channel: eid("switch", "Firmware: Beta Channel"),
-    update_frequency: eid("select", "Firmware: Update Frequency"),
+    update_frequency: settingEndpoint("update_frequency", "select", "Firmware: Update Frequency"),
     firmware_manifest_url: eid("text", "Firmware: Manifest URL"),
     firmware_beta_manifest_url: eid("text", "Firmware: Beta Manifest URL"),
     schedule_enabled: eid("switch", "Screen: Schedule Enabled"),
@@ -294,30 +312,30 @@
     brightness_night: eid("number", "Screen: Nighttime Brightness"),
     sunrise: eid("text_sensor", "Screen: Sunrise"),
     sunset: eid("text_sensor", "Screen: Sunset"),
-    photo_source: eid("select", "Photos: Source"),
+    photo_source: settingEndpoint("photo_source", "select", "Photos: Source"),
     album_ids: eid("text", "Photos: Album IDs"),
     album_labels: eid("text", "Photos: Album Labels"),
     person_ids: eid("text", "Photos: Person IDs"),
     person_labels: eid("text", "Photos: Person Labels"),
     date_filter_enabled: eid("switch", "Photos: Date Filter"),
-    date_filter_mode: eid("select", "Photos: Date Filter Mode"),
+    date_filter_mode: settingEndpoint("date_filter_mode", "select", "Photos: Date Filter Mode"),
     date_from: eid("text", "Photos: Date From"),
     date_to: eid("text", "Photos: Date To"),
     relative_amount: eid("number", "Photos: Relative Amount"),
-    relative_unit: eid("select", "Photos: Relative Unit"),
+    relative_unit: settingEndpoint("relative_unit", "select", "Photos: Relative Unit"),
     base_tone_enabled: eid("switch", "Screen: Tone Adjustment"),
     base_tone: eid("number", "Screen: Display Tone"),
     warm_tones_enabled: eid("switch", "Screen: Night Tone Adjustment"),
     warm_tone_intensity: eid("number", "Screen: Warm Tone Intensity"),
     warm_tone_override: eid("switch", "Screen: Warm Tone Override"),
     portrait_pairing: eid("switch", "Photos: Portrait Pairing"),
-    photo_orientation: eid("select", "Photos: Orientation"),
-    display_mode: eid("select", "Photos: Display Mode"),
+    photo_orientation: settingEndpoint("photo_orientation", "select", "Photos: Orientation"),
+    display_mode: settingEndpoint("display_mode", "select", "Photos: Display Mode"),
     photo_metadata_date_enabled: eid("switch", "Device: Metadata Date"),
-    photo_metadata_date_format: eid("select", "Device: Metadata Date Format"),
-    photo_metadata_date_taken_format: eid("select", "Device: Metadata Date Taken Format"),
+    photo_metadata_date_format: settingEndpoint("photo_metadata_date_format", "select", "Device: Metadata Date Format"),
+    photo_metadata_date_taken_format: settingEndpoint("photo_metadata_date_taken_format", "select", "Device: Metadata Date Taken Format"),
     photo_metadata_location_enabled: eid("switch", "Device: Metadata Location"),
-    screen_rotation: eid("select", "Screen: Rotation"),
+    screen_rotation: settingEndpoint("screen_rotation", "select", "Screen: Rotation"),
     developer_features_enabled: eid("switch", "Developer: Features"),
   };
 
