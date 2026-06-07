@@ -26,6 +26,8 @@ from product_config import (
     web_entity_aliases_metadata,
     web_initial_fetch_keys,
     web_initial_fetch_first_keys,
+    web_live_render_state_keys,
+    web_live_render_state_prefixes,
     web_local_state_keys,
     web_manual_entities,
     web_manual_entities_metadata,
@@ -997,6 +999,8 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "generated_asset_sources",
         "web_template_placeholders",
         "web_initial_fetch_first_keys",
+        "web_live_render_state_keys",
+        "web_live_render_state_prefixes",
         "web_local_state_keys",
         "web_manual_state_keys",
     ):
@@ -4052,6 +4056,8 @@ def check_web_entity_metadata(product: dict, errors: list[str]) -> None:
     }
     static_entities = web_static_entities(product)
     initial_fetch_first_keys = web_initial_fetch_first_keys(product)
+    live_render_state_keys = web_live_render_state_keys(product)
+    live_render_state_prefixes = web_live_render_state_prefixes(product)
     static_entities_seen: set[str] = set()
     state_domains = dict(product_key_domains)
     local_state_keys = web_local_state_keys(product)
@@ -4060,6 +4066,10 @@ def check_web_entity_metadata(product: dict, errors: list[str]) -> None:
         errors.append("project.web_static_entities must be a non-empty object")
     if not initial_fetch_first_keys:
         errors.append("project.web_initial_fetch_first_keys must be a non-empty list")
+    if not live_render_state_keys:
+        errors.append("project.web_live_render_state_keys must be a non-empty list")
+    if not live_render_state_prefixes:
+        errors.append("project.web_live_render_state_prefixes must be a non-empty list")
     for key in initial_fetch_first_keys:
         metadata = static_entities.get(key)
         if not metadata:
@@ -4079,6 +4089,13 @@ def check_web_entity_metadata(product: dict, errors: list[str]) -> None:
     for key, metadata in static_entities.items():
         if metadata.get("fetch") is True and key not in initial_fetch_keys:
             errors.append(f"Fetch-enabled static web entity {key} must be included in generated web initial fetch keys")
+    valid_state_keys = product_keys | set(static_entities)
+    for key in live_render_state_keys:
+        if key not in valid_state_keys:
+            errors.append(f"project.web_live_render_state_keys {key} must point at a product or static web entity")
+    for prefix in live_render_state_prefixes:
+        if not any(key.startswith(prefix) for key in valid_state_keys):
+            errors.append(f"project.web_live_render_state_prefixes {prefix} must match at least one product or static web entity")
 
     for key, metadata in static_entities.items():
         if not isinstance(key, str) or not key.strip():
@@ -4129,7 +4146,6 @@ def check_web_entity_metadata(product: dict, errors: list[str]) -> None:
             require_contains(text, f"name: \"{name}\"", firmware_file, errors)
 
     alias_entities_seen: set[str] = set()
-    valid_state_keys = product_keys | set(static_entities)
     entity_aliases = web_entity_aliases(product)
     if not entity_aliases:
         errors.append("project.web_entity_aliases must be a non-empty object")
@@ -4271,6 +4287,14 @@ def check_generated_web_metadata(product: dict, web_text: str, errors: list[str]
     initial_fetch_keys = extract_js_json_var(web_text, "INITIAL_FETCH_KEYS", errors)
     if initial_fetch_keys is not None and initial_fetch_keys != web_initial_fetch_keys(product["settings"]):
         errors.append("Generated web INITIAL_FETCH_KEYS does not match product/espframe.json")
+
+    live_render_state_keys = extract_js_json_var(web_text, "LIVE_RENDER_STATE_KEYS", errors)
+    if live_render_state_keys is not None and live_render_state_keys != web_live_render_state_keys(product):
+        errors.append("Generated web LIVE_RENDER_STATE_KEYS does not match product/espframe.json")
+
+    live_render_state_prefixes = extract_js_json_var(web_text, "LIVE_RENDER_STATE_PREFIXES", errors)
+    if live_render_state_prefixes is not None and live_render_state_prefixes != web_live_render_state_prefixes(product):
+        errors.append("Generated web LIVE_RENDER_STATE_PREFIXES does not match product/espframe.json")
 
     firmware_manifest_urls = extract_js_json_var(web_text, "FIRMWARE_MANIFEST_URLS", errors)
     if firmware_manifest_urls is not None and firmware_manifest_urls != default_public_manifest_urls(product):

@@ -8,6 +8,8 @@
   var MANUAL_ENTITIES = __ESPFRAME_MANUAL_ENTITIES__;
   var MANUAL_STATE_KEYS = __ESPFRAME_MANUAL_STATE_KEYS__;
   var ENTITY_ALIASES = __ESPFRAME_ENTITY_ALIASES__;
+  var LIVE_RENDER_STATE_KEYS = __ESPFRAME_LIVE_RENDER_STATE_KEYS__;
+  var LIVE_RENDER_STATE_PREFIXES = __ESPFRAME_LIVE_RENDER_STATE_PREFIXES__;
   var FIRMWARE_MANIFEST_URLS = __ESPFRAME_FIRMWARE_MANIFEST_URLS__;
   var DOCS_BASE_URL = __ESPFRAME_DOCS_BASE_URL__;
   var WEB_UI_TABS = __ESPFRAME_WEB_UI_TABS__;
@@ -756,6 +758,12 @@
     var active = document.activeElement;
     if (!active || !els.root || !els.root.contains(active)) return false;
     return /^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(active.tagName);
+  }
+
+  function liveRenderStateKeyHasPrefix(key) {
+    return (Array.isArray(LIVE_RENDER_STATE_PREFIXES) ? LIVE_RENDER_STATE_PREFIXES : []).some(function (prefix) {
+      return key.indexOf(prefix) === 0;
+    });
   }
 
   function renderConfiguredSettingsPage() {
@@ -2214,6 +2222,7 @@
   function handleLiveEvent(d) {
     if (!d || !d.id) return;
     var id = d.id;
+    var stateSpec = ENTITY_STATE_MAP[id];
     if (id === "light/Screen: Backlight") {
       S.backlight_on = d.state === "ON";
       if (d.brightness != null) {
@@ -2228,12 +2237,10 @@
     } else if (id === "text_sensor/Screen: Sunset") {
       S.sunset = d.value || d.state || "";
       updateSunInfoElement(document.getElementById("sun-info"));
-    } else if (ENTITY_STATE_MAP[id] && ["screen_rotation", "portrait_pairing", "developer_features_enabled", "beta_channel"].indexOf(ENTITY_STATE_MAP[id].key) !== -1) {
+    } else if (stateSpec && LIVE_RENDER_STATE_KEYS.indexOf(stateSpec.key) !== -1) {
       applyEntityToState(d);
       if (!isEditingSetting()) renderSettings();
-    } else if (ENTITY_STATE_MAP[id] && ENTITY_STATE_MAP[id].key.indexOf("photo_metadata_") === 0) {
-      if (!isEditingSetting()) renderSettings();
-    } else if (ENTITY_STATE_MAP[id] && ENTITY_STATE_MAP[id].key.indexOf("schedule_") === 0) {
+    } else if (stateSpec && liveRenderStateKeyHasPrefix(stateSpec.key)) {
       if (!isEditingSetting()) renderSettings();
     }
   }

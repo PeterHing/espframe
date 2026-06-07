@@ -26,6 +26,8 @@ from product_config import (
     settings,
     web_entity_aliases_metadata,
     web_initial_fetch_keys,
+    web_live_render_state_keys,
+    web_live_render_state_prefixes,
     web_manual_entities_metadata,
     web_manual_state_keys,
     web_settings_metadata,
@@ -178,6 +180,8 @@ def web_app_bundle() -> str:
     manual_state_keys_json = json.dumps(web_manual_state_keys(), separators=(",", ":"))
     entity_aliases_json = json.dumps(web_entity_aliases_metadata(), separators=(",", ":"))
     initial_fetch_keys_json = json.dumps(web_initial_fetch_keys(), separators=(",", ":"))
+    live_render_state_keys_json = json.dumps(web_live_render_state_keys(), separators=(",", ":"))
+    live_render_state_prefixes_json = json.dumps(web_live_render_state_prefixes(), separators=(",", ":"))
     firmware_manifest_urls_json = json.dumps(default_public_manifest_urls(), separators=(",", ":"))
     docs_base_url_json = json.dumps(public_base_url(), separators=(",", ":"))
     web_ui_tabs_json = json.dumps(load_product()["project"].get("web_ui_tabs", []), separators=(",", ":"))
@@ -194,6 +198,8 @@ def web_app_bundle() -> str:
         .replace("__ESPFRAME_MANUAL_STATE_KEYS__", manual_state_keys_json)
         .replace("__ESPFRAME_ENTITY_ALIASES__", entity_aliases_json)
         .replace("__ESPFRAME_INITIAL_FETCH_KEYS__", initial_fetch_keys_json)
+        .replace("__ESPFRAME_LIVE_RENDER_STATE_KEYS__", live_render_state_keys_json)
+        .replace("__ESPFRAME_LIVE_RENDER_STATE_PREFIXES__", live_render_state_prefixes_json)
         .replace("__ESPFRAME_FIRMWARE_MANIFEST_URLS__", firmware_manifest_urls_json)
         .replace("__ESPFRAME_DOCS_BASE_URL__", docs_base_url_json)
         .replace("__ESPFRAME_WEB_UI_TABS__", web_ui_tabs_json)

@@ -227,6 +227,22 @@ def web_initial_fetch_first_keys(product: dict[str, Any] | None = None) -> list[
     return [str(key).strip() for key in keys if str(key).strip()]
 
 
+def web_live_render_state_keys(product: dict[str, Any] | None = None) -> list[str]:
+    data = product if product is not None else load_product()
+    keys = data["project"].get("web_live_render_state_keys", [])
+    if not isinstance(keys, list):
+        return []
+    return [str(key).strip() for key in keys if str(key).strip()]
+
+
+def web_live_render_state_prefixes(product: dict[str, Any] | None = None) -> list[str]:
+    data = product if product is not None else load_product()
+    prefixes = data["project"].get("web_live_render_state_prefixes", [])
+    if not isinstance(prefixes, list):
+        return []
+    return [str(prefix).strip() for prefix in prefixes if str(prefix).strip()]
+
+
 def web_initial_fetch_keys(product_settings: list[dict[str, Any]] | None = None) -> list[str]:
     product = load_product()
     if product_settings is None:

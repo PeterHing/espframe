@@ -8,6 +8,8 @@
   var MANUAL_ENTITIES = {"immich_url":{"entity":"text/Connection: Server URL"},"api_key":{"entity":"text/Connection: API Key"},"backlight":{"entity":"light/Screen: Backlight"},"update":{"entity":"update/Firmware: Update"},"update_beta":{"entity":"update/Firmware: Update Beta"},"apply_photo_source":{"entity":"button/Apply Photo Source"},"firmware_check":{"entity":"button/Firmware: Check for Update"}};
   var MANUAL_STATE_KEYS = ["immich_url","api_key"];
   var ENTITY_ALIASES = {"schedule_enabled":[{"entity":"switch/Screen: Schedule","boolFromState":true}],"schedule_on_hour":[{"entity":"number/Screen: Schedule On","default":6,"number":true}],"schedule_off_hour":[{"entity":"number/Screen: Schedule Off","default":23,"number":true}]};
+  var LIVE_RENDER_STATE_KEYS = ["screen_rotation","portrait_pairing","developer_features_enabled","beta_channel"];
+  var LIVE_RENDER_STATE_PREFIXES = ["photo_metadata_","schedule_"];
   var FIRMWARE_MANIFEST_URLS = {"stable":"https://jtenniswood.github.io/espframe/firmware/manifest.json","beta":"https://jtenniswood.github.io/espframe/firmware/beta/manifest.json"};
   var DOCS_BASE_URL = "https://jtenniswood.github.io/espframe";
   var WEB_UI_TABS = [{"id":"immich","label":"Immich"},{"id":"settings","label":"Device"},{"id":"logs","label":"Logs"}];
@@ -756,6 +758,12 @@
     var active = document.activeElement;
     if (!active || !els.root || !els.root.contains(active)) return false;
     return /^(INPUT|SELECT|TEXTAREA|BUTTON)$/.test(active.tagName);
+  }
+
+  function liveRenderStateKeyHasPrefix(key) {
+    return (Array.isArray(LIVE_RENDER_STATE_PREFIXES) ? LIVE_RENDER_STATE_PREFIXES : []).some(function (prefix) {
+      return key.indexOf(prefix) === 0;
+    });
   }
 
   function renderConfiguredSettingsPage() {
@@ -2214,6 +2222,7 @@
   function handleLiveEvent(d) {
     if (!d || !d.id) return;
     var id = d.id;
+    var stateSpec = ENTITY_STATE_MAP[id];
     if (id === "light/Screen: Backlight") {
       S.backlight_on = d.state === "ON";
       if (d.brightness != null) {
@@ -2228,12 +2237,10 @@
     } else if (id === "text_sensor/Screen: Sunset") {
       S.sunset = d.value || d.state || "";
       updateSunInfoElement(document.getElementById("sun-info"));
-    } else if (ENTITY_STATE_MAP[id] && ["screen_rotation", "portrait_pairing", "developer_features_enabled", "beta_channel"].indexOf(ENTITY_STATE_MAP[id].key) !== -1) {
+    } else if (stateSpec && LIVE_RENDER_STATE_KEYS.indexOf(stateSpec.key) !== -1) {
       applyEntityToState(d);
       if (!isEditingSetting()) renderSettings();
-    } else if (ENTITY_STATE_MAP[id] && ENTITY_STATE_MAP[id].key.indexOf("photo_metadata_") === 0) {
-      if (!isEditingSetting()) renderSettings();
-    } else if (ENTITY_STATE_MAP[id] && ENTITY_STATE_MAP[id].key.indexOf("schedule_") === 0) {
+    } else if (stateSpec && liveRenderStateKeyHasPrefix(stateSpec.key)) {
       if (!isEditingSetting()) renderSettings();
     }
   }

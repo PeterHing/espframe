@@ -221,6 +221,8 @@
     "web_ui_logs_event_name": "log",
     "web_ui_logs_clear_label": "Clear",
     "web_ui_logs_retained_lines": 1000,
+    "web_live_render_state_keys": ["screen_rotation", "portrait_pairing", "developer_features_enabled", "beta_channel"],
+    "web_live_render_state_prefixes": ["photo_metadata_", "schedule_"],
     "web_initial_fetch_first_keys": ["firmware"],
     "web_static_entities": {
       "firmware": { "entity": "text_sensor/Firmware: Version", "firmware_file": "common/addon/firmware_update.yaml", "fetch": true },
@@ -436,6 +438,8 @@
       "__ESPFRAME_MANUAL_STATE_KEYS__",
       "__ESPFRAME_ENTITY_ALIASES__",
       "__ESPFRAME_INITIAL_FETCH_KEYS__",
+      "__ESPFRAME_LIVE_RENDER_STATE_KEYS__",
+      "__ESPFRAME_LIVE_RENDER_STATE_PREFIXES__",
       "__ESPFRAME_FIRMWARE_MANIFEST_URLS__",
       "__ESPFRAME_DOCS_BASE_URL__",
       "__ESPFRAME_WEB_UI_TABS__",
