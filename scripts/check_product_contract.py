@@ -243,6 +243,7 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "public_base_url",
         "support_url",
         "support_button_image_url",
+        "node_version",
     ):
         if not str(project.get(field, "")).strip():
             errors.append(f"project.{field} is required")
@@ -531,6 +532,19 @@ def check_workflows(errors: list[str]) -> None:
     ):
         require_contains(text, "scripts/product_config.py", label, errors)
         require_contains(text, "product/espframe.json", label, errors)
+
+
+def check_node_version(product: dict, errors: list[str]) -> None:
+    version = str(product["project"].get("node_version", "")).strip()
+    if not version:
+        errors.append("project.node_version is required")
+        return
+    if not re.match(r"^\d+$", version):
+        errors.append("project.node_version must be a major version number")
+
+    for path in (ROOT / ".github" / "workflows" / "compile.yml", ROOT / ".github" / "workflows" / "docs.yml"):
+        text = read(path, errors)
+        require_contains(text, f"node-version: {version}", rel(path), errors)
 
 
 def check_web_entity_metadata(product: dict, errors: list[str]) -> None:
@@ -964,6 +978,7 @@ def main() -> int:
     check_docs_site_config(product, errors)
     check_device_workflow_contract(product, errors)
     check_esphome_version(product, errors)
+    check_node_version(product, errors)
     check_workflows(errors)
     check_settings(product, errors)
 
