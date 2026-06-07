@@ -5,7 +5,7 @@ Turn a supported Guition ESP32-P4 touchscreen into a private digital photo frame
 Espframe is for people who want their photos out in the room, not hidden on a phone, and do not want to run another server, cloud account, or subscription just to make that happen. Flash the frame from a browser, connect it to WiFi, point it at Immich, and it starts showing your photos.
 
 <p align="center">
-  <img src="docs/public/espframe.png" alt="Espframe displaying photos on a Guition ESP32-P4 touchscreen" width="700" />
+  <img src="docs/public/espframe.png" alt="Espframe displaying Immich photos on a Guition ESP32-P4 touchscreen" width="700" />
 </p>
 
 ## What Espframe Lets You Do

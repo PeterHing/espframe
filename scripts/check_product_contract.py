@@ -240,6 +240,7 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "site_description",
         "ai_description",
         "social_image",
+        "social_image_alt",
         "favicon",
         "npm_package_name",
         "license_id",
@@ -382,6 +383,7 @@ def check_public_site_references(product: dict, errors: list[str]) -> None:
     install_url = public_url("install", product)
     web_app_url = public_url("webserver/app.js", product)
     project_name = str(product["project"].get("name", "")).strip()
+    social_image_alt = str(product["project"].get("social_image_alt", "")).strip()
     repository_url = str(product["project"].get("repository_url", "")).strip().rstrip("/")
     support_url = str(product["project"].get("support_url", "")).strip()
     support_button_image_url = str(product["project"].get("support_button_image_url", "")).strip()
@@ -420,6 +422,13 @@ def check_public_site_references(product: dict, errors: list[str]) -> None:
             require_contains(text, support_url, label, errors)
         if support_button_image_url:
             require_contains(text, support_button_image_url, label, errors)
+    if social_image_alt:
+        for label, text in (
+            ("README.md", readme),
+            ("docs/index.md", index_docs),
+            ("docs/immich-photo-frame.md", read(ROOT / "docs" / "immich-photo-frame.md", errors)),
+        ):
+            require_contains(text, f'alt="{social_image_alt}"', label, errors)
 
     for device in product["devices"]:
         slug = str(device.get("slug", "")).strip()
@@ -481,6 +490,7 @@ def check_docs_site_config(product: dict, errors: list[str]) -> None:
     site_description = str(project.get("site_description", "")).strip()
     ai_description = str(project.get("ai_description", "")).strip()
     social_image = str(project.get("social_image", "")).strip()
+    social_image_alt = str(project.get("social_image_alt", "")).strip()
     favicon = str(project.get("favicon", "")).strip()
     base_url = public_base_url(product)
     docs_url = public_url("", product)
@@ -498,6 +508,8 @@ def check_docs_site_config(product: dict, errors: list[str]) -> None:
     if social_image:
         require_contains(config, f"content: `${{hostname}}{social_image}`", "docs/.vitepress/config.mts", errors)
         require_contains(config, f"image: `${{hostname}}{social_image}`", "docs/.vitepress/config.mts", errors)
+    if social_image_alt:
+        require_contains(config, f"content: '{social_image_alt}'", "docs/.vitepress/config.mts", errors)
     if favicon:
         require_contains(config, f"href: '{base_path}{favicon}'", "docs/.vitepress/config.mts", errors)
     if ai_description:

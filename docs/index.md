@@ -10,7 +10,7 @@ description: Build a standalone Immich digital photo frame on a Guition ESP32-P4
 
 The firmware runs on ESP32-P4 hardware with [ESPHome](https://esphome.io/) and connects to Immich over HTTP or HTTPS. It does not need Home Assistant, a cloud account, or a separate bridge service.
 
-<img src="/espframe.png" alt="Espframe displaying photos on a Guition ESP32-P4 touchscreen" style="max-width: 100%; border-radius: 8px; margin: 1.5rem 0;" />
+<img src="/espframe.png" alt="Espframe displaying Immich photos on a Guition ESP32-P4 touchscreen" style="max-width: 100%; border-radius: 8px; margin: 1.5rem 0;" />
 
 ## Features
 

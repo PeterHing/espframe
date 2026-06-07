@@ -9,7 +9,7 @@ Espframe turns a supported Guition ESP32-P4 touchscreen into a standalone digita
 
 Unlike a tablet dashboard or cloud photo frame, Espframe runs firmware built with [ESPHome](https://esphome.io/) on the display hardware itself. You do not need Home Assistant, a separate bridge app, or a subscription service.
 
-<img src="/espframe.png" alt="Espframe Immich digital photo frame on a Guition ESP32-P4 touchscreen" style="max-width: 100%; border-radius: 8px; margin: 1rem 0;" />
+<img src="/espframe.png" alt="Espframe displaying Immich photos on a Guition ESP32-P4 touchscreen" style="max-width: 100%; border-radius: 8px; margin: 1rem 0;" />
 
 ## What Espframe Does
 
