@@ -59,6 +59,7 @@ Use **Advanced Filters** in the web UI to limit photos by when they were taken. 
 
 Date filter changes save automatically shortly after you change a control. You do not need to click an Apply button.
 
+<!-- ESPFRAME:SETTINGS_TABLE date_filtering START -->
 | Setting | Default | Format | Description |
 |---------|---------|--------|-------------|
 | **Filter by Date** | Off | Toggle | Turns date filtering on or off. When off, saved date values are ignored. |
@@ -67,6 +68,7 @@ Date filter changes save automatically shortly after you change a control. You d
 | **Until** | *(empty)* | `YYYY-MM-DD` | In fixed mode, only show photos taken on or before this date. Leave empty for no upper bound. |
 | **Last** | `1` | Number | In relative mode, the amount of time to include. |
 | **Unit** | `Years` | `Months` or `Years` | In relative mode, whether the amount is counted in months or years. |
+<!-- ESPFRAME:SETTINGS_TABLE date_filtering END -->
 
 Fixed mode and relative mode are mutually exclusive, so relative ranges do not combine with the fixed From or Until dates.
 
@@ -100,11 +102,13 @@ Use relative mode for ranges like the last 6 months, last 1 year, or last 2 year
 
 Use **Layout** to control how photos are chosen and fitted to the screen.
 
+<!-- ESPFRAME:SETTINGS_TABLE layout START -->
 | Setting | Default | Description |
 |---------|---------|-------------|
 | **Portrait Pairing** | On | Pairs compatible portrait photos side-by-side on landscape screens. |
 | **Photo Orientation** | Any | Choose any photo, portrait-only photos, or landscape-only photos. Portrait-only is useful when the frame is mounted vertically. |
 | **Display Mode** | Fill | Fill crops to cover the screen; Fit letterboxes without cropping. |
+<!-- ESPFRAME:SETTINGS_TABLE layout END -->
 
 ---
 
@@ -112,17 +116,26 @@ Use **Layout** to control how photos are chosen and fitted to the screen.
 
 Use **Metadata** in the **Immich** section of the web UI to control the photo information shown over the current image.
 
+<!-- ESPFRAME:SETTINGS_TABLE metadata START -->
 | Setting | Default | Description |
 |---------|---------|-------------|
 | **Location** | On | Shows the photo location when Immich has location data for the image. |
 | **Date** | On | Shows the photo date. |
 | **Date Format** | Date Taken | Choose whether the date uses the photo's taken date or a relative age. |
 | **Date Taken Format** | `1 January, 2026` | Choose the display style used when **Date Format** is set to **Date Taken**. |
+<!-- ESPFRAME:SETTINGS_TABLE metadata END -->
 
 ---
 
 ## Frequency
 
-**Slideshow Interval** (under **Frequency** in the web UI) sets how long each photo is shown before advancing (default 15 seconds, range 10 seconds to 10 minutes).
+Use **Frequency** in the web UI to control slideshow timing and disconnect handling.
 
-**Connection Timeout** sets how long the frame waits without successfully displaying a new photo before showing the connection-failed screen (default 10 minutes, range 30 seconds – 30 minutes). Increase this if you have a slow server or large photo library and see false disconnects.
+<!-- ESPFRAME:SETTINGS_TABLE frequency START -->
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Slideshow Interval** | 15 seconds | How long each photo is shown before advancing (10 seconds to 10 minutes). |
+| **Connection Timeout** | 10 minutes | How long the frame waits without successfully displaying a new photo before showing the connection-failed screen (30 seconds to 30 minutes). |
+<!-- ESPFRAME:SETTINGS_TABLE frequency END -->
+
+Increase **Connection Timeout** if you have a slow server or large photo library and see false disconnects.

@@ -29,6 +29,9 @@
       "key": "date_filter_mode",
       "entity": { "domain": "select", "name": "Photos: Date Filter Mode" },
       "default": "Fixed Range",
+      "docs_label": "Mode",
+      "docs_default": "`Fixed Range`",
+      "docs_description": "Choose whether to use fixed dates or a relative range ending today.",
       "options": ["Fixed Range", "Relative Range"],
       "firmware_files": ["common/addon/immich_filter.yaml"],
       "docs_files": ["docs/photo-sources.md"]
@@ -37,6 +40,10 @@
       "key": "relative_unit",
       "entity": { "domain": "select", "name": "Photos: Relative Unit" },
       "default": "Years",
+      "docs_label": "Unit",
+      "docs_default": "`Years`",
+      "docs_format": "`Months` or `Years`",
+      "docs_description": "In relative mode, whether the amount is counted in months or years.",
       "options": ["Months", "Years"],
       "firmware_files": ["common/addon/immich_filter.yaml"],
       "docs_files": ["docs/photo-sources.md"]
@@ -45,6 +52,8 @@
       "key": "photo_orientation",
       "entity": { "domain": "select", "name": "Photos: Orientation" },
       "default": "Any",
+      "docs_label": "Photo Orientation",
+      "docs_description": "Choose any photo, portrait-only photos, or landscape-only photos. Portrait-only is useful when the frame is mounted vertically.",
       "options": ["Any", "Portrait Only", "Landscape Only"],
       "firmware_files": ["common/addon/immich_filter.yaml"],
       "docs_files": ["docs/photo-sources.md"]
@@ -53,6 +62,8 @@
       "key": "display_mode",
       "entity": { "domain": "select", "name": "Photos: Display Mode" },
       "default": "Fill",
+      "docs_label": "Display Mode",
+      "docs_description": "Fill crops to cover the screen; Fit letterboxes without cropping.",
       "options": ["Fill", "Fit"],
       "firmware_files": ["common/addon/immich_config.yaml"],
       "docs_files": ["docs/photo-sources.md"]
@@ -61,6 +72,8 @@
       "key": "interval",
       "entity": { "domain": "select", "name": "Photos: Slideshow Interval" },
       "default": "15 seconds",
+      "docs_label": "Slideshow Interval",
+      "docs_description": "How long each photo is shown before advancing (10 seconds to 10 minutes).",
       "options": ["10 seconds", "15 seconds", "20 seconds", "30 seconds", "45 seconds", "1 minute", "2 minutes", "3 minutes", "5 minutes", "10 minutes"],
       "firmware_files": ["devices/guition-esp32-p4-jc8012p4a1/device/screen_slideshow.yaml"],
       "docs_files": ["docs/photo-sources.md"]
@@ -69,6 +82,8 @@
       "key": "conn_timeout",
       "entity": { "domain": "select", "name": "Screen: Connection Timeout" },
       "default": "10 minutes",
+      "docs_label": "Connection Timeout",
+      "docs_description": "How long the frame waits without successfully displaying a new photo before showing the connection-failed screen (30 seconds to 30 minutes).",
       "options": ["30 seconds", "45 seconds", "1 minute", "2 minutes", "3 minutes", "5 minutes", "10 minutes", "15 minutes", "20 minutes", "30 minutes"],
       "firmware_files": ["devices/guition-esp32-p4-jc8012p4a1/device/screen_slideshow.yaml"],
       "docs_files": ["docs/photo-sources.md"]
@@ -88,6 +103,8 @@
       "key": "photo_metadata_date_format",
       "entity": { "domain": "select", "name": "Device: Metadata Date Format" },
       "default": "Date Taken",
+      "docs_label": "Date Format",
+      "docs_description": "Choose whether the date uses the photo's taken date or a relative age.",
       "options": ["Relative Date", "Date Taken"],
       "firmware_files": ["common/addon/immich_slideshow.yaml"],
       "docs_files": ["docs/photo-sources.md"]
@@ -96,6 +113,9 @@
       "key": "photo_metadata_date_taken_format",
       "entity": { "domain": "select", "name": "Device: Metadata Date Taken Format" },
       "default": "1 January, 2026",
+      "docs_label": "Date Taken Format",
+      "docs_default": "`1 January, 2026`",
+      "docs_description": "Choose the display style used when **Date Format** is set to **Date Taken**.",
       "options": ["1 January, 2026", "January 1, 2026"],
       "firmware_files": ["common/addon/immich_slideshow.yaml"],
       "docs_files": ["docs/photo-sources.md"]
@@ -112,6 +132,8 @@
       "key": "update_frequency",
       "entity": { "domain": "select", "name": "Firmware: Update Frequency" },
       "default": "Daily",
+      "docs_label": "Update Frequency",
+      "docs_description": "Hourly, Daily, Weekly, or Monthly",
       "options": ["Hourly", "Daily", "Weekly", "Monthly"],
       "firmware_files": ["common/addon/firmware_update.yaml"],
       "docs_files": ["docs/firmware-update.md"]
@@ -120,7 +142,9 @@
       "key": "auto_update",
       "entity": { "domain": "switch", "name": "Firmware: Auto Update" },
       "default": true,
+      "docs_label": "Auto Update",
       "docs_default": "On",
+      "docs_description": "Check at selected frequency and install when available",
       "firmware_files": ["common/addon/firmware_update.yaml"],
       "docs_files": ["docs/firmware-update.md"]
     },
@@ -128,7 +152,31 @@
       "key": "beta_channel",
       "entity": { "domain": "switch", "name": "Firmware: Beta Channel" },
       "default": false,
+      "docs_label": "Beta Channel",
       "docs_default": "Off",
+      "docs_description": "Opt in to pre-release firmware checks",
+      "firmware_files": ["common/addon/firmware_update.yaml"],
+      "docs_files": ["docs/firmware-update.md"]
+    },
+    {
+      "key": "firmware_manifest_url",
+      "entity": { "domain": "text", "name": "Firmware: Manifest URL" },
+      "default": "",
+      "docs_label": "Stable Manifest URL",
+      "docs_default": "Device default",
+      "docs_type": "Text",
+      "docs_description": "Advanced: custom stable update manifest",
+      "firmware_files": ["common/addon/firmware_update.yaml"],
+      "docs_files": ["docs/firmware-update.md"]
+    },
+    {
+      "key": "firmware_beta_manifest_url",
+      "entity": { "domain": "text", "name": "Firmware: Beta Manifest URL" },
+      "default": "",
+      "docs_label": "Beta Manifest URL",
+      "docs_default": "Device default",
+      "docs_type": "Text",
+      "docs_description": "Advanced: custom pre-release update manifest",
       "firmware_files": ["common/addon/firmware_update.yaml"],
       "docs_files": ["docs/firmware-update.md"]
     },
@@ -136,7 +184,31 @@
       "key": "date_filter_enabled",
       "entity": { "domain": "switch", "name": "Photos: Date Filter" },
       "default": false,
+      "docs_label": "Filter by Date",
       "docs_default": "Off",
+      "docs_description": "Turns date filtering on or off. When off, saved date values are ignored.",
+      "firmware_files": ["common/addon/immich_filter.yaml"],
+      "docs_files": ["docs/photo-sources.md"]
+    },
+    {
+      "key": "date_from",
+      "entity": { "domain": "text", "name": "Photos: Date From" },
+      "default": "",
+      "docs_label": "From",
+      "docs_default": "*(empty)*",
+      "docs_format": "`YYYY-MM-DD`",
+      "docs_description": "In fixed mode, only show photos taken on or after this date. Leave empty for no lower bound.",
+      "firmware_files": ["common/addon/immich_filter.yaml"],
+      "docs_files": ["docs/photo-sources.md"]
+    },
+    {
+      "key": "date_to",
+      "entity": { "domain": "text", "name": "Photos: Date To" },
+      "default": "",
+      "docs_label": "Until",
+      "docs_default": "*(empty)*",
+      "docs_format": "`YYYY-MM-DD`",
+      "docs_description": "In fixed mode, only show photos taken on or before this date. Leave empty for no upper bound.",
       "firmware_files": ["common/addon/immich_filter.yaml"],
       "docs_files": ["docs/photo-sources.md"]
     },
@@ -144,6 +216,9 @@
       "key": "relative_amount",
       "entity": { "domain": "number", "name": "Photos: Relative Amount" },
       "default": 1,
+      "docs_label": "Last",
+      "docs_default": "`1`",
+      "docs_description": "In relative mode, the amount of time to include.",
       "min": 1,
       "max": 120,
       "step": 1,
@@ -283,7 +358,9 @@
       "key": "portrait_pairing",
       "entity": { "domain": "switch", "name": "Photos: Portrait Pairing" },
       "default": true,
+      "docs_label": "Portrait Pairing",
       "docs_default": "On",
+      "docs_description": "Pairs compatible portrait photos side-by-side on landscape screens.",
       "firmware_files": ["common/addon/immich_slideshow.yaml"],
       "docs_files": ["docs/photo-sources.md"]
     },
@@ -291,7 +368,9 @@
       "key": "photo_metadata_date_enabled",
       "entity": { "domain": "switch", "name": "Device: Metadata Date" },
       "default": true,
+      "docs_label": "Date",
       "docs_default": "On",
+      "docs_description": "Shows the photo date.",
       "firmware_files": ["common/addon/immich_slideshow.yaml"],
       "docs_files": ["docs/photo-sources.md"]
     },
@@ -299,7 +378,9 @@
       "key": "photo_metadata_location_enabled",
       "entity": { "domain": "switch", "name": "Device: Metadata Location" },
       "default": true,
+      "docs_label": "Location",
       "docs_default": "On",
+      "docs_description": "Shows the photo location when Immich has location data for the image.",
       "firmware_files": ["common/addon/immich_slideshow.yaml"],
       "docs_files": ["docs/photo-sources.md"]
     }

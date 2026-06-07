@@ -7,6 +7,7 @@ description: Configure Espframe over-the-air and HTTP firmware updates from GitH
 
 OTA and HTTP updates from GitHub. The device checks a manifest on GitHub Pages for stable and beta builds. The 10-inch model uses `https://jtenniswood.github.io/espframe/firmware/manifest.json`. Controls: device web UI at `http://<device-ip>/` under **Firmware** (and in Home Assistant).
 
+<!-- ESPFRAME:SETTINGS_TABLE firmware_controls START -->
 | Control | Type | Default | Description |
 |---------|------|---------|-------------|
 | **Auto Update** | Switch | On | Check at selected frequency and install when available |
@@ -14,8 +15,12 @@ OTA and HTTP updates from GitHub. The device checks a manifest on GitHub Pages f
 | **Update Frequency** | Select | Daily | Hourly, Daily, Weekly, or Monthly |
 | **Stable Manifest URL** | Text | Device default | Advanced: custom stable update manifest |
 | **Beta Manifest URL** | Text | Device default | Advanced: custom pre-release update manifest |
-| **Version** | Text sensor | *(current)* | Installed version |
-| **Check for Update** | Button | — | Check stable (and beta if opted in); does not install |
+<!-- ESPFRAME:SETTINGS_TABLE firmware_controls END -->
+
+| Status or action | Type | Description |
+|------------------|------|-------------|
+| **Version** | Text sensor | Installed version |
+| **Check for Update** | Button | Check stable (and beta if opted in); does not install |
 
 **Check for Update** only checks for updates; it does not install. To install, use the **Install** button that appears when a stable or pre-release update is available, or turn on **Auto Update** so the device installs at the selected frequency.
 

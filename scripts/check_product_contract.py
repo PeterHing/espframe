@@ -137,6 +137,9 @@ def check_setting(setting: dict, web_text: str, errors: list[str]) -> None:
     for filename in docs_files:
         text = read(ROOT / str(filename), errors)
         require_contains(text, docs_default, f"{filename} default for {key}", errors)
+        for field in ("docs_label", "docs_description", "docs_format", "docs_type"):
+            if setting.get(field):
+                require_contains(text, str(setting[field]), f"{filename} {field} for {key}", errors)
 
 
 def check_settings(product: dict, errors: list[str]) -> None:

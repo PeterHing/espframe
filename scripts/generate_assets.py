@@ -38,19 +38,60 @@ WEB_OPTIONS_KEYS = {
 
 DOCS_SETTINGS_TABLES = {
     ROOT / "docs" / "screen-settings.md": {
-        "screen_brightness": ["brightness_day", "brightness_night"],
-        "night_schedule": [
-            "schedule_enabled",
-            "schedule_on_hour",
-            "schedule_off_hour",
-            "schedule_wake_timeout",
-        ],
-        "screen_rotation": ["screen_rotation"],
+        "screen_brightness": {"settings": ["brightness_day", "brightness_night"]},
+        "night_schedule": {
+            "settings": [
+                "schedule_enabled",
+                "schedule_on_hour",
+                "schedule_off_hour",
+                "schedule_wake_timeout",
+            ]
+        },
+        "screen_rotation": {"settings": ["screen_rotation"]},
     },
     ROOT / "docs" / "screen-tone.md": {
-        "screen_tone": ["base_tone_enabled", "base_tone"],
-        "night_tone": ["warm_tones_enabled", "warm_tone_intensity"],
-        "warm_tone_override": ["warm_tone_override"],
+        "screen_tone": {"settings": ["base_tone_enabled", "base_tone"]},
+        "night_tone": {"settings": ["warm_tones_enabled", "warm_tone_intensity"]},
+        "warm_tone_override": {"settings": ["warm_tone_override"]},
+    },
+    ROOT / "docs" / "photo-sources.md": {
+        "date_filtering": {
+            "columns": ["Setting", "Default", "Format", "Description"],
+            "settings": [
+                "date_filter_enabled",
+                "date_filter_mode",
+                "date_from",
+                "date_to",
+                "relative_amount",
+                "relative_unit",
+            ],
+        },
+        "layout": {
+            "settings": ["portrait_pairing", "photo_orientation", "display_mode"],
+        },
+        "metadata": {
+            "settings": [
+                "photo_metadata_location_enabled",
+                "photo_metadata_date_enabled",
+                "photo_metadata_date_format",
+                "photo_metadata_date_taken_format",
+            ],
+        },
+        "frequency": {
+            "settings": ["interval", "conn_timeout"],
+        },
+    },
+    ROOT / "docs" / "firmware-update.md": {
+        "firmware_controls": {
+            "columns": ["Control", "Type", "Default", "Description"],
+            "settings": [
+                "auto_update",
+                "beta_channel",
+                "update_frequency",
+                "firmware_manifest_url",
+                "firmware_beta_manifest_url",
+            ],
+        },
     },
 }
 
@@ -241,18 +282,55 @@ def docs_setting_description(setting: dict[str, object]) -> str:
     return ", ".join(parts)
 
 
-def render_settings_table(setting_keys: list[str], all_settings: dict[str, dict[str, object]]) -> str:
+def docs_setting_type(setting: dict[str, object]) -> str:
+    if setting.get("docs_type"):
+        return str(setting["docs_type"])
+    entity = setting.get("entity") or {}
+    domain = str(entity.get("domain", ""))
+    return domain.replace("_", " ").title()
+
+
+def docs_setting_format(setting: dict[str, object]) -> str:
+    if setting.get("docs_format"):
+        return str(setting["docs_format"])
+    if setting.get("options"):
+        return "Select"
+    entity = setting.get("entity") or {}
+    domain = str(entity.get("domain", ""))
+    if domain == "switch":
+        return "Toggle"
+    if domain == "number":
+        return "Number"
+    return docs_setting_type(setting)
+
+
+def render_docs_cell(column: str, setting: dict[str, object]) -> str:
+    if column in ("Setting", "Control"):
+        return f"**{docs_setting_label(setting)}**"
+    if column == "Default":
+        return docs_setting_default(setting)
+    if column == "Description":
+        return docs_setting_description(setting)
+    if column == "Type":
+        return docs_setting_type(setting)
+    if column == "Format":
+        return docs_setting_format(setting)
+    raise RuntimeError(f"Unsupported generated docs table column: {column}")
+
+
+def render_settings_table(
+    setting_keys: list[str],
+    all_settings: dict[str, dict[str, object]],
+    columns: list[str] | None = None,
+) -> str:
+    columns = columns or ["Setting", "Default", "Description"]
     lines = [
-        "| Setting | Default | Description |",
-        "|---------|---------|-------------|",
+        "| " + " | ".join(columns) + " |",
+        "|" + "|".join("-" * (len(column) + 2) for column in columns) + "|",
     ]
     for key in setting_keys:
         setting = all_settings[key]
-        lines.append(
-            f"| **{docs_setting_label(setting)}** | "
-            f"{docs_setting_default(setting)} | "
-            f"{docs_setting_description(setting)} |"
-        )
+        lines.append("| " + " | ".join(render_docs_cell(column, setting) for column in columns) + " |")
     return "\n".join(lines)
 
 
@@ -270,14 +348,16 @@ def replace_marked_block(text: str, block_id: str, content: str, path: Path) -> 
     return result
 
 
-def generated_docs(path: Path, table_blocks: dict[str, list[str]]) -> str:
+def generated_docs(path: Path, table_blocks: dict[str, dict[str, object]]) -> str:
     text = path.read_text()
     all_settings = setting_lookup()
-    for block_id, setting_keys in table_blocks.items():
+    for block_id, table in table_blocks.items():
+        setting_keys = [str(key) for key in table["settings"]]
+        columns = [str(column) for column in table.get("columns", [])] or None
         missing = [key for key in setting_keys if key not in all_settings]
         if missing:
             raise RuntimeError(f"{path.relative_to(ROOT)} references unknown settings: {', '.join(missing)}")
-        text = replace_marked_block(text, block_id, render_settings_table(setting_keys, all_settings), path)
+        text = replace_marked_block(text, block_id, render_settings_table(setting_keys, all_settings, columns), path)
     return text
 
 
