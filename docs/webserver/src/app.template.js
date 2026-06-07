@@ -6,6 +6,7 @@
   var PRODUCT_SETTINGS = __ESPFRAME_PRODUCT_SETTINGS__;
   var STATIC_ENTITIES = __ESPFRAME_STATIC_ENTITIES__;
   var MANUAL_ENTITIES = __ESPFRAME_MANUAL_ENTITIES__;
+  var MANUAL_STATE_KEYS = __ESPFRAME_MANUAL_STATE_KEYS__;
   var ENTITY_ALIASES = __ESPFRAME_ENTITY_ALIASES__;
   var FIRMWARE_MANIFEST_URLS = __ESPFRAME_FIRMWARE_MANIFEST_URLS__;
   var DOCS_BASE_URL = __ESPFRAME_DOCS_BASE_URL__;
@@ -594,7 +595,7 @@
 
   function registerManualStateEntities() {
     if (!MANUAL_ENTITIES) return;
-    ["immich_url", "api_key"].forEach(function (key) {
+    (Array.isArray(MANUAL_STATE_KEYS) ? MANUAL_STATE_KEYS : []).forEach(function (key) {
       var manualSpec = MANUAL_ENTITIES[key];
       if (!manualSpec || typeof manualSpec.entity !== "string") return;
       ENTITY_STATE_MAP[manualSpec.entity] = { key: key };

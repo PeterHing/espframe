@@ -28,6 +28,7 @@ from product_config import (
     web_local_state_keys,
     web_manual_entities,
     web_manual_entities_metadata,
+    web_manual_state_keys,
     web_settings_metadata,
     web_static_entities,
     web_static_entities_metadata,
@@ -990,7 +991,13 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
                     errors.append(f"project.release_changelog_categories.{title or '<missing>'}.{field} must be a non-empty list")
                 elif any(not isinstance(value, str) or not value.strip() for value in values):
                     errors.append(f"project.release_changelog_categories.{title or '<missing>'}.{field} must only contain non-empty strings")
-    for field in ("generated_asset_outputs", "generated_asset_sources", "web_template_placeholders", "web_local_state_keys"):
+    for field in (
+        "generated_asset_outputs",
+        "generated_asset_sources",
+        "web_template_placeholders",
+        "web_local_state_keys",
+        "web_manual_state_keys",
+    ):
         values = project.get(field, [])
         if not isinstance(values, list) or not values:
             errors.append(f"project.{field} must be a non-empty list")
@@ -4167,9 +4174,18 @@ def check_manual_web_entity_metadata(product: dict, errors: list[str]) -> None:
         if valid_entity_string(alias.get("entity"))
     }
     manual_entities = web_manual_entities(product)
+    local_state_keys = web_local_state_keys(product)
+    manual_state_keys = web_manual_state_keys(product)
     seen_entities: set[str] = set()
     if not manual_entities:
         errors.append("project.web_manual_entities must be a non-empty object")
+    if not manual_state_keys:
+        errors.append("project.web_manual_state_keys must be a non-empty list")
+    for key in manual_state_keys:
+        if key not in manual_entities:
+            errors.append(f"project.web_manual_state_keys {key} must point at a manual web entity")
+        if key not in local_state_keys:
+            errors.append(f"project.web_manual_state_keys {key} must also be listed in project.web_local_state_keys")
 
     for key, metadata in manual_entities.items():
         if not isinstance(key, str) or not key.strip():
@@ -4219,6 +4235,10 @@ def check_generated_web_metadata(product: dict, web_text: str, errors: list[str]
     manual_entities = extract_js_json_var(web_text, "MANUAL_ENTITIES", errors)
     if manual_entities is not None and manual_entities != web_manual_entities_metadata(product):
         errors.append("Generated web MANUAL_ENTITIES does not match product/espframe.json")
+
+    manual_state_keys = extract_js_json_var(web_text, "MANUAL_STATE_KEYS", errors)
+    if manual_state_keys is not None and manual_state_keys != web_manual_state_keys(product):
+        errors.append("Generated web MANUAL_STATE_KEYS does not match product/espframe.json")
 
     entity_aliases = extract_js_json_var(web_text, "ENTITY_ALIASES", errors)
     if entity_aliases is not None and entity_aliases != web_entity_aliases_metadata(product):

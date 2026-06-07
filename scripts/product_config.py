@@ -206,6 +206,14 @@ def web_manual_entities_metadata(product: dict[str, Any] | None = None) -> dict[
     return {key: {"entity": metadata["entity"]} for key, metadata in web_manual_entities(product).items()}
 
 
+def web_manual_state_keys(product: dict[str, Any] | None = None) -> list[str]:
+    data = product if product is not None else load_product()
+    keys = data["project"].get("web_manual_state_keys", [])
+    if not isinstance(keys, list):
+        return []
+    return [str(key).strip() for key in keys if str(key).strip()]
+
+
 def web_local_state_keys(product: dict[str, Any] | None = None) -> set[str]:
     data = product if product is not None else load_product()
     return {str(key).strip() for key in data["project"].get("web_local_state_keys", []) if str(key).strip()}

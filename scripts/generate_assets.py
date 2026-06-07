@@ -27,6 +27,7 @@ from product_config import (
     web_entity_aliases_metadata,
     web_initial_fetch_keys,
     web_manual_entities_metadata,
+    web_manual_state_keys,
     web_settings_metadata,
     web_static_entities_metadata,
 )
@@ -174,6 +175,7 @@ def web_app_bundle() -> str:
     product_settings_json = json.dumps(web_settings_metadata(), separators=(",", ":"))
     static_entities_json = json.dumps(web_static_entities_metadata(), separators=(",", ":"))
     manual_entities_json = json.dumps(web_manual_entities_metadata(), separators=(",", ":"))
+    manual_state_keys_json = json.dumps(web_manual_state_keys(), separators=(",", ":"))
     entity_aliases_json = json.dumps(web_entity_aliases_metadata(), separators=(",", ":"))
     initial_fetch_keys_json = json.dumps(web_initial_fetch_keys(), separators=(",", ":"))
     firmware_manifest_urls_json = json.dumps(default_public_manifest_urls(), separators=(",", ":"))
@@ -189,6 +191,7 @@ def web_app_bundle() -> str:
         .replace("__ESPFRAME_PRODUCT_SETTINGS__", product_settings_json)
         .replace("__ESPFRAME_STATIC_ENTITIES__", static_entities_json)
         .replace("__ESPFRAME_MANUAL_ENTITIES__", manual_entities_json)
+        .replace("__ESPFRAME_MANUAL_STATE_KEYS__", manual_state_keys_json)
         .replace("__ESPFRAME_ENTITY_ALIASES__", entity_aliases_json)
         .replace("__ESPFRAME_INITIAL_FETCH_KEYS__", initial_fetch_keys_json)
         .replace("__ESPFRAME_FIRMWARE_MANIFEST_URLS__", firmware_manifest_urls_json)
