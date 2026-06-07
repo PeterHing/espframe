@@ -18,6 +18,7 @@ from product_config import load_product
 ROOT = Path(__file__).resolve().parent.parent
 WEB_TEMPLATE = ROOT / "docs" / "webserver" / "src" / "app.template.js"
 WEB_APP = ROOT / "docs" / "public" / "webserver" / "app.js"
+SETTING_DOMAINS = {"number", "select", "switch", "text"}
 
 
 def rel(path: Path) -> str:
@@ -58,6 +59,82 @@ def firmware_entity_block(text: str, name: str, filename: str, errors: list[str]
             break
 
     return "\n".join(lines[start:end])
+
+
+def check_path_list(setting: dict, key: str, field: str, errors: list[str]) -> list[str]:
+    value = setting.get(field, [])
+    if not isinstance(value, list) or not value:
+        errors.append(f"Setting {key} must have a non-empty {field} list")
+        return []
+    result: list[str] = []
+    for item in value:
+        path = str(item).strip()
+        if not path:
+            errors.append(f"Setting {key} has a blank entry in {field}")
+            continue
+        if Path(path).is_absolute() or ".." in Path(path).parts:
+            errors.append(f"Setting {key} has unsafe {field} path: {path}")
+            continue
+        result.append(path)
+    return result
+
+
+def check_setting_schema(setting: dict, errors: list[str]) -> None:
+    key = str(setting.get("key", "")).strip()
+    entity = setting.get("entity") or {}
+    domain = str(entity.get("domain", "")).strip()
+    raw_default = setting.get("default", "")
+    options = setting.get("options", [])
+    developer_options = setting.get("developer_options", [])
+
+    if domain not in SETTING_DOMAINS:
+        errors.append(f"Setting {key or '<missing>'} has unsupported domain: {domain or '<missing>'}")
+        return
+
+    if domain == "select":
+        if not isinstance(raw_default, str):
+            errors.append(f"Select setting {key} default must be a string")
+        if not isinstance(options, list) or not options:
+            errors.append(f"Select setting {key} must define non-empty options")
+        elif any(not isinstance(option, str) or not option for option in options):
+            errors.append(f"Select setting {key} options must be non-empty strings")
+        elif raw_default and raw_default not in options and not str(setting.get("firmware_initial_option", "")).startswith("${"):
+            errors.append(f"Select setting {key} default is not in options")
+
+        if developer_options:
+            if not isinstance(developer_options, list):
+                errors.append(f"Select setting {key} developer_options must be a list")
+            elif any(not isinstance(option, str) or not option for option in developer_options):
+                errors.append(f"Select setting {key} developer_options must be non-empty strings")
+            elif set(developer_options).intersection(options):
+                errors.append(f"Select setting {key} developer_options must not duplicate normal options")
+    elif domain == "number":
+        for field in ("default", "min", "max", "step"):
+            if not isinstance(setting.get(field), (int, float)) or isinstance(setting.get(field), bool):
+                errors.append(f"Number setting {key} needs numeric {field}")
+                return
+        minimum = setting["min"]
+        maximum = setting["max"]
+        default = setting["default"]
+        step = setting["step"]
+        if minimum > maximum:
+            errors.append(f"Number setting {key} min must not exceed max")
+        if not minimum <= default <= maximum:
+            errors.append(f"Number setting {key} default must be within min/max")
+        if step <= 0:
+            errors.append(f"Number setting {key} step must be greater than zero")
+        if options or developer_options:
+            errors.append(f"Number setting {key} must not define options")
+    elif domain == "switch":
+        if not isinstance(raw_default, bool):
+            errors.append(f"Switch setting {key} default must be true or false")
+        if options or developer_options:
+            errors.append(f"Switch setting {key} must not define options")
+    elif domain == "text":
+        if not isinstance(raw_default, str):
+            errors.append(f"Text setting {key} default must be a string")
+        if options or developer_options:
+            errors.append(f"Text setting {key} must not define options")
 
 
 def check_devices(product: dict, errors: list[str]) -> None:
@@ -130,6 +207,7 @@ def check_setting(setting: dict, web_text: str, errors: list[str]) -> None:
     if not key or not domain or not name:
         errors.append(f"Setting {key or '<missing>'} needs key, entity.domain, and entity.name")
         return
+    check_setting_schema(setting, errors)
 
     entity_id = f"{domain}/{name}"
     require_contains(web_text, f'"{entity_id}"', f"web UI mapping for {key}", errors)
@@ -140,9 +218,7 @@ def check_setting(setting: dict, web_text: str, errors: list[str]) -> None:
     for option in developer_options:
         require_contains(web_text, option, f"web UI developer option for {key}", errors)
 
-    firmware_files = setting.get("firmware_files", [])
-    if not firmware_files:
-        errors.append(f"Setting {key} has no firmware_files")
+    firmware_files = check_path_list(setting, key, "firmware_files", errors)
     for filename in firmware_files:
         text = read(ROOT / str(filename), errors)
         block = firmware_entity_block(text, name, str(filename), errors)
@@ -174,9 +250,7 @@ def check_setting(setting: dict, web_text: str, errors: list[str]) -> None:
             restore_mode = "RESTORE_DEFAULT_ON" if raw_default else "RESTORE_DEFAULT_OFF"
             require_contains(block, f"restore_mode: {restore_mode}", f"{filename} restore_mode for {key}", errors)
 
-    docs_files = setting.get("docs_files", [])
-    if not docs_files:
-        errors.append(f"Setting {key} has no docs_files")
+    docs_files = check_path_list(setting, key, "docs_files", errors)
     for filename in docs_files:
         text = read(ROOT / str(filename), errors)
         require_contains(text, docs_default, f"{filename} default for {key}", errors)
@@ -199,11 +273,17 @@ def check_settings(product: dict, errors: list[str]) -> None:
     ):
         require_contains(web_template, needle, rel(WEB_TEMPLATE), errors)
     seen: set[str] = set()
+    seen_entities: set[str] = set()
     for setting in product["settings"]:
         key = str(setting.get("key", "")).strip()
         if key in seen:
             errors.append(f"Duplicate product setting key: {key}")
         seen.add(key)
+        entity = setting.get("entity") or {}
+        entity_id = f'{entity.get("domain", "")}/{entity.get("name", "")}'
+        if entity_id in seen_entities:
+            errors.append(f"Duplicate product setting entity: {entity_id}")
+        seen_entities.add(entity_id)
         check_setting(setting, web_text, errors)
 
 
