@@ -122,6 +122,22 @@
     "factory_firmware_network_mode": "AP mode",
     "factory_firmware_setup_method": "captive portal",
     "factory_firmware_local_use": "not used locally",
+    "web_server_port": 80,
+    "web_server_version": 3,
+    "web_server_include_internal": true,
+    "web_server_public_app_path": "webserver/app.js",
+    "web_server_factory_js_url": "",
+    "web_server_factory_css_include": "../docs/public/webserver/style.css",
+    "web_server_factory_js_include": "../docs/public/webserver/app.js",
+    "web_server_sorting_groups": [
+      { "id": "sg_connection", "name": "Connection", "sorting_weight": 10 },
+      { "id": "sg_photos", "name": "Photos", "sorting_weight": 20 },
+      { "id": "sg_device", "name": "Device", "sorting_weight": 25 },
+      { "id": "sg_screen", "name": "Screen", "sorting_weight": 30 },
+      { "id": "sg_clock", "name": "Clock", "sorting_weight": 35 },
+      { "id": "sg_firmware", "name": "Firmware", "sorting_weight": 40 },
+      { "id": "sg_developer", "name": "Developer", "sorting_weight": 90 }
+    ],
     "web_ui_tabs": [
       { "id": "immich", "label": "Immich" },
       { "id": "settings", "label": "Device" },

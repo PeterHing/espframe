@@ -501,9 +501,41 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "factory_firmware_network_mode",
         "factory_firmware_setup_method",
         "factory_firmware_local_use",
+        "web_server_public_app_path",
+        "web_server_factory_css_include",
+        "web_server_factory_js_include",
     ):
         if not str(project.get(field, "")).strip():
             errors.append(f"project.{field} is required")
+    for field in ("web_server_port", "web_server_version"):
+        value = project.get(field)
+        if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+            errors.append(f"project.{field} must be a positive integer")
+    if not isinstance(project.get("web_server_include_internal"), bool):
+        errors.append("project.web_server_include_internal must be true or false")
+    if "web_server_factory_js_url" not in project or not isinstance(project.get("web_server_factory_js_url"), str):
+        errors.append("project.web_server_factory_js_url must be a string")
+    sorting_groups = project.get("web_server_sorting_groups", [])
+    if not isinstance(sorting_groups, list) or not sorting_groups:
+        errors.append("project.web_server_sorting_groups must be a non-empty list")
+    else:
+        group_ids: set[str] = set()
+        for group in sorting_groups:
+            if not isinstance(group, dict):
+                errors.append("project.web_server_sorting_groups entries must be objects")
+                continue
+            group_id = str(group.get("id", "")).strip()
+            name = str(group.get("name", "")).strip()
+            weight = group.get("sorting_weight")
+            if not group_id:
+                errors.append("project.web_server_sorting_groups entry is missing id")
+            elif group_id in group_ids:
+                errors.append(f"Duplicate project.web_server_sorting_groups id: {group_id}")
+            group_ids.add(group_id)
+            if not name:
+                errors.append(f"project.web_server_sorting_groups.{group_id or '<missing>'} is missing name")
+            if not isinstance(weight, int) or isinstance(weight, bool):
+                errors.append(f"project.web_server_sorting_groups.{group_id or '<missing>'}.sorting_weight must be an integer")
     for field in ("setup_wizard_steps", "setup_required_connection_fields", "setup_skip_substitutions"):
         values = project.get(field, [])
         if not isinstance(values, list) or not values:
@@ -2196,6 +2228,81 @@ def check_factory_firmware_metadata(product: dict, errors: list[str]) -> None:
         require_contains(install_docs, setup_method.replace("_", " "), "docs/install.md", errors)
 
 
+def check_web_server_metadata(product: dict, errors: list[str]) -> None:
+    project = product["project"]
+    port = project.get("web_server_port")
+    version = project.get("web_server_version")
+    include_internal = project.get("web_server_include_internal")
+    public_app_path = str(project.get("web_server_public_app_path", "")).strip()
+    factory_js_url = str(project.get("web_server_factory_js_url", ""))
+    factory_css_include = str(project.get("web_server_factory_css_include", "")).strip()
+    factory_js_include = str(project.get("web_server_factory_js_include", "")).strip()
+    sorting_groups = project.get("web_server_sorting_groups", [])
+    group_ids = {
+        str(group.get("id", "")).strip()
+        for group in sorting_groups
+        if isinstance(group, dict) and str(group.get("id", "")).strip()
+    }
+
+    if public_app_path and (public_app_path.startswith("/") or ".." in Path(public_app_path).parts):
+        errors.append("project.web_server_public_app_path must be a relative public asset path")
+    public_app_url = public_url(public_app_path, product) if public_app_path else ""
+
+    for device in product["devices"]:
+        slug = str(device.get("slug", "")).strip()
+        device_yaml = check_relative_path(device.get("device_yaml"), f"Device {slug} device_yaml", errors)
+        build_yaml = check_relative_path(device.get("build_yaml"), f"Device {slug} build_yaml", errors)
+        if device_yaml:
+            device_text = read(ROOT / device_yaml, errors)
+            if isinstance(port, int) and not isinstance(port, bool):
+                require_contains(device_text, f"  port: {port}", device_yaml, errors)
+            if isinstance(version, int) and not isinstance(version, bool):
+                require_contains(device_text, f"  version: {version}", device_yaml, errors)
+            if isinstance(include_internal, bool):
+                require_contains(device_text, f"  include_internal: {str(include_internal).lower()}", device_yaml, errors)
+            if public_app_url:
+                require_contains(device_text, f'  js_url: "{public_app_url}"', device_yaml, errors)
+            for group in sorting_groups if isinstance(sorting_groups, list) else []:
+                if not isinstance(group, dict):
+                    continue
+                group_id = str(group.get("id", "")).strip()
+                name = str(group.get("name", "")).strip()
+                weight = group.get("sorting_weight")
+                if group_id:
+                    require_contains(device_text, f"    - id: {group_id}", device_yaml, errors)
+                if name:
+                    require_contains(device_text, f'      name: "{name}"', device_yaml, errors)
+                if isinstance(weight, int) and not isinstance(weight, bool):
+                    require_contains(device_text, f"      sorting_weight: {weight}", device_yaml, errors)
+        if build_yaml:
+            build_text = read(ROOT / build_yaml, errors)
+            if isinstance(port, int) and not isinstance(port, bool):
+                require_contains(build_text, f"  port: {port}", build_yaml, errors)
+            if isinstance(version, int) and not isinstance(version, bool):
+                require_contains(build_text, f"  version: {version}", build_yaml, errors)
+            require_contains(build_text, f'  js_url: "{factory_js_url}"', build_yaml, errors)
+            if factory_css_include:
+                require_contains(build_text, f'  css_include: "{factory_css_include}"', build_yaml, errors)
+            if factory_js_include:
+                require_contains(build_text, f'  js_include: "{factory_js_include}"', build_yaml, errors)
+
+    if group_ids:
+        for yaml_path in list((ROOT / "common").rglob("*.yaml")) + list((ROOT / "devices").rglob("*.yaml")):
+            text = read(yaml_path, errors)
+            for group_id in re.findall(r"sorting_group_id:\s*([A-Za-z0-9_-]+)", text):
+                if group_id not in group_ids:
+                    errors.append(f"{rel(yaml_path)} references unknown web_server sorting group {group_id}")
+
+    for include_path in (factory_css_include, factory_js_include):
+        if not include_path:
+            continue
+        normalized = include_path
+        while normalized.startswith("../"):
+            normalized = normalized[3:]
+        if not (ROOT / normalized).is_file():
+            errors.append(f"project web server include is missing: {normalized}")
+
+
 def check_esphome_version(product: dict, errors: list[str]) -> None:
     version = str(product["project"].get("esphome_version", "")).strip()
     if not version:
@@ -2741,6 +2848,7 @@ def main() -> int:
     check_docs_site_config(product, errors)
     check_device_workflow_contract(product, errors)
     check_factory_firmware_metadata(product, errors)
+    check_web_server_metadata(product, errors)
     check_esphome_version(product, errors)
     check_node_version(product, errors)
     check_workflows(errors)
