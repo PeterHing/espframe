@@ -478,10 +478,21 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         errors.append("project.immich_retryable_http_statuses must only contain non-empty strings")
     if not isinstance(project.get("immich_auth_error_status"), int) or isinstance(project.get("immich_auth_error_status"), bool):
         errors.append("project.immich_auth_error_status must be an integer")
-    for field in ("setup_captive_portal_ip", "setup_connection_ready_condition"):
+    for field in (
+        "setup_captive_portal_ip",
+        "setup_connection_ready_condition",
+        "manual_setup_package_ref",
+        "manual_setup_package_refresh",
+    ):
         if not str(project.get(field, "")).strip():
             errors.append(f"project.{field} is required")
     for field in ("setup_wizard_steps", "setup_required_connection_fields", "setup_skip_substitutions"):
+        values = project.get(field, [])
+        if not isinstance(values, list) or not values:
+            errors.append(f"project.{field} must be a non-empty list")
+        elif any(not isinstance(value, str) or not value.strip() for value in values):
+            errors.append(f"project.{field} must only contain non-empty strings")
+    for field in ("manual_setup_required_substitutions", "manual_setup_wifi_secrets"):
         values = project.get(field, [])
         if not isinstance(values, list) or not values:
             errors.append(f"project.{field} must be a non-empty list")
@@ -1487,6 +1498,12 @@ def check_setup_flow_metadata(product: dict, errors: list[str]) -> None:
         str(value).strip() for value in project.get("setup_skip_substitutions", []) if str(value).strip()
     ]
     ready_condition = str(project.get("setup_connection_ready_condition", "")).strip()
+    required_substitutions = [
+        str(value).strip() for value in project.get("manual_setup_required_substitutions", []) if str(value).strip()
+    ]
+    wifi_secrets = [str(value).strip() for value in project.get("manual_setup_wifi_secrets", []) if str(value).strip()]
+    package_ref = str(project.get("manual_setup_package_ref", "")).strip()
+    package_refresh = str(project.get("manual_setup_package_refresh", "")).strip()
 
     install_docs = read(ROOT / "docs" / "install.md", errors)
     usb_docs = read(ROOT / "docs" / "usb-flashing.md", errors)
@@ -1498,6 +1515,10 @@ def check_setup_flow_metadata(product: dict, errors: list[str]) -> None:
     screen_loading_yaml = read(ROOT / "devices" / "guition-esp32-p4-jc8012p4a1" / "device" / "screen_loading.yaml", errors)
     screen_wifi_yaml = read(ROOT / "devices" / "guition-esp32-p4-jc8012p4a1" / "device" / "screen_wifi_setup.yaml", errors)
     packages_yaml = read(ROOT / "devices" / "guition-esp32-p4-jc8012p4a1" / "packages.yaml", errors)
+    local_yamls = [
+        (str(device.get("local_yaml", "")), read(ROOT / str(device.get("local_yaml", "")), errors))
+        for device in product["devices"]
+    ]
 
     for device in product["devices"]:
         esphome_name = str(device.get("esphome_name", "")).strip()
@@ -1529,6 +1550,22 @@ def check_setup_flow_metadata(product: dict, errors: list[str]) -> None:
         require_contains(immich_config_yaml, substitution, "common/addon/immich_config.yaml", errors)
     if ready_condition:
         require_contains(manual_setup_docs, ready_condition, "docs/manual-setup.md", errors)
+    for substitution in required_substitutions:
+        require_contains(manual_setup_docs, f"`{substitution}`", "docs/manual-setup.md", errors)
+        for label, local_yaml in local_yamls:
+            require_contains(local_yaml, f"{substitution}:", label or "device local ESPHome YAML", errors)
+    for secret in wifi_secrets:
+        require_contains(manual_setup_docs, secret, "docs/manual-setup.md", errors)
+        for label, local_yaml in local_yamls:
+            require_contains(local_yaml, f"!secret {secret}", label or "device local ESPHome YAML", errors)
+    if package_ref:
+        require_contains(manual_setup_docs, f"ref: {package_ref}", "docs/manual-setup.md", errors)
+        for label, local_yaml in local_yamls:
+            require_contains(local_yaml, f"ref: {package_ref}", label or "device local ESPHome YAML", errors)
+    if package_refresh:
+        require_contains(manual_setup_docs, f"refresh: {package_refresh}", "docs/manual-setup.md", errors)
+        for label, local_yaml in local_yamls:
+            require_contains(local_yaml, f"refresh: {package_refresh}", label or "device local ESPHome YAML", errors)
     for needle in ("WiFi", "Immich server URL", "Immich API key"):
         require_contains(immich_frame_docs, needle, "docs/immich-photo-frame.md", errors)
 
