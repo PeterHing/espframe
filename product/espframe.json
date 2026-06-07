@@ -210,6 +210,34 @@
     "docs_firmware_verify_delay_seconds": 15,
     "docs_dist_artifact_name": "docs-dist",
     "docs_firmware_artifact_name": "firmware",
+    "generated_asset_outputs": [
+      "components/espframe/tz_data_generated.h",
+      "common/addon/time.yaml",
+      "docs/public/webserver/app.js",
+      "docs/public/webserver/style.css"
+    ],
+    "generated_asset_sources": [
+      "components/espframe/timezones.py",
+      "docs/webserver/src/app.template.js",
+      "docs/webserver/src/style.css",
+      "product/espframe.json",
+      "scripts/product_config.py"
+    ],
+    "web_template_placeholders": [
+      "__ESPFRAME_TIMEZONES__",
+      "__ESPFRAME_TIMEZONE_LABELS__",
+      "__ESPFRAME_PRODUCT_SETTINGS__",
+      "__ESPFRAME_STATIC_ENTITIES__",
+      "__ESPFRAME_MANUAL_ENTITIES__",
+      "__ESPFRAME_ENTITY_ALIASES__",
+      "__ESPFRAME_INITIAL_FETCH_KEYS__",
+      "__ESPFRAME_FIRMWARE_MANIFEST_URLS__",
+      "__ESPFRAME_DOCS_BASE_URL__",
+      "__ESPFRAME_WEB_UI_TABS__",
+      "__ESPFRAME_SUPPORT_URL__",
+      "__ESPFRAME_SUPPORT_BUTTON_IMAGE_URL__",
+      "__ESPFRAME_CSS__"
+    ],
     "support_url": "https://www.buymeacoffee.com/jtenniswood",
     "support_button_image_url": "https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png",
     "node_version": "24",

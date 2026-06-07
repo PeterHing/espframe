@@ -640,6 +640,12 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         errors.append("project.release_asset_suffixes must be a non-empty list")
     elif any(not isinstance(suffix, str) or not suffix.strip() or not suffix.startswith(".") for suffix in release_asset_suffixes):
         errors.append("project.release_asset_suffixes must only contain non-empty dot-prefixed strings")
+    for field in ("generated_asset_outputs", "generated_asset_sources", "web_template_placeholders"):
+        values = project.get(field, [])
+        if not isinstance(values, list) or not values:
+            errors.append(f"project.{field} must be a non-empty list")
+        elif any(not isinstance(value, str) or not value.strip() for value in values):
+            errors.append(f"project.{field} must only contain non-empty strings")
 
     for field in ("support_url", "support_button_image_url"):
         value = str(project.get(field, "")).strip()
@@ -2780,6 +2786,44 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
             )
 
 
+def check_generated_asset_metadata(product: dict, errors: list[str]) -> None:
+    project = product["project"]
+    outputs = [str(value).strip() for value in project.get("generated_asset_outputs", []) if str(value).strip()]
+    sources = [str(value).strip() for value in project.get("generated_asset_sources", []) if str(value).strip()]
+    placeholders = [str(value).strip() for value in project.get("web_template_placeholders", []) if str(value).strip()]
+
+    generator = read(ROOT / "scripts" / "generate_assets.py", errors)
+    web_template = read(WEB_TEMPLATE, errors)
+    package_json = read(ROOT / "package.json", errors)
+
+    for filename in outputs + sources:
+        path = check_relative_path(filename, f"Generated asset path {filename}", errors)
+        if path:
+            read(ROOT / path, errors)
+            path_name = Path(path).name
+            if path_name in {"espframe.json", "product_config.py"}:
+                require_contains(generator, "load_product", "scripts/generate_assets.py", errors)
+            else:
+                require_contains(generator, path_name, "scripts/generate_assets.py", errors)
+    for placeholder in placeholders:
+        require_contains(web_template, placeholder, rel(WEB_TEMPLATE), errors)
+        require_contains(generator, placeholder, "scripts/generate_assets.py", errors)
+    for needle in (
+        "python3 scripts/generate_assets.py",
+        "python3 scripts/generate_assets.py --check",
+        "check:generated",
+        "webserver:build",
+    ):
+        require_contains(package_json, needle, "package.json", errors)
+    for needle in (
+        "write_or_check",
+        "replace_timezone_yaml",
+        "web_app_bundle",
+        "render_settings_table",
+    ):
+        require_contains(generator, needle, "scripts/generate_assets.py", errors)
+
+
 def check_factory_firmware_metadata(product: dict, errors: list[str]) -> None:
     project = product["project"]
     purpose = str(project.get("factory_firmware_purpose", "")).strip()
@@ -3442,16 +3486,9 @@ def check_settings(product: dict, errors: list[str]) -> None:
     check_docs_table_metadata(product, errors)
     check_docs_table_membership(product, errors)
     check_docs_table_markers(errors)
-    require_contains(web_template, "__ESPFRAME_PRODUCT_SETTINGS__", rel(WEB_TEMPLATE), errors)
-    require_contains(web_template, "__ESPFRAME_STATIC_ENTITIES__", rel(WEB_TEMPLATE), errors)
-    require_contains(web_template, "__ESPFRAME_MANUAL_ENTITIES__", rel(WEB_TEMPLATE), errors)
-    require_contains(web_template, "__ESPFRAME_ENTITY_ALIASES__", rel(WEB_TEMPLATE), errors)
-    require_contains(web_template, "__ESPFRAME_INITIAL_FETCH_KEYS__", rel(WEB_TEMPLATE), errors)
-    require_contains(web_template, "__ESPFRAME_FIRMWARE_MANIFEST_URLS__", rel(WEB_TEMPLATE), errors)
-    require_contains(web_template, "__ESPFRAME_DOCS_BASE_URL__", rel(WEB_TEMPLATE), errors)
-    require_contains(web_template, "__ESPFRAME_WEB_UI_TABS__", rel(WEB_TEMPLATE), errors)
-    require_contains(web_template, "__ESPFRAME_SUPPORT_URL__", rel(WEB_TEMPLATE), errors)
-    require_contains(web_template, "__ESPFRAME_SUPPORT_BUTTON_IMAGE_URL__", rel(WEB_TEMPLATE), errors)
+    for placeholder in product["project"].get("web_template_placeholders", []):
+        if isinstance(placeholder, str) and placeholder.strip():
+            require_contains(web_template, placeholder.strip(), rel(WEB_TEMPLATE), errors)
     for needle in (
         "registerStaticEntityStateDefaults",
         "registerProductSettingStateDefaults",
@@ -3507,6 +3544,7 @@ def main() -> int:
     check_public_site_references(product, errors)
     check_docs_site_config(product, errors)
     check_device_workflow_contract(product, errors)
+    check_generated_asset_metadata(product, errors)
     check_factory_firmware_metadata(product, errors)
     check_web_server_metadata(product, errors)
     check_external_components_metadata(product, errors)
