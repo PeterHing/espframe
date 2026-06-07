@@ -4334,7 +4334,7 @@ def check_docs_table_membership(product: dict, errors: list[str]) -> None:
 
 
 def check_docs_table_metadata(product: dict, errors: list[str]) -> None:
-    settings_by_key = {str(setting.get("key", "")).strip() for setting in product["settings"]}
+    settings_by_key = {str(setting.get("key", "")).strip(): setting for setting in product["settings"]}
     seen_tables: set[tuple[str, str]] = set()
     all_table_refs: set[tuple[str, str]] = set()
 
@@ -4386,6 +4386,7 @@ def check_docs_table_metadata(product: dict, errors: list[str]) -> None:
                     seen_columns.add(str(column))
                 if not {"Setting", "Control"}.intersection(seen_columns):
                     errors.append(f"{relative_path} settings table {block_id} must include Setting or Control column")
+            table_columns = {str(column) for column in columns if isinstance(column, str)}
 
             setting_keys = table.get("settings")
             if not isinstance(setting_keys, list) or not setting_keys:
@@ -4402,6 +4403,8 @@ def check_docs_table_metadata(product: dict, errors: list[str]) -> None:
                 seen_setting_keys.add(key)
                 if key not in settings_by_key:
                     errors.append(f"{relative_path} settings table {block_id} references unknown setting {key}")
+                elif "Description" in table_columns and not str(settings_by_key[key].get("docs_description", "")).strip():
+                    errors.append(f"{relative_path} settings table {block_id} {key} must define docs_description")
                 table_ref = (relative_path, key)
                 if table_ref in all_table_refs:
                     errors.append(f"{relative_path} includes {key} in more than one generated settings table")
