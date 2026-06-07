@@ -7,7 +7,7 @@
 # =============================================================================
 
 substitutions:
-  immich_slide_interval: "2 minutes"
+  immich_slide_interval: "15 seconds"
   slideshow_check_interval: "2s"
 
 # =============================================================================
@@ -557,7 +557,7 @@ script:
 globals:
   - id: slideshow_interval_sec
     type: uint32_t
-    initial_value: '120'
+    initial_value: '15'
   - id: connection_timeout_sec
     type: uint32_t
     initial_value: '600'

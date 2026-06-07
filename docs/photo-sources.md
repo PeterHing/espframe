@@ -123,6 +123,6 @@ Use **Metadata** in the **Immich** section of the web UI to control the photo in
 
 ## Frequency
 
-**Slideshow Interval** (under **Frequency** in the web UI) sets how long each photo is shown before advancing (default 2 minutes, minimum 30 seconds).
+**Slideshow Interval** (under **Frequency** in the web UI) sets how long each photo is shown before advancing (default 15 seconds, range 10 seconds to 10 minutes).
 
 **Connection Timeout** sets how long the frame waits without successfully displaying a new photo before showing the connection-failed screen (default 10 minutes, range 30 seconds – 30 minutes). Increase this if you have a slow server or large photo library and see false disconnects.
