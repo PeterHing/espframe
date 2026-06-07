@@ -1050,20 +1050,30 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
     for field in ("network_wifi_strength_source", "network_wifi_strength_update_interval"):
         if not str(project.get(field, "")).strip():
             errors.append(f"project.{field} is required")
-    if not isinstance(project.get("backup_config_version"), int) or isinstance(project.get("backup_config_version"), bool):
-        errors.append("project.backup_config_version must be an integer")
-    if not isinstance(project.get("backup_import_photo_id_limit"), int) or isinstance(project.get("backup_import_photo_id_limit"), bool):
-        errors.append("project.backup_import_photo_id_limit must be an integer")
+    backup_config_version = project.get("backup_config_version")
+    if not isinstance(backup_config_version, int) or isinstance(backup_config_version, bool) or backup_config_version < 1:
+        errors.append("project.backup_config_version must be a positive integer")
+    backup_import_photo_id_limit = project.get("backup_import_photo_id_limit")
+    if (
+        not isinstance(backup_import_photo_id_limit, int)
+        or isinstance(backup_import_photo_id_limit, bool)
+        or backup_import_photo_id_limit < 1
+    ):
+        errors.append("project.backup_import_photo_id_limit must be a positive integer")
     backup_excluded_values = project.get("backup_excluded_runtime_values", [])
     if not isinstance(backup_excluded_values, list) or not backup_excluded_values:
         errors.append("project.backup_excluded_runtime_values must be a non-empty list")
     elif any(not isinstance(value, str) or not value.strip() for value in backup_excluded_values):
         errors.append("project.backup_excluded_runtime_values must only contain non-empty strings")
+    elif len({str(value).strip() for value in backup_excluded_values}) != len(backup_excluded_values):
+        errors.append("project.backup_excluded_runtime_values must not contain duplicate values")
     backup_export_groups = project.get("backup_export_groups", [])
     if not isinstance(backup_export_groups, list) or not backup_export_groups:
         errors.append("project.backup_export_groups must be a non-empty list")
     elif any(not isinstance(value, str) or not value.strip() for value in backup_export_groups):
         errors.append("project.backup_export_groups must only contain non-empty strings")
+    elif len({str(value).strip() for value in backup_export_groups}) != len(backup_export_groups):
+        errors.append("project.backup_export_groups must not contain duplicate groups")
     backup_export_fields = project.get("backup_export_fields", {})
     if not isinstance(backup_export_fields, dict) or not backup_export_fields:
         errors.append("project.backup_export_fields must be a non-empty object")
@@ -1098,6 +1108,8 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
     backup_fixture_files = project.get("backup_fixture_files", [])
     if not isinstance(backup_fixture_files, list) or not backup_fixture_files:
         errors.append("project.backup_fixture_files must be a non-empty list")
+    elif len({str(fixture_file).strip() for fixture_file in backup_fixture_files}) != len(backup_fixture_files):
+        errors.append("project.backup_fixture_files must not contain duplicate files")
     else:
         for fixture_file in backup_fixture_files:
             path = check_relative_path(fixture_file, "project.backup_fixture_files entry", errors)
