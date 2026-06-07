@@ -108,6 +108,48 @@ IMPORT_SNIPPETS = {
     "screen": "var scr = data.screen || {};",
 }
 
+IMPORT_FIELD_SNIPPETS = {
+    ("connection", "immich_url"): "if (c.immich_url !== undefined)",
+    ("connection", "api_key"): "if (c.api_key !== undefined)",
+    ("photos", "source"): "if (p.source !== undefined)",
+    ("photos", "album_ids"): "if (p.album_ids !== undefined)",
+    ("photos", "album_labels"): "if (p.album_labels !== undefined)",
+    ("photos", "person_ids"): "if (p.person_ids !== undefined)",
+    ("photos", "person_labels"): "if (p.person_labels !== undefined)",
+    ("photos", "date_filter_enabled"): "if (p.date_filter_enabled !== undefined)",
+    ("photos", "date_filter_mode"): "if (p.date_filter_mode !== undefined)",
+    ("photos", "date_from"): "if (p.date_from !== undefined)",
+    ("photos", "date_to"): "if (p.date_to !== undefined)",
+    ("photos", "relative_amount"): "if (p.relative_amount !== undefined)",
+    ("photos", "relative_unit"): "if (p.relative_unit !== undefined)",
+    ("photos", "orientation"): "if (p.orientation !== undefined)",
+    ("photos", "portrait_pairing"): "if (p.portrait_pairing !== undefined)",
+    ("photos", "display_mode"): "if (p.display_mode !== undefined)",
+    ("frequency", "interval"): "if (f.interval !== undefined)",
+    ("frequency", "conn_timeout"): "if (f.conn_timeout !== undefined)",
+    ("firmware_updates", "auto_update"): "if (upd.auto_update !== undefined)",
+    ("firmware_updates", "beta_channel"): "if (upd.beta_channel !== undefined)",
+    ("firmware_updates", "update_frequency"): "if (upd.update_frequency !== undefined)",
+    ("firmware_updates", "manifest_url"): "if (upd.manifest_url !== undefined)",
+    ("firmware_updates", "beta_manifest_url"): "if (upd.beta_manifest_url !== undefined)",
+    ("clock", "show"): "if (clk.show !== undefined)",
+    ("clock", "format"): "if (clk.format !== undefined)",
+    ("clock", "timezone"): "if (clk.timezone !== undefined)",
+    ("clock", "ntp_servers"): "if (Array.isArray(clk.ntp_servers))",
+    ("screen", "brightness_day"): "if (scr.brightness_day !== undefined)",
+    ("screen", "brightness_night"): "if (scr.brightness_night !== undefined)",
+    ("screen", "schedule_enabled"): "if (scr.schedule_enabled !== undefined)",
+    ("screen", "schedule_on_hour"): "if (scr.schedule_on_hour !== undefined)",
+    ("screen", "schedule_off_hour"): "if (scr.schedule_off_hour !== undefined)",
+    ("screen", "schedule_wake_timeout"): "if (scr.schedule_wake_timeout !== undefined)",
+    ("screen", "base_tone_enabled"): "if (scr.base_tone_enabled !== undefined)",
+    ("screen", "base_tone"): "if (scr.base_tone !== undefined)",
+    ("screen", "warm_tones_enabled"): "if (scr.warm_tones_enabled !== undefined)",
+    ("screen", "warm_tone_intensity"): "if (scr.warm_tone_intensity !== undefined)",
+    ("screen", "warm_tone_override"): "if (scr.warm_tone_override !== undefined)",
+    ("screen", "rotation"): "if (scr.rotation !== undefined)",
+}
+
 
 def rel(path: Path) -> str:
     return str(path.relative_to(ROOT))
@@ -210,6 +252,8 @@ def validate_web_support(product: dict[str, Any], errors: list[str]) -> None:
             require_contains(text, f"{group}: {{", label, errors)
             require_contains(text, IMPORT_SNIPPETS[str(group)], label, errors)
         for snippet in EXPORT_SNIPPETS.values():
+            require_contains(text, snippet, label, errors)
+        for snippet in IMPORT_FIELD_SNIPPETS.values():
             require_contains(text, snippet, label, errors)
 
 
