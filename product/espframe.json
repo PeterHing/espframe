@@ -40,6 +40,14 @@
     "home_assistant_diagnostic_entities": [
       { "name": "Reset Reason", "type": "Text Sensor", "description": "Last reboot reason" }
     ],
+    "device_log_level_default": "INFO",
+    "device_log_component_levels": {
+      "component": "WARN",
+      "remote_image": "WARN",
+      "immich": "INFO",
+      "warm": "WARN",
+      "accent": "WARN"
+    },
     "device_debug_update_interval": "60s",
     "network_wifi_strength_source": "Network: WiFi Signal dB",
     "network_wifi_strength_update_interval": "60s",

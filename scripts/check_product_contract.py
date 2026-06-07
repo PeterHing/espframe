@@ -253,6 +253,7 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "home_assistant_url",
         "home_assistant_requirement",
         "home_assistant_integration_platform",
+        "device_log_level_default",
         "device_debug_update_interval",
         "firmware_update_source",
         "firmware_beta_channel_label",
@@ -377,6 +378,15 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
             for field in ("name", "type", "description"):
                 if not str(entity.get(field, "")).strip():
                     errors.append(f"project.home_assistant_diagnostic_entities entry is missing {field}")
+    component_log_levels = project.get("device_log_component_levels", {})
+    if not isinstance(component_log_levels, dict) or not component_log_levels:
+        errors.append("project.device_log_component_levels must be a non-empty object")
+    else:
+        for component, level in component_log_levels.items():
+            if not isinstance(component, str) or not component.strip():
+                errors.append("project.device_log_component_levels keys must be non-empty strings")
+            if not isinstance(level, str) or not level.strip():
+                errors.append(f"project.device_log_component_levels.{component} must be a non-empty string")
     for field in ("network_wifi_strength_source", "network_wifi_strength_update_interval"):
         if not str(project.get(field, "")).strip():
             errors.append(f"project.{field} is required")
@@ -850,6 +860,29 @@ def check_home_assistant_metadata(product: dict, errors: list[str]) -> None:
     ):
         require_contains(network_yaml, needle, "common/addon/network.yaml", errors)
     require_contains(home_assistant_docs, "notify when **Network: Online** goes unavailable", "docs/home-assistant.md", errors)
+
+
+def check_device_logging_metadata(product: dict, errors: list[str]) -> None:
+    project = product["project"]
+    default_level = str(project.get("device_log_level_default", "")).strip()
+    component_levels = project.get("device_log_component_levels", {})
+
+    device_yaml_path = "devices/guition-esp32-p4-jc8012p4a1/device/device.yaml"
+    device_yaml = read(ROOT / device_yaml_path, errors)
+
+    if default_level:
+        require_contains(device_yaml, f'log_level: "{default_level}"', device_yaml_path, errors)
+        require_contains(device_yaml, "level: ${log_level}", device_yaml_path, errors)
+    require_contains(device_yaml, "logger:", device_yaml_path, errors)
+    require_contains(device_yaml, "logs:", device_yaml_path, errors)
+    if isinstance(component_levels, dict):
+        for component, level in component_levels.items():
+            if not isinstance(component, str) or not isinstance(level, str):
+                continue
+            component_name = component.strip()
+            log_level = level.strip()
+            if component_name and log_level:
+                require_contains(device_yaml, f"{component_name}: {log_level}", device_yaml_path, errors)
 
 
 def check_firmware_update_metadata(product: dict, errors: list[str]) -> None:
@@ -2974,6 +3007,7 @@ def main() -> int:
     check_immich_api_key_metadata(product, errors)
     check_immich_connection_metadata(product, errors)
     check_home_assistant_metadata(product, errors)
+    check_device_logging_metadata(product, errors)
     check_firmware_update_metadata(product, errors)
     check_ota_update_metadata(product, errors)
     check_backup_metadata(product, errors)
