@@ -3282,6 +3282,8 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
         require_contains(docs_workflow, f"path: {docs_dist_output_path}", ".github/workflows/docs.yml", errors)
     if docs_firmware_artifact_name:
         require_contains(docs_workflow, f"name: {docs_firmware_artifact_name}", ".github/workflows/docs.yml", errors)
+        require_contains(docs_workflow, f"mkdir -p {docs_firmware_artifact_name}", ".github/workflows/docs.yml", errors)
+        require_contains(docs_workflow, f"path: {docs_firmware_artifact_name}/", ".github/workflows/docs.yml", errors)
         if docs_deploy_path:
             require_contains(
                 docs_workflow,
@@ -3434,6 +3436,12 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
             if public_manifest:
                 public_manifest_dirs.append(Path(public_manifest).parent.as_posix())
         for prefix in dict.fromkeys(public_manifest_dirs):
+            require_contains(
+                docs_workflow,
+                f"mkdir -p {prefix}",
+                ".github/workflows/docs.yml",
+                errors,
+            )
             require_contains(
                 docs_workflow,
                 f"if [ -f {prefix}/{slug}.manifest.json ]; then",
