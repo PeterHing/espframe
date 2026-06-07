@@ -724,6 +724,45 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
                 errors.append(f"project.github_workflow_path_filters.{name or '<missing>'} must only contain non-empty strings")
             if len(paths) != len(set(paths)):
                 errors.append(f"project.github_workflow_path_filters.{name or '<missing>'} must not contain duplicate paths")
+    workflow_events = project.get("github_workflow_events", {})
+    if not isinstance(workflow_events, dict) or not workflow_events:
+        errors.append("project.github_workflow_events must be a non-empty object")
+    else:
+        configured_workflows = {str(name).strip() for name in workflow_events}
+        missing_workflows = sorted(expected_workflows - configured_workflows)
+        extra_workflows = sorted(configured_workflows - expected_workflows)
+        if missing_workflows:
+            errors.append(f"project.github_workflow_events is missing workflows: {', '.join(missing_workflows)}")
+        if extra_workflows:
+            errors.append(f"project.github_workflow_events contains unknown workflows: {', '.join(extra_workflows)}")
+        for raw_name, raw_events in workflow_events.items():
+            name = str(raw_name).strip()
+            if not name:
+                errors.append("project.github_workflow_events keys must be non-empty strings")
+            if not isinstance(raw_events, list) or not raw_events:
+                errors.append(f"project.github_workflow_events.{name or '<missing>'} must be a non-empty list")
+                continue
+            events = [str(event).strip() for event in raw_events]
+            if any(not event for event in events):
+                errors.append(f"project.github_workflow_events.{name or '<missing>'} must only contain non-empty strings")
+            if len(events) != len(set(events)):
+                errors.append(f"project.github_workflow_events.{name or '<missing>'} must not contain duplicate events")
+    workflow_event_types = project.get("github_workflow_event_types", {})
+    if not isinstance(workflow_event_types, dict) or not workflow_event_types:
+        errors.append("project.github_workflow_event_types must be a non-empty object")
+    else:
+        for raw_key, raw_types in workflow_event_types.items():
+            key = str(raw_key).strip()
+            if "." not in key:
+                errors.append(f"project.github_workflow_event_types.{key or '<missing>'} must use workflow.event format")
+            if not isinstance(raw_types, list) or not raw_types:
+                errors.append(f"project.github_workflow_event_types.{key or '<missing>'} must be a non-empty list")
+                continue
+            event_types = [str(event_type).strip() for event_type in raw_types]
+            if any(not event_type for event_type in event_types):
+                errors.append(f"project.github_workflow_event_types.{key or '<missing>'} must only contain non-empty strings")
+            if len(event_types) != len(set(event_types)):
+                errors.append(f"project.github_workflow_event_types.{key or '<missing>'} must not contain duplicate event types")
     release_asset_suffixes = project.get("release_asset_suffixes", [])
     if not isinstance(release_asset_suffixes, list) or not release_asset_suffixes:
         errors.append("project.release_asset_suffixes must be a non-empty list")
@@ -3270,6 +3309,29 @@ def check_workflows(product: dict, errors: list[str]) -> None:
         "docs": (".github/workflows/docs.yml", docs_workflow),
         "release": (".github/workflows/release.yml", release_workflow),
     }
+    workflow_events = product["project"].get("github_workflow_events", {})
+    if isinstance(workflow_events, dict):
+        for workflow, raw_events in workflow_events.items():
+            workflow_name = str(workflow).strip()
+            if workflow_name not in workflow_texts or not isinstance(raw_events, list):
+                continue
+            label, text = workflow_texts[workflow_name]
+            for event in raw_events:
+                event_name = str(event).strip()
+                if event_name:
+                    require_contains(text, f"  {event_name}:", label, errors)
+    workflow_event_types = product["project"].get("github_workflow_event_types", {})
+    if isinstance(workflow_event_types, dict):
+        for key, raw_types in workflow_event_types.items():
+            workflow_name, _, event_name = str(key).strip().partition(".")
+            if workflow_name not in workflow_texts or not event_name or not isinstance(raw_types, list):
+                continue
+            label, text = workflow_texts[workflow_name]
+            require_contains(text, f"  {event_name}:", label, errors)
+            for event_type in raw_types:
+                event_type_name = str(event_type).strip()
+                if event_type_name:
+                    require_contains(text, f"types: [{event_type_name}]", label, errors)
     workflow_permissions = product["project"].get("github_workflow_permissions", {})
     workflow_names = product["project"].get("github_workflow_names", {})
     if isinstance(workflow_names, dict):
