@@ -5,6 +5,8 @@
     "repository_url": "https://github.com/jtenniswood/espframe",
     "public_base_url": "https://jtenniswood.github.io/espframe",
     "release_url_base": "https://github.com/jtenniswood/espframe/releases/tag/",
+    "support_url": "https://www.buymeacoffee.com/jtenniswood",
+    "support_button_image_url": "https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png",
     "esphome_version": "2026.5.0"
   },
   "devices": [

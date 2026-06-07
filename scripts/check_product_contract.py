@@ -235,7 +235,15 @@ def check_devices(product: dict, errors: list[str]) -> None:
 
 def check_project_metadata(product: dict, errors: list[str]) -> None:
     project = product["project"]
-    for field in ("name", "package_name", "repository_url", "release_url_base", "public_base_url"):
+    for field in (
+        "name",
+        "package_name",
+        "repository_url",
+        "release_url_base",
+        "public_base_url",
+        "support_url",
+        "support_button_image_url",
+    ):
         if not str(project.get(field, "")).strip():
             errors.append(f"project.{field} is required")
 
@@ -253,6 +261,11 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         errors.append("project.release_url_base must end with /")
     if repository_url and release_url_base and release_url_base != f"{repository_url}/releases/tag/":
         errors.append("project.release_url_base must be based on project.repository_url")
+
+    for field in ("support_url", "support_button_image_url"):
+        value = str(project.get(field, "")).strip()
+        if value and not value.startswith("https://"):
+            errors.append(f"project.{field} must be an https URL")
 
     firmware_update = read(ROOT / "common" / "addon" / "firmware_update.yaml", errors)
     if package_name:
@@ -308,6 +321,8 @@ def check_public_site_references(product: dict, errors: list[str]) -> None:
     web_app_url = public_url("webserver/app.js", product)
     project_name = str(product["project"].get("name", "")).strip()
     repository_url = str(product["project"].get("repository_url", "")).strip().rstrip("/")
+    support_url = str(product["project"].get("support_url", "")).strip()
+    support_button_image_url = str(product["project"].get("support_button_image_url", "")).strip()
 
     robots = read(ROOT / "docs" / "public" / "robots.txt", errors)
     ai_txt = read(ROOT / "docs" / "public" / "ai.txt", errors)
@@ -338,6 +353,11 @@ def check_public_site_references(product: dict, errors: list[str]) -> None:
     require_contains(readme, f"]({install_url})", "README.md installer link", errors)
     require_contains(readme, f"]({docs_url})", "README.md docs link", errors)
     require_contains(readme, base_url, "README.md public base URL", errors)
+    for label, text in (("README.md", readme), ("docs/index.md", index_docs)):
+        if support_url:
+            require_contains(text, support_url, label, errors)
+        if support_button_image_url:
+            require_contains(text, support_button_image_url, label, errors)
 
     for device in product["devices"]:
         slug = str(device.get("slug", "")).strip()
@@ -612,6 +632,14 @@ def check_generated_web_metadata(product: dict, web_text: str, errors: list[str]
     if docs_base_url is not None and docs_base_url != public_base_url(product):
         errors.append("Generated web DOCS_BASE_URL does not match product/espframe.json")
 
+    support_url = extract_js_json_var(web_text, "SUPPORT_URL", errors)
+    if support_url is not None and support_url != product["project"].get("support_url"):
+        errors.append("Generated web SUPPORT_URL does not match product/espframe.json")
+
+    support_button_image_url = extract_js_json_var(web_text, "SUPPORT_BUTTON_IMAGE_URL", errors)
+    if support_button_image_url is not None and support_button_image_url != product["project"].get("support_button_image_url"):
+        errors.append("Generated web SUPPORT_BUTTON_IMAGE_URL does not match product/espframe.json")
+
 
 def check_static_web_defaults_against_firmware(errors: list[str]) -> None:
     text = read(TIME_YAML, errors)
@@ -878,6 +906,8 @@ def check_settings(product: dict, errors: list[str]) -> None:
     require_contains(web_template, "__ESPFRAME_INITIAL_FETCH_KEYS__", rel(WEB_TEMPLATE), errors)
     require_contains(web_template, "__ESPFRAME_FIRMWARE_MANIFEST_URLS__", rel(WEB_TEMPLATE), errors)
     require_contains(web_template, "__ESPFRAME_DOCS_BASE_URL__", rel(WEB_TEMPLATE), errors)
+    require_contains(web_template, "__ESPFRAME_SUPPORT_URL__", rel(WEB_TEMPLATE), errors)
+    require_contains(web_template, "__ESPFRAME_SUPPORT_BUTTON_IMAGE_URL__", rel(WEB_TEMPLATE), errors)
     for needle in (
         "registerStaticEntityStateDefaults",
         "registerProductSettingStateDefaults",

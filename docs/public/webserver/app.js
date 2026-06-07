@@ -9,6 +9,8 @@
   var ENTITY_ALIASES = {"schedule_enabled":[{"entity":"switch/Screen: Schedule","boolFromState":true}],"schedule_on_hour":[{"entity":"number/Screen: Schedule On","default":6,"number":true}],"schedule_off_hour":[{"entity":"number/Screen: Schedule Off","default":23,"number":true}]};
   var FIRMWARE_MANIFEST_URLS = {"stable":"https://jtenniswood.github.io/espframe/firmware/manifest.json","beta":"https://jtenniswood.github.io/espframe/firmware/beta/manifest.json"};
   var DOCS_BASE_URL = "https://jtenniswood.github.io/espframe";
+  var SUPPORT_URL = "https://www.buymeacoffee.com/jtenniswood";
+  var SUPPORT_BUTTON_IMAGE_URL = "https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png";
 
   var S = {
     tz_options: TIMEZONES,
@@ -137,11 +139,11 @@
     if (document.querySelector(".sp-support-btn")) return;
     var link = document.createElement("a");
     link.className = "sp-support-btn";
-    link.href = "https://www.buymeacoffee.com/jtenniswood";
+    link.href = SUPPORT_URL;
     link.target = "_blank";
     link.rel = "noopener";
     link.setAttribute("aria-label", "Buy Me A Coffee");
-    link.innerHTML = '<span>Buy Me A Coffee</span><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60" style="border-radius:999px;">';
+    link.innerHTML = '<span>Buy Me A Coffee</span><img src="' + SUPPORT_BUTTON_IMAGE_URL + '" alt="Buy Me A Coffee" height="60" style="border-radius:999px;">';
     document.body.appendChild(link);
   }
 

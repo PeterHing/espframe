@@ -9,6 +9,8 @@
   var ENTITY_ALIASES = __ESPFRAME_ENTITY_ALIASES__;
   var FIRMWARE_MANIFEST_URLS = __ESPFRAME_FIRMWARE_MANIFEST_URLS__;
   var DOCS_BASE_URL = __ESPFRAME_DOCS_BASE_URL__;
+  var SUPPORT_URL = __ESPFRAME_SUPPORT_URL__;
+  var SUPPORT_BUTTON_IMAGE_URL = __ESPFRAME_SUPPORT_BUTTON_IMAGE_URL__;
 
   var S = {
     tz_options: TIMEZONES,
@@ -137,11 +139,11 @@
     if (document.querySelector(".sp-support-btn")) return;
     var link = document.createElement("a");
     link.className = "sp-support-btn";
-    link.href = "https://www.buymeacoffee.com/jtenniswood";
+    link.href = SUPPORT_URL;
     link.target = "_blank";
     link.rel = "noopener";
     link.setAttribute("aria-label", "Buy Me A Coffee");
-    link.innerHTML = '<span>Buy Me A Coffee</span><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60" style="border-radius:999px;">';
+    link.innerHTML = '<span>Buy Me A Coffee</span><img src="' + SUPPORT_BUTTON_IMAGE_URL + '" alt="Buy Me A Coffee" height="60" style="border-radius:999px;">';
     document.body.appendChild(link);
   }
 
