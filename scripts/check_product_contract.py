@@ -296,6 +296,15 @@ def check_devices(product: dict, errors: list[str]) -> None:
                 if alias in seen_includes:
                     errors.append(f"Device {slug} package_includes has duplicate alias {alias}")
                 seen_includes.add(alias)
+        package_substitutions = device.get("package_substitutions", {})
+        if not isinstance(package_substitutions, dict) or not package_substitutions:
+            errors.append(f"Device {slug} package_substitutions must be a non-empty object")
+        else:
+            for name, value in package_substitutions.items():
+                if not isinstance(name, str) or not name.strip():
+                    errors.append(f"Device {slug} package_substitutions keys must be non-empty strings")
+                if not isinstance(value, str) or not value.strip():
+                    errors.append(f"Device {slug} package_substitutions.{name} must be a non-empty string")
 
         for field in ("panel_url", "stand_url"):
             url = str(device.get(field, "")).strip()
@@ -396,6 +405,10 @@ def check_devices(product: dict, errors: list[str]) -> None:
                 include_path = (package_dir / path).resolve()
                 if not include_path.is_file():
                     errors.append(f"Missing package include for device {slug}: {rel(include_path)}")
+        if isinstance(package_substitutions, dict):
+            for name, value in package_substitutions.items():
+                if isinstance(name, str) and isinstance(value, str) and name.strip() and value.strip():
+                    require_contains(package_yaml, f'{name}: "{value}"', rel(ROOT / package_yaml_path), errors)
         for needle in (
             "esp_ldo:",
             "platform: ledc",

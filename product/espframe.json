@@ -263,6 +263,22 @@
         { "alias": "dev_features", "path": "../../common/addon/developer_features.yaml" },
         { "alias": "network", "path": "../../common/addon/network.yaml" }
       ],
+      "package_substitutions": {
+        "display_width": "1280",
+        "display_height": "800",
+        "portrait_display_width": "800",
+        "portrait_display_height": "1280",
+        "portrait_metadata_width": "710",
+        "portrait_half_width": "640",
+        "screen_rotation": "0",
+        "screen_rotation_0": "90",
+        "screen_rotation_90": "180",
+        "screen_rotation_180": "270",
+        "screen_rotation_270": "0",
+        "captive_portal_ip": "192.168.4.1",
+        "firmware_manifest_url": "https://jtenniswood.github.io/espframe/firmware/manifest.json",
+        "firmware_beta_manifest_url": "https://jtenniswood.github.io/espframe/firmware/beta/manifest.json"
+      },
       "panel_url": "https://s.click.aliexpress.com/e/_c4LLo3rH",
       "stand_url": "https://makerworld.com/en/models/2490049-guition-p4-10inch-screen-stand#profileId-2736046",
       "build_yaml": "builds/guition-esp32-p4-jc8012p4a1.factory.yaml",
