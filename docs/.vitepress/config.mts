@@ -172,6 +172,7 @@ export default defineConfig({
         text: 'Project',
         items: [
           { text: 'Product Metadata Foundation', link: '/phase-1-product-metadata' },
+          { text: 'Reset Architecture', link: '/phase-3-reset-architecture' },
           { text: 'Roadmap', link: '/roadmap' },
           { text: 'License', link: '/license' },
         ],

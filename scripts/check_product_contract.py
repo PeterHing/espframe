@@ -1542,6 +1542,8 @@ def check_npm_package_metadata(product: dict, errors: list[str]) -> None:
             errors.append("package.json test:web-compat must run tests/web_compat_tests.js")
         if scripts.get("test:web-modules") != "node tests/web_module_tests.js":
             errors.append("package.json test:web-modules must run tests/web_module_tests.js")
+        if scripts.get("test:web-smoke") != "node tests/web_smoke_tests.js":
+            errors.append("package.json test:web-smoke must run tests/web_smoke_tests.js")
         check_all = str(scripts.get("check:all", ""))
         if "npm run check:backup" not in check_all:
             errors.append("package.json check:all must include check:backup")
@@ -1553,6 +1555,8 @@ def check_npm_package_metadata(product: dict, errors: list[str]) -> None:
             errors.append("package.json check:all must include test:web-compat")
         if "npm run test:web-modules" not in check_all:
             errors.append("package.json check:all must include test:web-modules")
+        if "npm run test:web-smoke" not in check_all:
+            errors.append("package.json check:all must include test:web-smoke")
     if package_lock.get("name") != expected_name:
         errors.append("package-lock.json name must match project.npm_package_name")
     root_package = package_lock.get("packages", {}).get("", {})
