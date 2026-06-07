@@ -239,6 +239,26 @@ def check_devices(product: dict, errors: list[str]) -> None:
             value = device.get(field)
             if not isinstance(value, int) or isinstance(value, bool) or value < 1:
                 errors.append(f"Device {slug} {field} must be a positive integer")
+        hardware_pins = device.get("hardware_pins", {})
+        if not isinstance(hardware_pins, dict) or not hardware_pins:
+            errors.append(f"Device {slug} hardware_pins must be a non-empty object")
+        else:
+            for pin_name, pin in hardware_pins.items():
+                if not isinstance(pin_name, str) or not pin_name.strip():
+                    errors.append(f"Device {slug} hardware_pins keys must be non-empty strings")
+                if not isinstance(pin, str) or not pin.strip():
+                    errors.append(f"Device {slug} hardware_pins.{pin_name} must be a non-empty string")
+        power_rail = device.get("mipi_dsi_power_rail", {})
+        if not isinstance(power_rail, dict):
+            errors.append(f"Device {slug} mipi_dsi_power_rail must be an object")
+        else:
+            for field in ("id", "voltage"):
+                if not str(power_rail.get(field, "")).strip():
+                    errors.append(f"Device {slug} mipi_dsi_power_rail.{field} is required")
+            if not isinstance(power_rail.get("channel"), int) or isinstance(power_rail.get("channel"), bool):
+                errors.append(f"Device {slug} mipi_dsi_power_rail.channel must be an integer")
+        if not str(device.get("i2c_frequency", "")).strip():
+            errors.append(f"Device {slug} i2c_frequency is required")
 
         for field in ("panel_url", "stand_url"):
             url = str(device.get(field, "")).strip()
@@ -276,6 +296,51 @@ def check_devices(product: dict, errors: list[str]) -> None:
             require_contains(package_yaml, f'display_width: "{ui_width}"', rel(ROOT / package_yaml_path), errors)
         if isinstance(ui_height, int):
             require_contains(package_yaml, f'display_height: "{ui_height}"', rel(ROOT / package_yaml_path), errors)
+        if isinstance(hardware_pins, dict):
+            pin_markers = {
+                "esp32_hosted_reset": "reset_pin",
+                "esp32_hosted_cmd": "cmd_pin",
+                "esp32_hosted_clk": "clk_pin",
+                "esp32_hosted_d0": "d0_pin",
+                "esp32_hosted_d1": "d1_pin",
+                "esp32_hosted_d2": "d2_pin",
+                "esp32_hosted_d3": "d3_pin",
+                "backlight_pwm": "pin",
+                "display_reset": "reset_pin",
+                "touch_reset": "reset_pin",
+                "touch_interrupt": "interrupt_pin",
+                "i2c_sda": "sda",
+                "i2c_scl": "scl",
+            }
+            for pin_name, marker in pin_markers.items():
+                pin = str(hardware_pins.get(pin_name, "")).strip()
+                if pin:
+                    require_contains(device_yaml, f"{marker}: {pin}", rel(ROOT / device_yaml_path), errors)
+        if isinstance(power_rail, dict):
+            rail_id = str(power_rail.get("id", "")).strip()
+            rail_voltage = str(power_rail.get("voltage", "")).strip()
+            rail_channel = power_rail.get("channel")
+            if rail_id:
+                require_contains(device_yaml, f"id: {rail_id}", rel(ROOT / device_yaml_path), errors)
+            if isinstance(rail_channel, int):
+                require_contains(device_yaml, f"channel: {rail_channel}", rel(ROOT / device_yaml_path), errors)
+            if rail_voltage:
+                require_contains(device_yaml, f"voltage: {rail_voltage}", rel(ROOT / device_yaml_path), errors)
+        i2c_frequency = str(device.get("i2c_frequency", "")).strip()
+        if i2c_frequency:
+            require_contains(device_yaml, f"frequency: {i2c_frequency}", rel(ROOT / device_yaml_path), errors)
+        for needle in (
+            "esp_ldo:",
+            "platform: ledc",
+            "id: backlight_output",
+            "i2c:",
+            "scan: true",
+            "sda_pullup_enabled: false",
+            "scl_pullup_enabled: false",
+            "auto_clear_enabled: false",
+            "color_order: RGB",
+        ):
+            require_contains(device_yaml, needle, rel(ROOT / device_yaml_path), errors)
 
 
 def check_project_metadata(product: dict, errors: list[str]) -> None:
