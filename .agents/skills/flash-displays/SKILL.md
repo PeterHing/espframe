@@ -1,6 +1,6 @@
 ---
 name: flash-displays
-description: Flash Espframe display firmware from this repository using ESPHome. Use when the user invokes /flash-displays, asks to flash, reflash, update, or upload firmware to the Immich Frame / 10-inch Guition display over an explicitly supplied IP address or USB.
+description: Flash Espframe display firmware from this repository using ESPHome. Use when the user invokes /flash-displays, asks to flash, reflash, update, or upload firmware to the Immich Frame / 10-inch Guition display over its default IP address, an explicitly supplied IP address, or USB.
 ---
 
 # Flash Displays
@@ -9,13 +9,13 @@ description: Flash Espframe display firmware from this repository using ESPHome.
 
 Use the local development ESPHome config to flash the Espframe display from this checkout. This repository currently has one supported display: the Guition ESP32-P4 JC8012P4A1 10.1-inch Immich Frame.
 
-Flash over OTA when the user supplies an IP address. Flash over USB when the user explicitly asks for USB, local USB, serial, or gives a `/dev/cu.*` target. If the user asks to flash without saying IP or USB, ask for the target because this project has no safe default IP address.
+Flash over OTA by default using `192.168.10.199`, unless the user supplies a different IP address. Flash over USB when the user explicitly asks for USB, local USB, serial, or gives a `/dev/cu.*` target.
 
 ## Device Map
 
-| Request names | ESPHome config directory | Default YAML |
+| Request names | ESPHome config directory | Default YAML | Default OTA target |
 |---|---|---|
-| `immich frame`, `10inch`, `10-inch`, `10inch P4`, `10-inch P4`, `JC8012P4A1`, `guition` | `devices/guition-esp32-p4-jc8012p4a1` | `dev.yaml` |
+| `immich frame`, `10inch`, `10-inch`, `10inch P4`, `10-inch P4`, `JC8012P4A1`, `guition` | `devices/guition-esp32-p4-jc8012p4a1` | `dev.yaml` | `192.168.10.199` |
 
 ## YAML Selection
 
@@ -38,8 +38,8 @@ Use `dev.yaml` by default. If the user names another YAML file, use that file in
 3. Check that the selected config directory has a local `secrets.yaml` or another ESPHome-supported local secret source. If secrets are missing, stop and tell the user that WiFi credentials are needed beside the YAML before flashing.
 4. Resolve the upload target:
    - Use an explicit IP address from the user's request for OTA.
+   - If no target is provided and USB is not requested, use the default OTA target `192.168.10.199`.
    - Use USB when the user says `USB`, `over USB`, `serial`, `local USB`, or gives a `/dev/cu.*` device.
-   - If neither IP nor USB is clear, ask for the target.
 5. For OTA targets, check reachability first with `ping -c 2 -W 1000 <target>`.
 6. For USB flashing:
    - List ports with `ls -1 /dev/cu.*`.
@@ -63,9 +63,9 @@ esphome -s espframe_component_url file:///Users/jtenniswood/Git/espframe -s espf
 Examples:
 
 ```bash
-# OTA, using the IP address supplied by the user
+# OTA, using the default 10-inch display IP address
 cd /Users/jtenniswood/Git/espframe/devices/guition-esp32-p4-jc8012p4a1
-esphome -s espframe_component_url file:///Users/jtenniswood/Git/espframe -s espframe_component_ref HEAD run dev.yaml --device 192.168.1.50 --no-logs
+esphome -s espframe_component_url file:///Users/jtenniswood/Git/espframe -s espframe_component_ref HEAD run dev.yaml --device 192.168.10.199 --no-logs
 
 # USB, only when explicitly requested
 cd /Users/jtenniswood/Git/espframe/devices/guition-esp32-p4-jc8012p4a1
