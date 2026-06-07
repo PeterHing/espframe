@@ -329,7 +329,13 @@ def check_public_site_references(product: dict, errors: list[str]) -> None:
     for device in product["devices"]:
         slug = str(device.get("slug", "")).strip()
         local_yaml = check_relative_path(device.get("local_yaml"), f"Device {slug} local_yaml", errors)
+        package_yaml = check_relative_path(device.get("package_yaml"), f"Device {slug} package_yaml", errors)
+        build_yaml = check_relative_path(device.get("build_yaml"), f"Device {slug} build_yaml", errors)
         device_yaml = check_relative_path(device.get("device_yaml"), f"Device {slug} device_yaml", errors)
+        if package_yaml:
+            require_contains(manual_setup, f"files: [{package_yaml}]", "docs/manual-setup.md", errors)
+        if build_yaml:
+            require_contains(readme, f"compile /config/{build_yaml}", "README.md compile example", errors)
         if local_yaml and repository_url:
             require_contains(read(ROOT / local_yaml, errors), f"url: {repository_url}", local_yaml, errors)
         if device_yaml:
@@ -361,6 +367,8 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
     for release_device in release_devices:
         slug = release_device["slug"]
         build_yaml = str(devices_by_slug.get(slug, {}).get("build_yaml", "")).strip()
+        local_yaml = str(devices_by_slug.get(slug, {}).get("local_yaml", "")).strip()
+        device_dir = str(Path(local_yaml).parent) if local_yaml else ""
         for needle in (
             f"- slug: {slug}",
             f"yaml: {release_device['yaml']}",
@@ -380,6 +388,13 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
             ".github/workflows/compile.yml",
             errors,
         )
+        if device_dir:
+            require_contains(
+                compile_workflow,
+                f'"{device_dir}/**"',
+                ".github/workflows/compile.yml",
+                errors,
+            )
         for prefix in ("firmware", "firmware/beta"):
             require_contains(
                 docs_workflow,
