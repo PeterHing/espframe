@@ -619,6 +619,8 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "release_build_output_dir",
         "release_publish_dir",
         "release_uploaded_verify_dir",
+        "release_source_factory_binary",
+        "release_source_ota_binary",
         "release_version_pattern",
         "stable_release_version_pattern",
         "firmware_version_placeholder_line",
@@ -2967,6 +2969,8 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
     release_build_output_dir = str(project.get("release_build_output_dir", "")).strip()
     release_publish_dir = str(project.get("release_publish_dir", "")).strip()
     release_uploaded_verify_dir = str(project.get("release_uploaded_verify_dir", "")).strip()
+    release_source_factory_binary = str(project.get("release_source_factory_binary", "")).strip()
+    release_source_ota_binary = str(project.get("release_source_ota_binary", "")).strip()
     asset_suffixes = [str(value).strip() for value in project.get("release_asset_suffixes", []) if str(value).strip()]
     release_version_pattern = str(project.get("release_version_pattern", "")).strip()
     stable_release_version_pattern = str(project.get("stable_release_version_pattern", "")).strip()
@@ -3042,6 +3046,18 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
             f'"{release_build_output_dir}/${{{{ matrix.slug }}}}.factory.bin"',
             f'"{release_build_output_dir}/${{{{ matrix.slug }}}}.ota.bin"',
             f'"{release_build_output_dir}/${{{{ matrix.slug }}}}.manifest.json"',
+        ):
+            require_contains(release_workflow, needle, ".github/workflows/release.yml", errors)
+    if release_source_factory_binary:
+        for needle in (
+            f'"${{BUILD_DIR}}/{release_source_factory_binary}"',
+            f"factory binary not found",
+        ):
+            require_contains(release_workflow, needle, ".github/workflows/release.yml", errors)
+    if release_source_ota_binary:
+        for needle in (
+            f'"${{BUILD_DIR}}/{release_source_ota_binary}"',
+            f"OTA binary not found",
         ):
             require_contains(release_workflow, needle, ".github/workflows/release.yml", errors)
     if release_publish_dir:
