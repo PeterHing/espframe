@@ -634,6 +634,8 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "node_install_command",
         "local_check_command",
         "docs_build_command",
+        "esphome_docker_image",
+        "esphome_config_mount",
         "github_docs_release_meta_step_id",
         "github_docs_release_tag_env",
         "github_docs_release_tag_output",
@@ -2822,6 +2824,7 @@ def check_public_site_references(product: dict, errors: list[str]) -> None:
     default_branch = str(product["project"].get("github_default_branch", "")).strip()
     support_url = str(product["project"].get("support_url", "")).strip()
     support_button_image_url = str(product["project"].get("support_button_image_url", "")).strip()
+    esphome_config_mount = str(product["project"].get("esphome_config_mount", "")).strip()
 
     robots = read(ROOT / "docs" / "public" / "robots.txt", errors)
     ai_txt = read(ROOT / "docs" / "public" / "ai.txt", errors)
@@ -2963,7 +2966,8 @@ def check_public_site_references(product: dict, errors: list[str]) -> None:
         if package_yaml:
             require_contains(manual_setup, f"files: [{package_yaml}]", "docs/manual-setup.md", errors)
         if build_yaml:
-            require_contains(readme, f"compile /config/{build_yaml}", "README.md compile example", errors)
+            if esphome_config_mount:
+                require_contains(readme, f"compile {esphome_config_mount}/{build_yaml}", "README.md compile example", errors)
             build_text = read(ROOT / build_yaml, errors)
             if esphome_name:
                 require_contains(build_text, f'name: "{esphome_name}"', build_yaml, errors)
@@ -3093,6 +3097,7 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
     actions_runner = str(project.get("github_actions_runner", "")).strip()
     github_cli_env = project.get("github_cli_env", {})
     firmware_compile_timeout = project.get("firmware_compile_timeout_minutes")
+    esphome_config_mount = str(project.get("esphome_config_mount", "")).strip()
     slugs = [str(device.get("slug", "")).strip() for device in product["devices"]]
     expected_slugs = " ".join(slugs)
     if actions_runner:
@@ -3411,18 +3416,19 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
             f"chip: {release_device['chip']}",
         ):
             require_contains(release_workflow, needle, ".github/workflows/release.yml", errors)
-        require_contains(
-            release_workflow,
-            f"compile /config/builds/${{{{ matrix.yaml }}}}.factory.yaml",
-            ".github/workflows/release.yml",
-            errors,
-        )
-        require_contains(
-            compile_workflow,
-            f"compile /config/{build_yaml}",
-            ".github/workflows/compile.yml",
-            errors,
-        )
+        if esphome_config_mount:
+            require_contains(
+                release_workflow,
+                f"compile {esphome_config_mount}/builds/${{{{ matrix.yaml }}}}.factory.yaml",
+                ".github/workflows/release.yml",
+                errors,
+            )
+            require_contains(
+                compile_workflow,
+                f"compile {esphome_config_mount}/{build_yaml}",
+                ".github/workflows/compile.yml",
+                errors,
+            )
         if device_dir:
             require_contains(
                 compile_workflow,
@@ -3501,6 +3507,7 @@ def check_factory_firmware_metadata(product: dict, errors: list[str]) -> None:
     network_mode = str(project.get("factory_firmware_network_mode", "")).strip()
     setup_method = str(project.get("factory_firmware_setup_method", "")).strip()
     local_use = str(project.get("factory_firmware_local_use", "")).strip()
+    esphome_config_mount = str(project.get("esphome_config_mount", "")).strip()
 
     install_docs = read(ROOT / "docs" / "install.md", errors)
     connectivity_yaml = read(ROOT / "common" / "addon" / "connectivity.yaml", errors)
@@ -3519,13 +3526,19 @@ def check_factory_firmware_metadata(product: dict, errors: list[str]) -> None:
         require_contains(build_text, "firmware_version: \"0.0.0\"", build_yaml, errors)
         require_contains(build_text, "css_include: \"../docs/public/webserver/style.css\"", build_yaml, errors)
         require_contains(build_text, "js_include: \"../docs/public/webserver/app.js\"", build_yaml, errors)
-        require_contains(compile_workflow, f"compile /config/{build_yaml}", ".github/workflows/compile.yml", errors)
-        require_contains(
-            release_workflow,
-            "compile /config/builds/${{ matrix.yaml }}.factory.yaml",
-            ".github/workflows/release.yml",
-            errors,
-        )
+        if esphome_config_mount:
+            require_contains(
+                compile_workflow,
+                f"compile {esphome_config_mount}/{build_yaml}",
+                ".github/workflows/compile.yml",
+                errors,
+            )
+            require_contains(
+                release_workflow,
+                f"compile {esphome_config_mount}/builds/${{{{ matrix.yaml }}}}.factory.yaml",
+                ".github/workflows/release.yml",
+                errors,
+            )
 
     if network_mode:
         require_contains(install_docs, "hotspot", "docs/install.md", errors)
@@ -3676,7 +3689,10 @@ def check_external_components_metadata(product: dict, errors: list[str]) -> None
 
 
 def check_esphome_version(product: dict, errors: list[str]) -> None:
-    version = str(product["project"].get("esphome_version", "")).strip()
+    project = product["project"]
+    version = str(project.get("esphome_version", "")).strip()
+    docker_image = str(project.get("esphome_docker_image", "")).strip().rstrip(":")
+    config_mount = str(project.get("esphome_config_mount", "")).strip()
     if not version:
         errors.append("project.esphome_version is required")
         return
@@ -3692,9 +3708,12 @@ def check_esphome_version(product: dict, errors: list[str]) -> None:
         text = read(path, errors)
         require_contains(text, version, rel(path), errors)
 
-    for path in (ROOT / ".github" / "workflows" / "compile.yml", ROOT / ".github" / "workflows" / "release.yml"):
+    for path in (ROOT / ".github" / "workflows" / "compile.yml", ROOT / ".github" / "workflows" / "release.yml", ROOT / "README.md"):
         text = read(path, errors)
-        require_contains(text, f"ghcr.io/esphome/esphome:{version}", rel(path), errors)
+        if docker_image:
+            require_contains(text, f"{docker_image}:{version}", rel(path), errors)
+        if config_mount:
+            require_contains(text, f'-v "${{PWD}}:{config_mount}"', rel(path), errors)
 
 
 def check_workflows(product: dict, errors: list[str]) -> None:
