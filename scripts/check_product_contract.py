@@ -4172,15 +4172,29 @@ def check_web_ui_metadata(product: dict, web_template: str, web_text: str, error
             require_contains(text, f"childNodes.length - {retained_lines}", label, errors)
 
     if isinstance(tabs, list):
+        seen_tab_ids: set[str] = set()
         for tab in tabs:
             if not isinstance(tab, dict):
+                errors.append("project.web_ui_tabs entries must be objects")
                 continue
             tab_id = str(tab.get("id", "")).strip()
             tab_label = str(tab.get("label", "")).strip()
+            if not tab_id:
+                errors.append("project.web_ui_tabs entries must include id")
+            elif not re.match(r"^[A-Za-z][A-Za-z0-9_]*$", tab_id):
+                errors.append(f"project.web_ui_tabs id {tab_id!r} must be a JavaScript-safe identifier")
+            elif tab_id in seen_tab_ids:
+                errors.append(f"project.web_ui_tabs has duplicate id {tab_id!r}")
+            else:
+                seen_tab_ids.add(tab_id)
+            if not tab_label:
+                errors.append(f"project.web_ui_tabs {tab_id or '<missing>'} must include label")
             if tab_id:
                 require_contains(web_template + web_text, f"{tab_id}Page", f"web UI page for {tab_id}", errors)
             if tab_label:
                 require_contains(web_text, f'"label":"{tab_label}"', f"generated web UI tab {tab_label}", errors)
+    else:
+        errors.append("project.web_ui_tabs must be a list")
 
 
 def check_web_template_key_references(product: dict, web_template: str, errors: list[str]) -> None:
