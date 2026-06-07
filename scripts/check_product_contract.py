@@ -140,6 +140,7 @@ def check_path_list(setting: dict, key: str, field: str, errors: list[str]) -> l
         errors.append(f"Setting {key} must have a non-empty {field} list")
         return []
     result: list[str] = []
+    seen: set[str] = set()
     for item in value:
         path = str(item).strip()
         if not path:
@@ -148,6 +149,10 @@ def check_path_list(setting: dict, key: str, field: str, errors: list[str]) -> l
         if Path(path).is_absolute() or ".." in Path(path).parts:
             errors.append(f"Setting {key} has unsafe {field} path: {path}")
             continue
+        if path in seen:
+            errors.append(f"Setting {key} has duplicate {field} path: {path}")
+            continue
+        seen.add(path)
         result.append(path)
     return result
 
