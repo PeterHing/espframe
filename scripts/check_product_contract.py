@@ -1242,6 +1242,9 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         errors.append("project.web_server_include_internal must be true or false")
     if not isinstance(project.get("github_pages_cancel_in_progress"), bool):
         errors.append("project.github_pages_cancel_in_progress must be true or false")
+    prerelease_lookup_limit = project.get("github_prerelease_lookup_limit")
+    if not isinstance(prerelease_lookup_limit, int) or isinstance(prerelease_lookup_limit, bool) or prerelease_lookup_limit < 1:
+        errors.append("project.github_prerelease_lookup_limit must be a positive integer")
     for field in ("github_release_download_clobber", "github_release_upload_clobber"):
         if not isinstance(project.get(field), bool):
             errors.append(f"project.{field} must be true or false")
@@ -3070,6 +3073,7 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
     sparse_checkout_cone_mode = project.get("github_sparse_checkout_cone_mode")
     docs_verify_retries = project.get("docs_firmware_verify_retries")
     docs_verify_delay = project.get("docs_firmware_verify_delay_seconds")
+    prerelease_lookup_limit = project.get("github_prerelease_lookup_limit")
     actions_runner = str(project.get("github_actions_runner", "")).strip()
     github_cli_env = project.get("github_cli_env", {})
     firmware_compile_timeout = project.get("firmware_compile_timeout_minutes")
@@ -3313,13 +3317,15 @@ def check_device_workflow_contract(product: dict, errors: list[str]) -> None:
             (".github/workflows/compile.yml", compile_workflow),
         ):
             require_contains(text, f"timeout-minutes: {firmware_compile_timeout}", label, errors)
-    for needle in (
+    docs_release_lookup_needles = [
         "gh release view --json tagName",
-        "gh release list --limit 20 --json tagName,isPrerelease",
         "python3 scripts/firmware_release.py verify-directory",
         "python3 scripts/firmware_release.py verify-pages",
         f'--base-url "{public_base_url(product)}"',
-    ):
+    ]
+    if isinstance(prerelease_lookup_limit, int) and not isinstance(prerelease_lookup_limit, bool):
+        docs_release_lookup_needles.append(f"gh release list --limit {prerelease_lookup_limit} --json tagName,isPrerelease")
+    for needle in docs_release_lookup_needles:
         require_contains(docs_workflow, needle, ".github/workflows/docs.yml", errors)
 
     try:

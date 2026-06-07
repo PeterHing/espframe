@@ -401,6 +401,7 @@
     "github_pages_environment": "github-pages",
     "github_pages_concurrency_group": "pages",
     "github_pages_cancel_in_progress": false,
+    "github_prerelease_lookup_limit": 20,
     "generated_asset_outputs": [
       "components/espframe/tz_data_generated.h",
       "common/addon/time.yaml",
