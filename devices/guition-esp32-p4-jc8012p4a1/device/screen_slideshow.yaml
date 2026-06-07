@@ -390,71 +390,111 @@ lvgl:
                         text_align: center
                         text_color: 0xFFD166
                         text_font: noto_400_28_font
-                    - label:
-                        id: photo_source_all_label
-                        text: "All Photos"
+                    - obj:
                         width: 640
                         height: 58
-                        text_align: center
-                        text_color: 0xFFFFFF
-                        text_font: noto_400_30_font
+                        bg_opa: 0%
+                        border_width: 0
+                        pad_all: 0
+                        scrollable: false
                         clickable: true
                         on_click:
                           then:
                             - lambda: 'id(photo_source_menu_selection_index) = 0;'
                             - script.execute: select_photo_source_from_menu
-                    - label:
-                        id: photo_source_favorites_label
-                        text: "Favorites"
+                        widgets:
+                          - label:
+                              id: photo_source_all_label
+                              text: "All Photos"
+                              align: CENTER
+                              width: 640
+                              text_align: center
+                              text_color: 0xFFFFFF
+                              text_font: noto_400_30_font
+                    - obj:
                         width: 640
                         height: 58
-                        text_align: center
-                        text_color: 0xFFFFFF
-                        text_font: noto_400_30_font
+                        bg_opa: 0%
+                        border_width: 0
+                        pad_all: 0
+                        scrollable: false
                         clickable: true
                         on_click:
                           then:
                             - lambda: 'id(photo_source_menu_selection_index) = 1;'
                             - script.execute: select_photo_source_from_menu
-                    - label:
-                        id: photo_source_album_label
-                        text: "Album"
+                        widgets:
+                          - label:
+                              id: photo_source_favorites_label
+                              text: "Favorites"
+                              align: CENTER
+                              width: 640
+                              text_align: center
+                              text_color: 0xFFFFFF
+                              text_font: noto_400_30_font
+                    - obj:
                         width: 640
                         height: 58
-                        text_align: center
-                        text_color: 0xFFFFFF
-                        text_font: noto_400_30_font
+                        bg_opa: 0%
+                        border_width: 0
+                        pad_all: 0
+                        scrollable: false
                         clickable: true
                         on_click:
                           then:
                             - lambda: 'id(photo_source_menu_selection_index) = 2;'
                             - script.execute: select_photo_source_from_menu
-                    - label:
-                        id: photo_source_person_label
-                        text: "Person"
+                        widgets:
+                          - label:
+                              id: photo_source_album_label
+                              text: "Album"
+                              align: CENTER
+                              width: 640
+                              text_align: center
+                              text_color: 0xFFFFFF
+                              text_font: noto_400_30_font
+                    - obj:
                         width: 640
                         height: 58
-                        text_align: center
-                        text_color: 0xFFFFFF
-                        text_font: noto_400_30_font
+                        bg_opa: 0%
+                        border_width: 0
+                        pad_all: 0
+                        scrollable: false
                         clickable: true
                         on_click:
                           then:
                             - lambda: 'id(photo_source_menu_selection_index) = 3;'
                             - script.execute: select_photo_source_from_menu
-                    - label:
-                        id: photo_source_memories_label
-                        text: "Memories"
+                        widgets:
+                          - label:
+                              id: photo_source_person_label
+                              text: "Person"
+                              align: CENTER
+                              width: 640
+                              text_align: center
+                              text_color: 0xFFFFFF
+                              text_font: noto_400_30_font
+                    - obj:
                         width: 640
                         height: 58
-                        text_align: center
-                        text_color: 0xFFFFFF
-                        text_font: noto_400_30_font
+                        bg_opa: 0%
+                        border_width: 0
+                        pad_all: 0
+                        scrollable: false
                         clickable: true
                         on_click:
                           then:
                             - lambda: 'id(photo_source_menu_selection_index) = 4;'
                             - script.execute: select_photo_source_from_menu
+                        widgets:
+                          - label:
+                              id: photo_source_memories_label
+                              text: "Memories"
+                              align: CENTER
+                              width: 640
+                              text_align: center
+                              text_color: 0xFFFFFF
+                              text_font: noto_400_30_font
 
 # =============================================================================
 # CONNECTION FAILED DIM TIMER
