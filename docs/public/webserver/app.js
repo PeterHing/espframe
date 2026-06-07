@@ -9,6 +9,7 @@
   var ENTITY_ALIASES = {"schedule_enabled":[{"entity":"switch/Screen: Schedule","boolFromState":true}],"schedule_on_hour":[{"entity":"number/Screen: Schedule On","default":6,"number":true}],"schedule_off_hour":[{"entity":"number/Screen: Schedule Off","default":23,"number":true}]};
   var FIRMWARE_MANIFEST_URLS = {"stable":"https://jtenniswood.github.io/espframe/firmware/manifest.json","beta":"https://jtenniswood.github.io/espframe/firmware/beta/manifest.json"};
   var DOCS_BASE_URL = "https://jtenniswood.github.io/espframe";
+  var WEB_UI_TABS = [{"id":"immich","label":"Immich"},{"id":"settings","label":"Device"},{"id":"logs","label":"Logs"}];
   var SUPPORT_URL = "https://www.buymeacoffee.com/jtenniswood";
   var SUPPORT_BUTTON_IMAGE_URL = "https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png";
 
@@ -160,12 +161,7 @@
     nav.className = "sp-nav";
     nav.setAttribute("aria-label", "Primary");
 
-    var tabs = [
-      { id: "immich", label: "Immich" },
-      { id: "settings", label: "Device" }
-    ];
-
-    tabs.forEach(function (t) {
+    webUiTabs().forEach(function (t) {
       var tab = document.createElement("div");
       tab.className = "sp-tab";
       tab.setAttribute("role", "tab");
@@ -186,6 +182,12 @@
 
     header.appendChild(nav);
     parent.appendChild(header);
+  }
+
+  function webUiTabs() {
+    return Array.isArray(WEB_UI_TABS) && WEB_UI_TABS.length
+      ? WEB_UI_TABS
+      : [{ id: "immich", label: "Immich" }, { id: "settings", label: "Device" }];
   }
 
   var immichApp;
@@ -242,7 +244,8 @@
   }
 
   function switchTab(tab) {
-    ["immich", "settings"].forEach(function (t) {
+    webUiTabs().forEach(function (tabSpec) {
+      var t = tabSpec.id;
       els["tab_" + t].className = "sp-tab" + (tab === t ? " active" : "");
       els["tab_" + t].setAttribute("aria-selected", tab === t ? "true" : "false");
     });

@@ -122,6 +122,15 @@
     "factory_firmware_network_mode": "AP mode",
     "factory_firmware_setup_method": "captive portal",
     "factory_firmware_local_use": "not used locally",
+    "web_ui_tabs": [
+      { "id": "immich", "label": "Immich" },
+      { "id": "settings", "label": "Device" },
+      { "id": "logs", "label": "Logs" }
+    ],
+    "web_ui_logs_event_source": "/events",
+    "web_ui_logs_event_name": "log",
+    "web_ui_logs_clear_label": "Clear",
+    "web_ui_logs_retained_lines": 1000,
     "date_filter_modes": ["Fixed Range", "Relative Range"],
     "date_filter_relative_anchor": "ending today",
     "date_filter_time_source": "frame's configured time",

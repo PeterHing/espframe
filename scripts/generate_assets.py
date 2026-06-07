@@ -20,6 +20,7 @@ from product_config import (
     DOCS_SETTINGS_TABLE_COLUMNS,
     DOCS_SETTINGS_TABLES,
     default_public_manifest_urls,
+    load_product,
     project_value,
     public_base_url,
     settings,
@@ -177,6 +178,7 @@ def web_app_bundle() -> str:
     initial_fetch_keys_json = json.dumps(web_initial_fetch_keys(), separators=(",", ":"))
     firmware_manifest_urls_json = json.dumps(default_public_manifest_urls(), separators=(",", ":"))
     docs_base_url_json = json.dumps(public_base_url(), separators=(",", ":"))
+    web_ui_tabs_json = json.dumps(load_product()["project"].get("web_ui_tabs", []), separators=(",", ":"))
     support_url_json = json.dumps(project_value("support_url"), separators=(",", ":"))
     support_button_image_url_json = json.dumps(project_value("support_button_image_url"), separators=(",", ":"))
     css_json = json.dumps(css, separators=(",", ":"))
@@ -191,6 +193,7 @@ def web_app_bundle() -> str:
         .replace("__ESPFRAME_INITIAL_FETCH_KEYS__", initial_fetch_keys_json)
         .replace("__ESPFRAME_FIRMWARE_MANIFEST_URLS__", firmware_manifest_urls_json)
         .replace("__ESPFRAME_DOCS_BASE_URL__", docs_base_url_json)
+        .replace("__ESPFRAME_WEB_UI_TABS__", web_ui_tabs_json)
         .replace("__ESPFRAME_SUPPORT_URL__", support_url_json)
         .replace("__ESPFRAME_SUPPORT_BUTTON_IMAGE_URL__", support_button_image_url_json)
         .replace("__ESPFRAME_CSS__", css_json)

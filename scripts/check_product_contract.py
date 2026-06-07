@@ -281,6 +281,9 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "public_base_url",
         "support_url",
         "support_button_image_url",
+        "web_ui_logs_event_source",
+        "web_ui_logs_event_name",
+        "web_ui_logs_clear_label",
         "node_version",
     ):
         if not str(project.get(field, "")).strip():
@@ -513,6 +516,27 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
             errors.append(f"project.{field} must be a non-empty list")
         elif any(not isinstance(value, str) or not value.strip() for value in values):
             errors.append(f"project.{field} must only contain non-empty strings")
+    web_ui_tabs = project.get("web_ui_tabs", [])
+    if not isinstance(web_ui_tabs, list) or not web_ui_tabs:
+        errors.append("project.web_ui_tabs must be a non-empty list")
+    else:
+        tab_ids: set[str] = set()
+        for tab in web_ui_tabs:
+            if not isinstance(tab, dict):
+                errors.append("project.web_ui_tabs entries must be objects")
+                continue
+            tab_id = str(tab.get("id", "")).strip()
+            tab_label = str(tab.get("label", "")).strip()
+            if not tab_id:
+                errors.append("project.web_ui_tabs entry is missing id")
+            elif tab_id in tab_ids:
+                errors.append(f"Duplicate project.web_ui_tabs id: {tab_id}")
+            tab_ids.add(tab_id)
+            if not tab_label:
+                errors.append("project.web_ui_tabs entry is missing label")
+    retained_log_lines = project.get("web_ui_logs_retained_lines")
+    if not isinstance(retained_log_lines, int) or isinstance(retained_log_lines, bool) or retained_log_lines < 1:
+        errors.append("project.web_ui_logs_retained_lines must be a positive integer")
     for field in ("date_filter_modes", "metadata_overlay_fields"):
         values = project.get(field, [])
         if not isinstance(values, list) or not values:
@@ -2340,6 +2364,10 @@ def check_generated_web_metadata(product: dict, web_text: str, errors: list[str]
     if docs_base_url is not None and docs_base_url != public_base_url(product):
         errors.append("Generated web DOCS_BASE_URL does not match product/espframe.json")
 
+    web_ui_tabs = extract_js_json_var(web_text, "WEB_UI_TABS", errors)
+    if web_ui_tabs is not None and web_ui_tabs != product["project"].get("web_ui_tabs"):
+        errors.append("Generated web WEB_UI_TABS does not match product/espframe.json")
+
     support_url = extract_js_json_var(web_text, "SUPPORT_URL", errors)
     if support_url is not None and support_url != product["project"].get("support_url"):
         errors.append("Generated web SUPPORT_URL does not match product/espframe.json")
@@ -2376,6 +2404,47 @@ def check_static_web_defaults_against_firmware(errors: list[str]) -> None:
         return
     restore_mode = "RESTORE_DEFAULT_ON" if show_clock_default is True else "RESTORE_DEFAULT_OFF"
     require_contains(text, f"restore_mode: {restore_mode}", rel(TIME_YAML), errors)
+
+
+def check_web_ui_metadata(product: dict, web_template: str, web_text: str, errors: list[str]) -> None:
+    project = product["project"]
+    tabs = project.get("web_ui_tabs", [])
+    event_source = str(project.get("web_ui_logs_event_source", "")).strip()
+    event_name = str(project.get("web_ui_logs_event_name", "")).strip()
+    clear_label = str(project.get("web_ui_logs_clear_label", "")).strip()
+    retained_lines = project.get("web_ui_logs_retained_lines")
+    labels_and_text = ((rel(WEB_TEMPLATE), web_template), (rel(WEB_APP), web_text))
+
+    for label, text in labels_and_text:
+        require_contains(text, "WEB_UI_TABS", label, errors)
+        require_contains(text, "webUiTabs()", label, errors)
+        require_contains(text, "switchTab(t.id)", label, errors)
+        require_contains(text, 'els["tab_" + t]', label, errors)
+        require_contains(text, "buildLogsPage(root)", label, errors)
+        require_contains(text, "appendLog(d.msg || e.data, d.lvl)", label, errors)
+        require_contains(text, "ANSI_LEVEL", label, errors)
+        require_contains(text, "sp-log-error", label, errors)
+        require_contains(text, "sp-log-warn", label, errors)
+        require_contains(text, "sp-log-info", label, errors)
+        if event_source:
+            require_contains(text, f'new EventSource("{event_source}")', label, errors)
+        if event_name:
+            require_contains(text, f'addEventListener("{event_name}"', label, errors)
+        if clear_label:
+            require_contains(text, f'textContent = "{clear_label}"', label, errors)
+        if isinstance(retained_lines, int) and not isinstance(retained_lines, bool):
+            require_contains(text, f"childNodes.length - {retained_lines}", label, errors)
+
+    if isinstance(tabs, list):
+        for tab in tabs:
+            if not isinstance(tab, dict):
+                continue
+            tab_id = str(tab.get("id", "")).strip()
+            tab_label = str(tab.get("label", "")).strip()
+            if tab_id:
+                require_contains(web_template + web_text, f"{tab_id}Page", f"web UI page for {tab_id}", errors)
+            if tab_label:
+                require_contains(web_text, f'"label":"{tab_label}"', f"generated web UI tab {tab_label}", errors)
 
 
 def check_web_template_key_references(product: dict, web_template: str, errors: list[str]) -> None:
@@ -2603,6 +2672,7 @@ def check_settings(product: dict, errors: list[str]) -> None:
     check_manual_web_entity_metadata(errors)
     check_generated_web_metadata(product, web_text, errors)
     check_static_web_defaults_against_firmware(errors)
+    check_web_ui_metadata(product, web_template, web_text, errors)
     check_web_template_key_references(product, web_template, errors)
     check_docs_table_metadata(product, errors)
     check_docs_table_membership(product, errors)
@@ -2614,6 +2684,7 @@ def check_settings(product: dict, errors: list[str]) -> None:
     require_contains(web_template, "__ESPFRAME_INITIAL_FETCH_KEYS__", rel(WEB_TEMPLATE), errors)
     require_contains(web_template, "__ESPFRAME_FIRMWARE_MANIFEST_URLS__", rel(WEB_TEMPLATE), errors)
     require_contains(web_template, "__ESPFRAME_DOCS_BASE_URL__", rel(WEB_TEMPLATE), errors)
+    require_contains(web_template, "__ESPFRAME_WEB_UI_TABS__", rel(WEB_TEMPLATE), errors)
     require_contains(web_template, "__ESPFRAME_SUPPORT_URL__", rel(WEB_TEMPLATE), errors)
     require_contains(web_template, "__ESPFRAME_SUPPORT_BUTTON_IMAGE_URL__", rel(WEB_TEMPLATE), errors)
     for needle in (

@@ -9,6 +9,7 @@
   var ENTITY_ALIASES = __ESPFRAME_ENTITY_ALIASES__;
   var FIRMWARE_MANIFEST_URLS = __ESPFRAME_FIRMWARE_MANIFEST_URLS__;
   var DOCS_BASE_URL = __ESPFRAME_DOCS_BASE_URL__;
+  var WEB_UI_TABS = __ESPFRAME_WEB_UI_TABS__;
   var SUPPORT_URL = __ESPFRAME_SUPPORT_URL__;
   var SUPPORT_BUTTON_IMAGE_URL = __ESPFRAME_SUPPORT_BUTTON_IMAGE_URL__;
 
@@ -160,12 +161,7 @@
     nav.className = "sp-nav";
     nav.setAttribute("aria-label", "Primary");
 
-    var tabs = [
-      { id: "immich", label: "Immich" },
-      { id: "settings", label: "Device" }
-    ];
-
-    tabs.forEach(function (t) {
+    webUiTabs().forEach(function (t) {
       var tab = document.createElement("div");
       tab.className = "sp-tab";
       tab.setAttribute("role", "tab");
@@ -186,6 +182,12 @@
 
     header.appendChild(nav);
     parent.appendChild(header);
+  }
+
+  function webUiTabs() {
+    return Array.isArray(WEB_UI_TABS) && WEB_UI_TABS.length
+      ? WEB_UI_TABS
+      : [{ id: "immich", label: "Immich" }, { id: "settings", label: "Device" }];
   }
 
   var immichApp;
@@ -242,7 +244,8 @@
   }
 
   function switchTab(tab) {
-    ["immich", "settings"].forEach(function (t) {
+    webUiTabs().forEach(function (tabSpec) {
+      var t = tabSpec.id;
       els["tab_" + t].className = "sp-tab" + (tab === t ? " active" : "");
       els["tab_" + t].setAttribute("aria-selected", tab === t ? "true" : "false");
     });
