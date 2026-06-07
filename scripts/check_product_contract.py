@@ -782,6 +782,14 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         errors.append("project.backup_export_groups must be a non-empty list")
     elif any(not isinstance(value, str) or not value.strip() for value in backup_export_groups):
         errors.append("project.backup_export_groups must only contain non-empty strings")
+    backup_fixture_files = project.get("backup_fixture_files", [])
+    if not isinstance(backup_fixture_files, list) or not backup_fixture_files:
+        errors.append("project.backup_fixture_files must be a non-empty list")
+    else:
+        for fixture_file in backup_fixture_files:
+            path = check_relative_path(fixture_file, "project.backup_fixture_files entry", errors)
+            if path:
+                read(ROOT / path, errors)
     touch_controls = project.get("touch_controls", [])
     if not isinstance(touch_controls, list) or not touch_controls:
         errors.append("project.touch_controls must be a non-empty list")
@@ -1072,6 +1080,15 @@ def check_npm_package_metadata(product: dict, errors: list[str]) -> None:
         errors.append("package.json name must match project.npm_package_name")
     if expected_license and package_json.get("license") != expected_license:
         errors.append("package.json license must match project.license_id")
+    scripts = package_json.get("scripts", {})
+    if not isinstance(scripts, dict):
+        errors.append("package.json scripts must be an object")
+    else:
+        if scripts.get("check:backup") != "python3 scripts/check_backup_config.py":
+            errors.append("package.json check:backup must run scripts/check_backup_config.py")
+        check_all = str(scripts.get("check:all", ""))
+        if "npm run check:backup" not in check_all:
+            errors.append("package.json check:all must include check:backup")
     if package_lock.get("name") != expected_name:
         errors.append("package-lock.json name must match project.npm_package_name")
     root_package = package_lock.get("packages", {}).get("", {})

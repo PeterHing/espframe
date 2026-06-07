@@ -72,6 +72,10 @@
     "backup_import_write_behavior": "Each setting is pushed to the device individually",
     "backup_partial_config_behavior": "only settings present in the file are applied; everything else stays unchanged",
     "backup_invalid_photo_id_behavior": "web UI shows an error and skips that field",
+    "backup_fixture_files": [
+      "tests/fixtures/backup/espframe-config-v1-full.json",
+      "tests/fixtures/backup/espframe-config-v1-partial.json"
+    ],
     "privacy_connection_model": "connects directly to your Immich server",
     "privacy_network_scope": "your own network",
     "privacy_no_cloud_service": "no Espframe cloud service",
