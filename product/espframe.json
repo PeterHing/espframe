@@ -9,7 +9,10 @@
     "usb_flashing_image_alt": "USB-C cable plugged into the bottom USB-C flashing port on the Guition ESP32-P4 display",
     "web_installer_required_browsers": ["Chrome", "Edge"],
     "web_installer_required_api": "Web Serial",
+    "web_installer_computer_requirement": "desktop computer",
     "web_installer_unsupported_browsers": ["Safari", "Firefox"],
+    "usb_cable_requirement": "USB-C data cable",
+    "usb_cable_warning": "not a charge-only cable",
     "immich_api_key_mode": "read-only",
     "immich_api_key_privacy_promise": "never modifies or uploads",
     "immich_api_key_permissions": [

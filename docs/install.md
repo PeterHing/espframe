@@ -9,7 +9,7 @@ Flash Espframe to a supported Guition ESP32-P4 display from your browser — no 
 
 ## What You'll Need
 
-- **Supported Guition ESP32-P4 display**, **USB-C cable** (data-capable), **Immich server** on your network ([immich.app](https://immich.app/)), and an [**Immich API key**](./api-key)
+- **Supported Guition ESP32-P4 display**, **USB-C data cable** (not a charge-only cable), **Immich server** on your network ([immich.app](https://immich.app/)), and an [**Immich API key**](./api-key)
 
 | Model | Panel | Stand |
 |-------|-------|-------|
@@ -32,7 +32,7 @@ Connect the display via USB-C, then click the install button below. Check the mo
 <EspInstallButton />
 
 ::: info Browser
-Requires **Chrome** or **Edge** (desktop) with [Web Serial](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API). Safari and Firefox not supported.
+Requires **Chrome** or **Edge** on a desktop computer with [Web Serial](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API). Safari and Firefox not supported.
 :::
 
 ## Steps

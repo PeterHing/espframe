@@ -60,7 +60,7 @@ The easiest way to install Espframe is with the web installer. You do not need t
 You will need:
 
 - A supported Guition ESP32-P4 touchscreen
-- A USB-C data cable
+- A USB-C data cable, not a charge-only cable
 - Chrome or Edge on a desktop computer
 - Your Immich server address
 - An Immich API key

@@ -18,7 +18,7 @@ The Guition ESP32-P4 display has two USB-C ports. For flashing Espframe, use the
 The [Espframe installer](/install) uses Web Serial, which means you need:
 
 - Chrome or Edge on a desktop computer.
-- A USB-C cable that supports data, not just charging.
+- A USB-C data cable, not a charge-only cable.
 - Permission to access the serial device when the browser asks.
 
 Safari and Firefox do not support the required browser flashing flow.

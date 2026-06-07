@@ -25,8 +25,8 @@ Unlike a tablet dashboard or cloud photo frame, Espframe runs firmware built wit
 |------|-------|
 | Immich server | A working self-hosted Immich instance on your network or reachable by HTTPS |
 | Supported display | Guition ESP32-P4 10-inch `JC8012P4A1` |
-| USB-C data cable | Used for first-time flashing |
-| Chrome or Edge | Required for browser flashing with Web Serial |
+| USB-C data cable | Used for first-time flashing; not a charge-only cable |
+| Chrome or Edge | Required on a desktop computer for browser flashing with Web Serial |
 | Immich API key | Read-only permissions are recommended |
 
 ## How Setup Works

@@ -244,6 +244,9 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
         "usb_flashing_image",
         "usb_flashing_image_alt",
         "web_installer_required_api",
+        "web_installer_computer_requirement",
+        "usb_cable_requirement",
+        "usb_cable_warning",
         "immich_api_key_mode",
         "immich_api_key_privacy_promise",
         "home_assistant_name",
@@ -618,6 +621,16 @@ def check_public_site_references(product: dict, errors: list[str]) -> None:
             for browser in web_installer_required_browsers:
                 if isinstance(browser, str) and browser.strip():
                     require_contains(text, browser.strip(), label, errors)
+    web_installer_computer_requirement = str(product["project"].get("web_installer_computer_requirement", "")).strip()
+    if web_installer_computer_requirement:
+        for label, text in (
+            ("README.md", readme),
+            ("docs/install.md", install_docs),
+            ("docs/usb-flashing.md", usb_flashing_docs),
+            ("docs/troubleshooting.md", troubleshooting_docs),
+            ("docs/immich-photo-frame.md", read(ROOT / "docs" / "immich-photo-frame.md", errors)),
+        ):
+            require_contains(text, web_installer_computer_requirement, label, errors)
     if web_installer_required_api:
         for label, text in (
             ("docs/install.md", install_docs),
@@ -633,6 +646,22 @@ def check_public_site_references(product: dict, errors: list[str]) -> None:
             for browser in web_installer_unsupported_browsers:
                 if isinstance(browser, str) and browser.strip():
                     require_contains(text, browser.strip(), label, errors)
+    usb_cable_requirement = str(product["project"].get("usb_cable_requirement", "")).strip()
+    usb_cable_warning = str(product["project"].get("usb_cable_warning", "")).strip()
+    for field_name, value in (
+        ("usb_cable_requirement", usb_cable_requirement),
+        ("usb_cable_warning", usb_cable_warning),
+    ):
+        if not value:
+            continue
+        for label, text in (
+            ("README.md", readme),
+            ("docs/install.md", install_docs),
+            ("docs/usb-flashing.md", usb_flashing_docs),
+            ("docs/troubleshooting.md", troubleshooting_docs),
+            ("docs/immich-photo-frame.md", read(ROOT / "docs" / "immich-photo-frame.md", errors)),
+        ):
+            require_contains(text, value, f"{label} {field_name}", errors)
 
     for device in product["devices"]:
         slug = str(device.get("slug", "")).strip()
