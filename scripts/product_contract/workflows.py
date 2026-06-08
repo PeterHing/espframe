@@ -493,7 +493,6 @@ def check_esphome_version(product: dict, errors: list[str]) -> None:
         return
 
     required_refs = [
-        ROOT / ".github" / "workflows" / "compile.yml",
         ROOT / "README.md",
         ROOT / "docs" / "install.md",
         ROOT / "docs" / "manual-setup.md",
@@ -502,10 +501,28 @@ def check_esphome_version(product: dict, errors: list[str]) -> None:
         text = read(path, errors)
         require_contains(text, version, rel(path), errors)
 
-    for path in (ROOT / ".github" / "workflows" / "compile.yml", ROOT / "README.md"):
-        text = read(path, errors)
-        if docker_image:
-            require_contains(text, f"{docker_image}:{version}", rel(path), errors)
+    readme = read(ROOT / "README.md", errors)
+    if docker_image:
+        require_contains(readme, f"{docker_image}:{version}", "README.md", errors)
+
+    compile_workflow = read(ROOT / ".github" / "workflows" / "compile.yml", errors)
+    require_contains(
+        compile_workflow,
+        'python3 scripts/product_config.py github-env >> "$GITHUB_ENV"',
+        ".github/workflows/compile.yml",
+        errors,
+    )
+    require_contains(
+        compile_workflow,
+        '"${ESPHOME_DOCKER_IMAGE}:${ESPHOME_VERSION}"',
+        ".github/workflows/compile.yml",
+        errors,
+    )
+
+    for path, text in (
+        (ROOT / ".github" / "workflows" / "compile.yml", compile_workflow),
+        (ROOT / "README.md", readme),
+    ):
         if config_mount:
             require_contains(text, f'-v "${{PWD}}:{config_mount}"', rel(path), errors)
         if remove_container is True:
@@ -663,5 +680,4 @@ def check_node_version(product: dict, errors: list[str]) -> None:
     if version == "24" and node24_env:
         release_workflow = read(ROOT / ".github" / "workflows" / "release.yml", errors)
         require_contains(release_workflow, node24_env, ".github/workflows/release.yml", errors)
-
 

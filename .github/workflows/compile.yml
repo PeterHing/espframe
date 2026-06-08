@@ -47,9 +47,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Read product metadata
+        run: python3 scripts/product_config.py github-env >> "$GITHUB_ENV"
+
       - name: Compile 10-inch P4 firmware
         run: >-
           docker run --rm
           -v "${PWD}:/config"
-          ghcr.io/esphome/esphome:2026.5.3
+          "${ESPHOME_DOCKER_IMAGE}:${ESPHOME_VERSION}"
           compile /config/builds/guition-esp32-p4-jc8012p4a1.factory.yaml
