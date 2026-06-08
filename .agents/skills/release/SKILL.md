@@ -71,11 +71,10 @@ If there is no existing stable release, treat the first stable release as
 
 ### 3. Create the Release
 
-Before publishing, run the local release helper checks:
+Before publishing, run the compile-aware release-readiness check:
 
 ```bash
-npm run check:firmware-release
-npm run check:release-changelog
+npm run check:release-ready-with-compile
 ```
 
 Use a published release, not a draft, so GitHub emits the `release.published`

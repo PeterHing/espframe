@@ -6,6 +6,7 @@
     "generate": "python3 scripts/generate_assets.py",
     "check:generated": "python3 scripts/generate_assets.py --check",
     "check:release-ready": "python3 scripts/check_release_ready.py",
+    "check:release-ready-with-compile": "python3 scripts/check_release_ready.py --compile",
     "check:firmware-release": "python3 scripts/check_firmware_release.py",
     "check:firmware-fields": "python3 scripts/check_firmware_fields.py",
     "check:release-changelog": "python3 scripts/check_release_changelog.py",

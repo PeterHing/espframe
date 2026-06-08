@@ -13,14 +13,14 @@ Phase 4 turns the reset architecture into a release-confidence system. The web U
 - Compatibility fixtures now cover every exported backup group: connection, photos, frequency, firmware updates, clock, and screen.
 - Compatibility checks keep backup JSON at version 1 and verify that all product-owned backup fields still map to valid device endpoints.
 - Firmware generation checks now verify generated field markers stay in safe entity-field sections, not handwritten lambdas, scripts, actions, or LVGL layout blocks.
-- The release-readiness command runs the normal local gate and reports whether the repository is clean before publishing.
+- The release-readiness command runs the normal local gate and reports whether the repository is clean before publishing. Firmware releases can use the compile-aware variant so ESPHome factory builds are not missed.
 
 ## Release checklist
 
 Before publishing a release:
 
-1. Run `npm run check:release-ready`.
-2. For firmware-generation or firmware behavior changes, also run the ESPHome factory compile with Docker.
+1. Run `npm run check:release-ready-with-compile` before firmware releases.
+2. For non-firmware checks where speed matters, run `npm run check:release-ready`.
 3. Confirm generated web assets, generated firmware field sections, docs, compatibility fixtures, and release helpers are current.
 
 ## What remains future work
