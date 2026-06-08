@@ -38,6 +38,43 @@ def require_contains(text: str, needle: str, label: str, errors: list[str]) -> N
         errors.append(f"{label} is missing {needle!r}")
 
 
+def firmware_entity_block(text: str, name: str, filename: str, errors: list[str]) -> str:
+    needle = f'name: "{name}"'
+    lines = text.splitlines()
+    name_index = next((idx for idx, line in enumerate(lines) if needle in line), None)
+    if name_index is None:
+        errors.append(f"{filename} entity is missing {needle!r}")
+        return ""
+
+    start = name_index
+    while start > 0 and not lines[start].startswith("  - platform:"):
+        start -= 1
+    if not lines[start].startswith("  - platform:"):
+        errors.append(f"{filename} entity block for {name} is missing a platform header")
+        return ""
+
+    end = len(lines)
+    for idx in range(start + 1, len(lines)):
+        if lines[idx].startswith("  - platform:") or (lines[idx] and not lines[idx].startswith((" ", "#"))):
+            end = idx
+            break
+
+    return "\n".join(lines[start:end])
+
+
+def require_firmware_text_entity_shape(text: str, name: str, filename: str, errors: list[str]) -> None:
+    block = firmware_entity_block(text, name, filename, errors)
+    if not block:
+        return
+    for needle in (
+        "optimistic: false",
+        "restore_value: true",
+        "min_length: 0",
+        "mode: text",
+    ):
+        require_contains(block, needle, f"{filename} text entity {name}", errors)
+
+
 def extract_js_json_var(text: str, var_name: str, errors: list[str]) -> object | None:
     match = re.search(rf"\bvar {re.escape(var_name)} = (.*?);", text)
     if not match:
