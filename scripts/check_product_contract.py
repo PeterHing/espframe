@@ -13,6 +13,21 @@ import re
 import sys
 from pathlib import Path
 
+from product_contract.backup_metadata import check_backup_metadata
+from product_contract.common import (
+    ROOT,
+    TIME_YAML,
+    WEB_APP,
+    WEB_SRC_DIR,
+    WEB_TEMPLATE,
+    check_web_entity_default_type,
+    extract_js_json_var,
+    read,
+    read_web_source,
+    rel,
+    require_contains,
+    valid_entity_string,
+)
 from product_config import (
     DOCS_SETTINGS_TABLE_COLUMNS,
     backup_schema,
@@ -39,11 +54,6 @@ from product_config import (
 )
 
 
-ROOT = Path(__file__).resolve().parent.parent
-WEB_SRC_DIR = ROOT / "docs" / "webserver" / "src"
-WEB_TEMPLATE = ROOT / "docs" / "webserver" / "src" / "app.template.js"
-WEB_APP = ROOT / "docs" / "public" / "webserver" / "app.js"
-TIME_YAML = ROOT / "common" / "addon" / "time.yaml"
 SETTING_DOMAINS = {"number", "select", "switch", "text"}
 DOCS_TABLE_ID_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 WEB_STATE_REF_RE = re.compile(r"\bS\.([A-Za-z_$][A-Za-z0-9_$]*)")
@@ -52,30 +62,6 @@ WEB_PRODUCT_HELPER_REF_RE = re.compile(
     r"\b(?:productSettingOptions|productNumberMin|productNumberMax|productNumberStep)\(\s*\"([^\"]+)\""
 )
 WEB_PRODUCT_SETTINGS_REF_RE = re.compile(r"\bPRODUCT_SETTINGS\.([A-Za-z_$][A-Za-z0-9_$]*)")
-
-
-def rel(path: Path) -> str:
-    return str(path.relative_to(ROOT))
-
-
-def read(path: Path, errors: list[str]) -> str:
-    if not path.is_file():
-        errors.append(f"Missing file: {rel(path)}")
-        return ""
-    return path.read_text()
-
-
-def read_web_source(errors: list[str]) -> str:
-    files = [WEB_TEMPLATE] + sorted(
-        path for path in WEB_SRC_DIR.glob("*.js")
-        if path.name != WEB_TEMPLATE.name
-    )
-    return "\n".join(read(path, errors) for path in files)
-
-
-def require_contains(text: str, needle: str, label: str, errors: list[str]) -> None:
-    if needle not in text:
-        errors.append(f"{label} is missing {needle!r}")
 
 
 def require_firmware_text_entity_shape(text: str, name: str, filename: str, errors: list[str]) -> None:
@@ -103,40 +89,6 @@ def require_workflow_needs(text: str, dependencies: list[str], label: str, error
     else:
         needle = f"    needs: [{', '.join(dependencies)}]"
     require_contains(text, needle, label, errors)
-
-
-def extract_js_json_var(text: str, var_name: str, errors: list[str]) -> object | None:
-    match = re.search(rf"\bvar {re.escape(var_name)} = (.*?);", text)
-    if not match:
-        errors.append(f"Generated web app is missing {var_name}")
-        return None
-    try:
-        return json.loads(match.group(1))
-    except json.JSONDecodeError as exc:
-        errors.append(f"Generated web app {var_name} is not valid JSON: {exc}")
-        return None
-
-
-def valid_entity_string(value: object) -> bool:
-    if not isinstance(value, str) or "/" not in value:
-        return False
-    domain, name = value.split("/", 1)
-    return bool(domain.strip() and name.strip())
-
-
-def check_web_entity_default_type(metadata: dict, domain: str, label: str, errors: list[str]) -> None:
-    if "default" not in metadata:
-        return
-    value = metadata.get("default")
-    if domain == "switch":
-        if not isinstance(value, bool):
-            errors.append(f"{label} switch default must be true or false")
-    elif domain == "number":
-        if not isinstance(value, (int, float)) or isinstance(value, bool):
-            errors.append(f"{label} number default must be numeric")
-    elif domain in {"select", "text", "text_sensor"}:
-        if not isinstance(value, str):
-            errors.append(f"{label} {domain} default must be a string")
 
 
 def firmware_entity_block(text: str, name: str, filename: str, errors: list[str]) -> str:
@@ -1954,100 +1906,6 @@ def check_ota_update_metadata(product: dict, errors: list[str]) -> None:
         "id: backlight",
     ):
         require_contains(device_yaml, needle, device_yaml_path, errors)
-
-
-def check_backup_metadata(product: dict, errors: list[str]) -> None:
-    project = product["project"]
-    config_version = project.get("backup_config_version")
-    filename_prefix = str(project.get("backup_filename_prefix", "")).strip()
-    date_format = str(project.get("backup_filename_date_format", "")).strip()
-    photo_id_limit = project.get("backup_import_photo_id_limit")
-    excluded_values = project.get("backup_excluded_runtime_values", [])
-    export_groups = [str(value).strip() for value in project.get("backup_export_groups", []) if str(value).strip()]
-    import_write_behavior = str(project.get("backup_import_write_behavior", "")).strip()
-    partial_behavior = str(project.get("backup_partial_config_behavior", "")).strip()
-    invalid_photo_id_behavior = str(project.get("backup_invalid_photo_id_behavior", "")).strip()
-
-    backup_docs = read(ROOT / "docs" / "backup.md", errors)
-    web_template = read_web_source(errors)
-    web_text = read(WEB_APP, errors)
-
-    if isinstance(config_version, int) and not isinstance(config_version, bool):
-        require_contains(backup_docs, f'"version": {config_version}', "docs/backup.md", errors)
-        require_contains(web_template, f"version: {config_version}", rel(WEB_TEMPLATE), errors)
-        require_contains(web_text, f"version: {config_version}", rel(WEB_APP), errors)
-    if filename_prefix:
-        require_contains(backup_docs, f"`{filename_prefix}{date_format}.json`", "docs/backup.md", errors)
-        require_contains(web_template, f'var name = "{filename_prefix}"', rel(WEB_TEMPLATE), errors)
-        require_contains(web_text, f'var name = "{filename_prefix}"', rel(WEB_APP), errors)
-    if date_format:
-        require_contains(backup_docs, date_format, "docs/backup.md", errors)
-    if isinstance(photo_id_limit, int) and not isinstance(photo_id_limit, bool):
-        require_contains(backup_docs, f"{photo_id_limit} characters", "docs/backup.md", errors)
-        require_contains(web_template, f"MAX_PHOTO_ID_FIELD_LENGTH = {photo_id_limit}", rel(WEB_TEMPLATE), errors)
-        require_contains(web_text, f"MAX_PHOTO_ID_FIELD_LENGTH = {photo_id_limit}", rel(WEB_APP), errors)
-    if isinstance(excluded_values, list):
-        for value in excluded_values:
-            if isinstance(value, str) and value.strip():
-                require_contains(backup_docs, value.strip(), "docs/backup.md", errors)
-    for group in export_groups:
-        require_contains(backup_docs, f'"{group}"', "docs/backup.md", errors)
-    if import_write_behavior:
-        require_contains(backup_docs, import_write_behavior, "docs/backup.md", errors)
-    if partial_behavior:
-        require_contains(backup_docs, partial_behavior, "docs/backup.md", errors)
-    if invalid_photo_id_behavior:
-        require_contains(backup_docs, invalid_photo_id_behavior, "docs/backup.md", errors)
-        for label in ("Album IDs", "Album labels", "Person IDs", "Person labels"):
-            require_contains(web_template, f"{label} exceed {photo_id_limit} characters - not imported", rel(WEB_TEMPLATE), errors)
-            require_contains(web_text, f"{label} exceed {photo_id_limit} characters - not imported", rel(WEB_APP), errors)
-        for label in ("album IDs", "person IDs"):
-            require_contains(web_template, f"Import skipped invalid {label}", rel(WEB_TEMPLATE), errors)
-            require_contains(web_text, f"Import skipped invalid {label}", rel(WEB_APP), errors)
-    for message in (
-        "Stable firmware URL was invalid - not imported",
-        "Beta firmware URL was invalid - not imported",
-    ):
-        require_contains(web_template, message, rel(WEB_TEMPLATE), errors)
-        require_contains(web_text, message, rel(WEB_APP), errors)
-
-    for needle in (
-        "display_mode",
-        "display mode",
-        "Partial config files work",
-        "Settings imported successfully",
-        "JSON.stringify(data, null, 2)",
-        "buildBackupExportData",
-        "BACKUP_SCHEMA.forEach",
-        "normalizeScheduleWakeTimeout(S.schedule_wake_timeout)",
-        "backupImportFieldPresent",
-        "backupImportFieldValue",
-        "applyBackupImportField",
-        "backupEntryKey(entry)",
-        "photos.album_ids",
-        "firmware_updates.manifest_url",
-        "clock.ntp_servers",
-        "screen.schedule_wake_timeout",
-    ):
-        if needle in {
-            "Settings imported successfully",
-            "JSON.stringify(data, null, 2)",
-            "buildBackupExportData",
-            "BACKUP_SCHEMA.forEach",
-            "normalizeScheduleWakeTimeout(S.schedule_wake_timeout)",
-            "backupImportFieldPresent",
-            "backupImportFieldValue",
-            "applyBackupImportField",
-            "backupEntryKey(entry)",
-            "photos.album_ids",
-            "firmware_updates.manifest_url",
-            "clock.ntp_servers",
-            "screen.schedule_wake_timeout",
-        }:
-            require_contains(web_template, needle, rel(WEB_TEMPLATE), errors)
-            require_contains(web_text, needle, rel(WEB_APP), errors)
-        else:
-            require_contains(backup_docs, needle, "docs/backup.md", errors)
 
 
 def check_privacy_metadata(product: dict, errors: list[str]) -> None:
