@@ -136,6 +136,68 @@ def docs_settings_tables(product: dict[str, Any] | None = None) -> dict[Path, di
     }
 
 
+def backup_export_groups(product: dict[str, Any] | None = None) -> list[str]:
+    data = product if product is not None else load_product()
+    groups = data["project"].get("backup_export_groups", [])
+    if not isinstance(groups, list):
+        return []
+    return [str(group).strip() for group in groups if str(group).strip()]
+
+
+def backup_export_fields(product: dict[str, Any] | None = None) -> dict[str, list[str]]:
+    data = product if product is not None else load_product()
+    fields = data["project"].get("backup_export_fields", {})
+    if not isinstance(fields, dict):
+        return {}
+    return {
+        str(group).strip(): [str(field).strip() for field in values if str(field).strip()]
+        for group, values in fields.items()
+        if str(group).strip() and isinstance(values, list)
+    }
+
+
+def backup_field_state_keys(product: dict[str, Any] | None = None) -> dict[str, dict[str, list[str]]]:
+    data = product if product is not None else load_product()
+    mappings = data["project"].get("backup_field_state_keys", {})
+    if not isinstance(mappings, dict):
+        return {}
+
+    result: dict[str, dict[str, list[str]]] = {}
+    for raw_group, raw_fields in mappings.items():
+        group = str(raw_group).strip()
+        if not group or not isinstance(raw_fields, dict):
+            continue
+        result[group] = {}
+        for raw_field, raw_state_keys in raw_fields.items():
+            field = str(raw_field).strip()
+            if not field:
+                continue
+            if isinstance(raw_state_keys, list):
+                state_keys = [str(key).strip() for key in raw_state_keys if str(key).strip()]
+            else:
+                state_key = str(raw_state_keys).strip()
+                state_keys = [state_key] if state_key else []
+            result[group][field] = state_keys
+    return result
+
+
+def backup_schema(product: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    data = product if product is not None else load_product()
+    fields = backup_export_fields(data)
+    state_key_mappings = backup_field_state_keys(data)
+    schema: list[dict[str, Any]] = []
+    for group in backup_export_groups(data):
+        for field in fields.get(group, []):
+            schema.append(
+                {
+                    "group": group,
+                    "field": field,
+                    "state_keys": state_key_mappings.get(group, {}).get(field, []),
+                }
+            )
+    return schema
+
+
 def web_settings_metadata(product_settings: list[dict[str, Any]] | None = None) -> dict[str, dict[str, Any]]:
     result: dict[str, dict[str, Any]] = {}
     for setting in product_settings if product_settings is not None else settings():

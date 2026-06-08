@@ -7,6 +7,9 @@ const { spawnSync } = require("child_process");
 const root = path.resolve(__dirname, "..");
 const chromePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const appSource = fs.readFileSync(path.join(root, "docs/public/webserver/app.js"), "utf8");
+const product = JSON.parse(fs.readFileSync(path.join(root, "product/espframe.json"), "utf8"));
+const expectedBackupGroups = product.project.backup_export_groups;
+const expectedBackupFields = product.project.backup_export_fields;
 
 if (!fs.existsSync(chromePath)) {
   throw new Error("Google Chrome is required for browser smoke tests");
@@ -86,6 +89,7 @@ function browserScriptForScenario(scenario) {
       posts: [],
       errors: [],
       downloads: 0,
+      exportPayloads: [],
       inputClicks: 0,
       importFixture: ${JSON.stringify(scenario.importFixture || null)}
     };
@@ -96,7 +100,18 @@ function browserScriptForScenario(scenario) {
       window.__smoke.errors.push(String(event.reason || "unhandled rejection"));
     });
 
-    URL.createObjectURL = function () { return "blob:espframe-smoke"; };
+    const NativeBlob = window.Blob;
+    window.Blob = class SmokeBlob extends NativeBlob {
+      constructor(parts, options) {
+        super(parts, options);
+        this.__smokeText = (parts || []).map((part) => typeof part === "string" ? part : "").join("");
+      }
+    };
+
+    URL.createObjectURL = function (blob) {
+      if (blob && typeof blob.__smokeText === "string") window.__smoke.exportPayloads.push(blob.__smokeText);
+      return "blob:espframe-smoke";
+    };
     URL.revokeObjectURL = function () {};
     HTMLAnchorElement.prototype.click = function () {
       if (this.download) window.__smoke.downloads += 1;
@@ -252,6 +267,35 @@ function smokeAssertionsForScenario(scenario) {
         button.click();
         return button;
       }
+      function requirePostContains(label, fragment, extraFragment) {
+        const found = window.__smoke.posts.some((url) =>
+          url.indexOf(fragment) !== -1 && (!extraFragment || url.indexOf(extraFragment) !== -1)
+        );
+        if (!found) throw new Error(label + " was not posted to the device");
+      }
+      function requireExportShape() {
+        if (!window.__smoke.exportPayloads.length) throw new Error("Export payload was not captured");
+        const exported = JSON.parse(window.__smoke.exportPayloads[0]);
+        if (exported.version !== ${JSON.stringify(product.project.backup_config_version)}) {
+          throw new Error("Exported backup version changed");
+        }
+        if (!exported.exported_at || typeof exported.exported_at !== "string") {
+          throw new Error("Exported backup timestamp missing");
+        }
+        const expectedGroups = ${JSON.stringify(expectedBackupGroups)};
+        const expectedFields = ${JSON.stringify(expectedBackupFields)};
+        const actualGroups = Object.keys(exported).filter((key) => key !== "version" && key !== "exported_at");
+        if (JSON.stringify(actualGroups) !== JSON.stringify(expectedGroups)) {
+          throw new Error("Exported backup groups changed: " + JSON.stringify(actualGroups));
+        }
+        expectedGroups.forEach((group) => {
+          const actualFields = Object.keys(exported[group] || {});
+          const expectedGroupFields = expectedFields[group] || [];
+          if (JSON.stringify(actualFields) !== JSON.stringify(expectedGroupFields)) {
+            throw new Error("Exported backup fields changed for " + group + ": " + JSON.stringify(actualFields));
+          }
+        });
+      }
       function selectByLabel(labelText) {
         const labels = Array.from(document.querySelectorAll("label"));
         const label = labels.find((item) => item.textContent.trim() === labelText);
@@ -301,6 +345,7 @@ function smokeAssertionsForScenario(scenario) {
             clickButton("Export");
             clickButton("Import");
             if (window.__smoke.downloads !== 1) throw new Error("Export did not trigger a download");
+            requireExportShape();
             if (window.__smoke.inputClicks !== 1) throw new Error("Import did not open the file picker");
             const checkButton = clickButton("Check for Update");
             await waitFor(() => checkButton.textContent.trim() === "Check for Update", 7000, "firmware check");
@@ -326,9 +371,13 @@ function smokeAssertionsForScenario(scenario) {
             if (!window.__smoke.posts.some((url) => url.indexOf("Connection: Server URL") !== -1)) {
               throw new Error("Import did not post connection URL");
             }
-            if (!window.__smoke.posts.some((url) => url.indexOf("Screen: Schedule Wake Timeout") !== -1)) {
-              throw new Error("Import did not post screen schedule setting");
-            }
+            requirePostContains("Import text field", "Connection: Server URL");
+            requirePostContains("Import switch field", "Firmware: Auto Update", "turn_on");
+            requirePostContains("Import select field", "Photos: Source", "option=Person");
+            requirePostContains("Import number field", "Screen: Daytime Brightness", "value=90");
+            requirePostContains("Import aggregate NTP field", "Clock: NTP Server 1");
+            requirePostContains("Import URL field", "Firmware: Manifest URL");
+            requirePostContains("Import normalized schedule setting", "Screen: Schedule Wake Timeout", "value=120");
           }
 
           if (${JSON.stringify(scenario.name)} === "backup-import-rejected") {

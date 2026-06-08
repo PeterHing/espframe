@@ -15,6 +15,7 @@ from pathlib import Path
 
 from product_config import (
     DOCS_SETTINGS_TABLE_COLUMNS,
+    backup_schema,
     default_public_manifest_urls,
     device_public_manifest_urls,
     docs_settings_tables,
@@ -1175,6 +1176,65 @@ def check_project_metadata(product: dict, errors: list[str]) -> None:
             field_count += len(fields)
         if len(all_fields) != field_count:
             errors.append("project.backup_export_fields field names must be unique across groups")
+    backup_state_mappings = project.get("backup_field_state_keys", {})
+    if not isinstance(backup_state_mappings, dict) or not backup_state_mappings:
+        errors.append("project.backup_field_state_keys must be a non-empty object")
+    else:
+        expected_group_fields = {
+            (str(group).strip(), str(field).strip())
+            for group, fields in project.get("backup_export_fields", {}).items()
+            if isinstance(fields, list)
+            for field in fields
+            if str(group).strip() and str(field).strip()
+        }
+        configured_group_fields: set[tuple[str, str]] = set()
+        valid_state_keys = (
+            {str(setting.get("key", "")).strip() for setting in product.get("settings", [])}
+            | set(web_static_entities(product))
+            | set(web_manual_entities(product))
+        )
+        for raw_group, raw_fields in backup_state_mappings.items():
+            group = str(raw_group).strip()
+            if not group:
+                errors.append("project.backup_field_state_keys keys must be non-empty strings")
+                continue
+            if not isinstance(raw_fields, dict) or not raw_fields:
+                errors.append(f"project.backup_field_state_keys.{group} must be a non-empty object")
+                continue
+            for raw_field, raw_state_keys in raw_fields.items():
+                field = str(raw_field).strip()
+                if not field:
+                    errors.append(f"project.backup_field_state_keys.{group} field keys must be non-empty strings")
+                    continue
+                configured_group_fields.add((group, field))
+                if isinstance(raw_state_keys, list):
+                    state_keys = [str(value).strip() for value in raw_state_keys]
+                    if not state_keys:
+                        errors.append(f"project.backup_field_state_keys.{group}.{field} must list at least one state key")
+                    elif any(not value for value in state_keys):
+                        errors.append(f"project.backup_field_state_keys.{group}.{field} must only contain non-empty strings")
+                    elif len(state_keys) != len(set(state_keys)):
+                        errors.append(f"project.backup_field_state_keys.{group}.{field} must not contain duplicate state keys")
+                else:
+                    state_key = str(raw_state_keys).strip()
+                    state_keys = [state_key] if state_key else []
+                    if not state_key:
+                        errors.append(f"project.backup_field_state_keys.{group}.{field} must be a non-empty string or list")
+                for state_key in state_keys:
+                    if state_key not in valid_state_keys:
+                        errors.append(f"Backup field {group}.{field} maps to unknown state key {state_key}")
+        missing_mappings = sorted(expected_group_fields - configured_group_fields)
+        extra_mappings = sorted(configured_group_fields - expected_group_fields)
+        if missing_mappings:
+            errors.append(
+                "project.backup_field_state_keys is missing fields: "
+                + ", ".join(f"{group}.{field}" for group, field in missing_mappings)
+            )
+        if extra_mappings:
+            errors.append(
+                "project.backup_field_state_keys contains unknown fields: "
+                + ", ".join(f"{group}.{field}" for group, field in extra_mappings)
+            )
     backup_fixture_files = project.get("backup_fixture_files", [])
     if not isinstance(backup_fixture_files, list) or not backup_fixture_files:
         errors.append("project.backup_fixture_files must be a non-empty list")
@@ -4364,6 +4424,10 @@ def check_generated_web_metadata(product: dict, web_text: str, errors: list[str]
     entity_aliases = extract_js_json_var(web_text, "ENTITY_ALIASES", errors)
     if entity_aliases is not None and entity_aliases != web_entity_aliases_metadata(product):
         errors.append("Generated web ENTITY_ALIASES does not match product/espframe.json")
+
+    generated_backup_schema = extract_js_json_var(web_text, "BACKUP_SCHEMA", errors)
+    if generated_backup_schema is not None and generated_backup_schema != backup_schema(product):
+        errors.append("Generated web BACKUP_SCHEMA does not match product/espframe.json")
 
     initial_fetch_keys = extract_js_json_var(web_text, "INITIAL_FETCH_KEYS", errors)
     if initial_fetch_keys is not None and initial_fetch_keys != web_initial_fetch_keys(product["settings"]):

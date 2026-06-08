@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from product_config import (
+    backup_schema,
     default_public_manifest_urls,
     load_product,
     public_base_url,
@@ -34,49 +35,6 @@ UUID_LIST_RE = re.compile(
     r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
     r"(,[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})*$"
 )
-
-BACKUP_FIELD_STATE_KEYS = {
-    ("connection", "immich_url"): "immich_url",
-    ("connection", "api_key"): "api_key",
-    ("photos", "source"): "photo_source",
-    ("photos", "album_ids"): "album_ids",
-    ("photos", "album_labels"): "album_labels",
-    ("photos", "person_ids"): "person_ids",
-    ("photos", "person_labels"): "person_labels",
-    ("photos", "date_filter_enabled"): "date_filter_enabled",
-    ("photos", "date_filter_mode"): "date_filter_mode",
-    ("photos", "date_from"): "date_from",
-    ("photos", "date_to"): "date_to",
-    ("photos", "relative_amount"): "relative_amount",
-    ("photos", "relative_unit"): "relative_unit",
-    ("photos", "orientation"): "photo_orientation",
-    ("photos", "portrait_pairing"): "portrait_pairing",
-    ("photos", "display_mode"): "display_mode",
-    ("frequency", "interval"): "interval",
-    ("frequency", "conn_timeout"): "conn_timeout",
-    ("firmware_updates", "auto_update"): "auto_update",
-    ("firmware_updates", "beta_channel"): "beta_channel",
-    ("firmware_updates", "update_frequency"): "update_frequency",
-    ("firmware_updates", "manifest_url"): "firmware_manifest_url",
-    ("firmware_updates", "beta_manifest_url"): "firmware_beta_manifest_url",
-    ("clock", "show"): "show_clock",
-    ("clock", "format"): "clock_format",
-    ("clock", "timezone"): "timezone",
-    ("clock", "ntp_servers"): ("ntp_server_1", "ntp_server_2", "ntp_server_3"),
-    ("screen", "brightness_day"): "brightness_day",
-    ("screen", "brightness_night"): "brightness_night",
-    ("screen", "schedule_enabled"): "schedule_enabled",
-    ("screen", "schedule_on_hour"): "schedule_on_hour",
-    ("screen", "schedule_off_hour"): "schedule_off_hour",
-    ("screen", "schedule_wake_timeout"): "schedule_wake_timeout",
-    ("screen", "base_tone_enabled"): "base_tone_enabled",
-    ("screen", "base_tone"): "base_tone",
-    ("screen", "warm_tones_enabled"): "warm_tones_enabled",
-    ("screen", "warm_tone_intensity"): "warm_tone_intensity",
-    ("screen", "warm_tone_override"): "warm_tone_override",
-    ("screen", "rotation"): "screen_rotation",
-}
-
 
 def rel(path: Path) -> str:
     return str(path.relative_to(ROOT))
@@ -130,6 +88,7 @@ def check_generated_web_metadata(product: dict[str, Any], errors: list[str]) -> 
         "MANUAL_ENTITIES": web_manual_entities_metadata(product),
         "MANUAL_STATE_KEYS": web_manual_state_keys(product),
         "ENTITY_ALIASES": web_entity_aliases_metadata(product),
+        "BACKUP_SCHEMA": backup_schema(product),
         "INITIAL_FETCH_KEYS": web_initial_fetch_keys(product["settings"]),
         "LIVE_RENDER_STATE_KEYS": web_live_render_state_keys(product),
         "LIVE_RENDER_STATE_PREFIXES": web_live_render_state_prefixes(product),
@@ -150,25 +109,30 @@ def check_backup_endpoint_mapping(product: dict[str, Any], errors: list[str]) ->
         for group, fields in product["project"].get("backup_export_fields", {}).items()
         for field in fields
     }
-    missing_mapping = sorted(configured - set(BACKUP_FIELD_STATE_KEYS))
-    extra_mapping = sorted(set(BACKUP_FIELD_STATE_KEYS) - configured)
+    schema = backup_schema(product)
+    mapped = {(str(entry["group"]), str(entry["field"])) for entry in schema}
+    missing_mapping = sorted(configured - mapped)
+    extra_mapping = sorted(mapped - configured)
     if missing_mapping:
         errors.append(
-            "Compatibility backup field map is missing fields: "
+            "Compatibility backup schema is missing fields: "
             + ", ".join(f"{group}.{field}" for group, field in missing_mapping)
         )
     if extra_mapping:
         errors.append(
-            "Compatibility backup field map has unknown fields: "
+            "Compatibility backup schema has unknown fields: "
             + ", ".join(f"{group}.{field}" for group, field in extra_mapping)
         )
 
     endpoint_keys = all_endpoint_keys(product)
-    for group_field, state_keys in BACKUP_FIELD_STATE_KEYS.items():
-        keys = state_keys if isinstance(state_keys, tuple) else (state_keys,)
-        for key in keys:
+    for entry in schema:
+        group = str(entry["group"])
+        field = str(entry["field"])
+        state_keys = entry.get("state_keys", [])
+        if not state_keys:
+            errors.append(f"Backup field {group}.{field} has no schema state keys")
+        for key in state_keys:
             if key not in endpoint_keys:
-                group, field = group_field
                 errors.append(f"Backup field {group}.{field} maps to unknown endpoint key {key}")
 
 

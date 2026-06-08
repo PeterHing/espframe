@@ -18,6 +18,7 @@ from pathlib import Path
 
 from product_config import (
     DOCS_SETTINGS_TABLE_COLUMNS,
+    backup_schema,
     default_public_manifest_urls,
     docs_settings_tables,
     load_product,
@@ -195,6 +196,7 @@ def web_app_bundle() -> str:
     manual_entities_json = json.dumps(web_manual_entities_metadata(), separators=(",", ":"))
     manual_state_keys_json = json.dumps(web_manual_state_keys(), separators=(",", ":"))
     entity_aliases_json = json.dumps(web_entity_aliases_metadata(), separators=(",", ":"))
+    backup_schema_json = json.dumps(backup_schema(), separators=(",", ":"))
     initial_fetch_keys_json = json.dumps(web_initial_fetch_keys(), separators=(",", ":"))
     live_render_state_keys_json = json.dumps(web_live_render_state_keys(), separators=(",", ":"))
     live_render_state_prefixes_json = json.dumps(web_live_render_state_prefixes(), separators=(",", ":"))
@@ -217,6 +219,7 @@ def web_app_bundle() -> str:
         .replace("__ESPFRAME_MANUAL_ENTITIES__", manual_entities_json)
         .replace("__ESPFRAME_MANUAL_STATE_KEYS__", manual_state_keys_json)
         .replace("__ESPFRAME_ENTITY_ALIASES__", entity_aliases_json)
+        .replace("__ESPFRAME_BACKUP_SCHEMA__", backup_schema_json)
         .replace("__ESPFRAME_INITIAL_FETCH_KEYS__", initial_fetch_keys_json)
         .replace("__ESPFRAME_LIVE_RENDER_STATE_KEYS__", live_render_state_keys_json)
         .replace("__ESPFRAME_LIVE_RENDER_STATE_PREFIXES__", live_render_state_prefixes_json)

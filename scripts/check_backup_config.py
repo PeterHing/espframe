@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from product_config import load_product
+from product_config import backup_schema, load_product
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -21,48 +21,6 @@ UUID_LIST_RE = re.compile(
     r"(,[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})*$"
 )
 
-EXPORT_SNIPPETS = {
-    ("connection", "immich_url"): "immich_url: S.immich_url",
-    ("connection", "api_key"): "api_key: S.api_key",
-    ("photos", "source"): "source: S.photo_source",
-    ("photos", "album_ids"): "album_ids: S.album_ids",
-    ("photos", "album_labels"): "album_labels: S.album_labels",
-    ("photos", "person_ids"): "person_ids: S.person_ids",
-    ("photos", "person_labels"): "person_labels: S.person_labels",
-    ("photos", "date_filter_enabled"): "date_filter_enabled: S.date_filter_enabled",
-    ("photos", "date_filter_mode"): "date_filter_mode: S.date_filter_mode",
-    ("photos", "date_from"): "date_from: S.date_from",
-    ("photos", "date_to"): "date_to: S.date_to",
-    ("photos", "relative_amount"): "relative_amount: S.relative_amount",
-    ("photos", "relative_unit"): "relative_unit: S.relative_unit",
-    ("photos", "orientation"): "orientation: S.photo_orientation",
-    ("photos", "portrait_pairing"): "portrait_pairing: S.portrait_pairing",
-    ("photos", "display_mode"): "display_mode: S.display_mode",
-    ("frequency", "interval"): "interval: S.interval",
-    ("frequency", "conn_timeout"): "conn_timeout: S.conn_timeout",
-    ("firmware_updates", "auto_update"): "auto_update: S.auto_update",
-    ("firmware_updates", "beta_channel"): "beta_channel: S.beta_channel",
-    ("firmware_updates", "update_frequency"): "update_frequency: S.update_frequency",
-    ("firmware_updates", "manifest_url"): "manifest_url: S.firmware_manifest_url",
-    ("firmware_updates", "beta_manifest_url"): "beta_manifest_url: S.firmware_beta_manifest_url",
-    ("clock", "show"): "show: S.show_clock",
-    ("clock", "format"): "format: S.clock_format",
-    ("clock", "timezone"): "timezone: S.timezone",
-    ("clock", "ntp_servers"): "ntp_servers: [",
-    ("screen", "brightness_day"): "brightness_day: S.brightness_day",
-    ("screen", "brightness_night"): "brightness_night: S.brightness_night",
-    ("screen", "schedule_enabled"): "schedule_enabled: S.schedule_enabled",
-    ("screen", "schedule_on_hour"): "schedule_on_hour: S.schedule_on_hour",
-    ("screen", "schedule_off_hour"): "schedule_off_hour: S.schedule_off_hour",
-    ("screen", "schedule_wake_timeout"): "schedule_wake_timeout: normalizeScheduleWakeTimeout(S.schedule_wake_timeout)",
-    ("screen", "base_tone_enabled"): "base_tone_enabled: S.base_tone_enabled",
-    ("screen", "base_tone"): "base_tone: S.base_tone",
-    ("screen", "warm_tones_enabled"): "warm_tones_enabled: S.warm_tones_enabled",
-    ("screen", "warm_tone_intensity"): "warm_tone_intensity: S.warm_tone_intensity",
-    ("screen", "warm_tone_override"): "warm_tone_override: S.warm_tone_override",
-    ("screen", "rotation"): "rotation: S.screen_rotation",
-}
-
 IMPORT_SNIPPETS = {
     "connection": "var c = data.connection || {};",
     "photos": "var p = data.photos || {};",
@@ -72,46 +30,13 @@ IMPORT_SNIPPETS = {
     "screen": "var scr = data.screen || {};",
 }
 
-IMPORT_FIELD_SNIPPETS = {
-    ("connection", "immich_url"): "if (c.immich_url !== undefined)",
-    ("connection", "api_key"): "if (c.api_key !== undefined)",
-    ("photos", "source"): "if (p.source !== undefined)",
-    ("photos", "album_ids"): "if (p.album_ids !== undefined)",
-    ("photos", "album_labels"): "if (p.album_labels !== undefined)",
-    ("photos", "person_ids"): "if (p.person_ids !== undefined)",
-    ("photos", "person_labels"): "if (p.person_labels !== undefined)",
-    ("photos", "date_filter_enabled"): "if (p.date_filter_enabled !== undefined)",
-    ("photos", "date_filter_mode"): "if (p.date_filter_mode !== undefined)",
-    ("photos", "date_from"): "if (p.date_from !== undefined)",
-    ("photos", "date_to"): "if (p.date_to !== undefined)",
-    ("photos", "relative_amount"): "if (p.relative_amount !== undefined)",
-    ("photos", "relative_unit"): "if (p.relative_unit !== undefined)",
-    ("photos", "orientation"): "if (p.orientation !== undefined)",
-    ("photos", "portrait_pairing"): "if (p.portrait_pairing !== undefined)",
-    ("photos", "display_mode"): "if (p.display_mode !== undefined)",
-    ("frequency", "interval"): "if (f.interval !== undefined)",
-    ("frequency", "conn_timeout"): "if (f.conn_timeout !== undefined)",
-    ("firmware_updates", "auto_update"): "if (upd.auto_update !== undefined)",
-    ("firmware_updates", "beta_channel"): "if (upd.beta_channel !== undefined)",
-    ("firmware_updates", "update_frequency"): "if (upd.update_frequency !== undefined)",
-    ("firmware_updates", "manifest_url"): "if (upd.manifest_url !== undefined)",
-    ("firmware_updates", "beta_manifest_url"): "if (upd.beta_manifest_url !== undefined)",
-    ("clock", "show"): "if (clk.show !== undefined)",
-    ("clock", "format"): "if (clk.format !== undefined)",
-    ("clock", "timezone"): "if (clk.timezone !== undefined)",
-    ("clock", "ntp_servers"): "if (Array.isArray(clk.ntp_servers))",
-    ("screen", "brightness_day"): "if (scr.brightness_day !== undefined)",
-    ("screen", "brightness_night"): "if (scr.brightness_night !== undefined)",
-    ("screen", "schedule_enabled"): "if (scr.schedule_enabled !== undefined)",
-    ("screen", "schedule_on_hour"): "if (scr.schedule_on_hour !== undefined)",
-    ("screen", "schedule_off_hour"): "if (scr.schedule_off_hour !== undefined)",
-    ("screen", "schedule_wake_timeout"): "if (scr.schedule_wake_timeout !== undefined)",
-    ("screen", "base_tone_enabled"): "if (scr.base_tone_enabled !== undefined)",
-    ("screen", "base_tone"): "if (scr.base_tone !== undefined)",
-    ("screen", "warm_tones_enabled"): "if (scr.warm_tones_enabled !== undefined)",
-    ("screen", "warm_tone_intensity"): "if (scr.warm_tone_intensity !== undefined)",
-    ("screen", "warm_tone_override"): "if (scr.warm_tone_override !== undefined)",
-    ("screen", "rotation"): "if (scr.rotation !== undefined)",
+IMPORT_GROUP_VARS = {
+    "connection": "c",
+    "photos": "p",
+    "frequency": "f",
+    "firmware_updates": "upd",
+    "clock": "clk",
+    "screen": "scr",
 }
 
 
@@ -202,18 +127,19 @@ def validate_internal_contract(
         errors.append("project.backup_export_fields field names must be unique across groups")
 
     expected_group_fields = {(group, field) for group, fields in group_keys.items() for field in fields}
-    for label, snippet_keys in (
-        ("export snippets", set(EXPORT_SNIPPETS)),
-        ("import field snippets", set(IMPORT_FIELD_SNIPPETS)),
-    ):
-        missing = sorted(expected_group_fields - snippet_keys)
-        extra = sorted(snippet_keys - expected_group_fields)
-        if missing:
-            fields = ", ".join(f"{group}.{field}" for group, field in missing)
-            errors.append(f"Backup checker {label} are missing fields: {fields}")
-        if extra:
-            fields = ", ".join(f"{group}.{field}" for group, field in extra)
-            errors.append(f"Backup checker {label} include unknown fields: {fields}")
+    schema_group_fields = {(str(entry["group"]), str(entry["field"])) for entry in backup_schema(product)}
+    missing_schema = sorted(expected_group_fields - schema_group_fields)
+    extra_schema = sorted(schema_group_fields - expected_group_fields)
+    if missing_schema:
+        fields = ", ".join(f"{group}.{field}" for group, field in missing_schema)
+        errors.append(f"Backup schema is missing fields: {fields}")
+    if extra_schema:
+        fields = ", ".join(f"{group}.{field}" for group, field in extra_schema)
+        errors.append(f"Backup schema includes unknown fields: {fields}")
+    for entry in backup_schema(product):
+        state_keys = entry.get("state_keys", [])
+        if not isinstance(state_keys, list) or not state_keys:
+            errors.append(f"Backup schema {entry['group']}.{entry['field']} must list state keys")
 
     missing_import_groups = sorted(expected_groups - set(IMPORT_SNIPPETS))
     extra_import_groups = sorted(set(IMPORT_SNIPPETS) - expected_groups)
@@ -298,10 +224,17 @@ def validate_web_support(product: dict[str, Any], errors: list[str]) -> None:
         for group in product["project"].get("backup_export_groups", []):
             require_contains(text, f"{group}: {{", label, errors)
             require_contains(text, IMPORT_SNIPPETS[str(group)], label, errors)
-        for snippet in EXPORT_SNIPPETS.values():
-            require_contains(text, snippet, label, errors)
-        for snippet in IMPORT_FIELD_SNIPPETS.values():
-            require_contains(text, snippet, label, errors)
+        for entry in backup_schema(product):
+            group = str(entry["group"])
+            field = str(entry["field"])
+            var_name = IMPORT_GROUP_VARS.get(group)
+            if not var_name:
+                errors.append(f"Backup checker does not know import variable for group {group}")
+                continue
+            if field == "ntp_servers":
+                require_contains(text, "if (Array.isArray(clk.ntp_servers))", label, errors)
+            else:
+                require_contains(text, f"if ({var_name}.{field} !== undefined)", label, errors)
 
 
 def main() -> int:

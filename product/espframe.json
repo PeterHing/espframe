@@ -106,6 +106,59 @@
         "rotation"
       ]
     },
+    "backup_field_state_keys": {
+      "connection": {
+        "immich_url": "immich_url",
+        "api_key": "api_key"
+      },
+      "photos": {
+        "source": "photo_source",
+        "album_ids": "album_ids",
+        "album_labels": "album_labels",
+        "person_ids": "person_ids",
+        "person_labels": "person_labels",
+        "date_filter_enabled": "date_filter_enabled",
+        "date_filter_mode": "date_filter_mode",
+        "date_from": "date_from",
+        "date_to": "date_to",
+        "relative_amount": "relative_amount",
+        "relative_unit": "relative_unit",
+        "orientation": "photo_orientation",
+        "portrait_pairing": "portrait_pairing",
+        "display_mode": "display_mode"
+      },
+      "frequency": {
+        "interval": "interval",
+        "conn_timeout": "conn_timeout"
+      },
+      "firmware_updates": {
+        "auto_update": "auto_update",
+        "beta_channel": "beta_channel",
+        "update_frequency": "update_frequency",
+        "manifest_url": "firmware_manifest_url",
+        "beta_manifest_url": "firmware_beta_manifest_url"
+      },
+      "clock": {
+        "show": "show_clock",
+        "format": "clock_format",
+        "timezone": "timezone",
+        "ntp_servers": ["ntp_server_1", "ntp_server_2", "ntp_server_3"]
+      },
+      "screen": {
+        "brightness_day": "brightness_day",
+        "brightness_night": "brightness_night",
+        "schedule_enabled": "schedule_enabled",
+        "schedule_on_hour": "schedule_on_hour",
+        "schedule_off_hour": "schedule_off_hour",
+        "schedule_wake_timeout": "schedule_wake_timeout",
+        "base_tone_enabled": "base_tone_enabled",
+        "base_tone": "base_tone",
+        "warm_tones_enabled": "warm_tones_enabled",
+        "warm_tone_intensity": "warm_tone_intensity",
+        "warm_tone_override": "warm_tone_override",
+        "rotation": "screen_rotation"
+      }
+    },
     "backup_import_write_behavior": "Each setting is pushed to the device individually",
     "backup_partial_config_behavior": "only settings present in the file are applied; everything else stays unchanged",
     "backup_invalid_photo_id_behavior": "web UI shows an error and skips that field",
@@ -475,6 +528,7 @@
       "__ESPFRAME_MANUAL_ENTITIES__",
       "__ESPFRAME_MANUAL_STATE_KEYS__",
       "__ESPFRAME_ENTITY_ALIASES__",
+      "__ESPFRAME_BACKUP_SCHEMA__",
       "__ESPFRAME_INITIAL_FETCH_KEYS__",
       "__ESPFRAME_LIVE_RENDER_STATE_KEYS__",
       "__ESPFRAME_LIVE_RENDER_STATE_PREFIXES__",
