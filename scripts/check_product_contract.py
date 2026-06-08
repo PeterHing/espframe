@@ -1992,8 +1992,6 @@ def check_backup_metadata(product: dict, errors: list[str]) -> None:
                 require_contains(backup_docs, value.strip(), "docs/backup.md", errors)
     for group in export_groups:
         require_contains(backup_docs, f'"{group}"', "docs/backup.md", errors)
-        require_contains(web_template, f"data.{group} || {{}}", rel(WEB_TEMPLATE), errors)
-        require_contains(web_text, f"data.{group} || {{}}", rel(WEB_APP), errors)
     if import_write_behavior:
         require_contains(backup_docs, import_write_behavior, "docs/backup.md", errors)
     if partial_behavior:
@@ -2006,6 +2004,12 @@ def check_backup_metadata(product: dict, errors: list[str]) -> None:
         for label in ("album IDs", "person IDs"):
             require_contains(web_template, f"Import skipped invalid {label}", rel(WEB_TEMPLATE), errors)
             require_contains(web_text, f"Import skipped invalid {label}", rel(WEB_APP), errors)
+    for message in (
+        "Stable firmware URL was invalid - not imported",
+        "Beta firmware URL was invalid - not imported",
+    ):
+        require_contains(web_template, message, rel(WEB_TEMPLATE), errors)
+        require_contains(web_text, message, rel(WEB_APP), errors)
 
     for needle in (
         "display_mode",
@@ -2016,6 +2020,14 @@ def check_backup_metadata(product: dict, errors: list[str]) -> None:
         "buildBackupExportData",
         "BACKUP_SCHEMA.forEach",
         "normalizeScheduleWakeTimeout(S.schedule_wake_timeout)",
+        "backupImportFieldPresent",
+        "backupImportFieldValue",
+        "applyBackupImportField",
+        "backupEntryKey(entry)",
+        "photos.album_ids",
+        "firmware_updates.manifest_url",
+        "clock.ntp_servers",
+        "screen.schedule_wake_timeout",
     ):
         if needle in {
             "Settings imported successfully",
@@ -2023,12 +2035,19 @@ def check_backup_metadata(product: dict, errors: list[str]) -> None:
             "buildBackupExportData",
             "BACKUP_SCHEMA.forEach",
             "normalizeScheduleWakeTimeout(S.schedule_wake_timeout)",
+            "backupImportFieldPresent",
+            "backupImportFieldValue",
+            "applyBackupImportField",
+            "backupEntryKey(entry)",
+            "photos.album_ids",
+            "firmware_updates.manifest_url",
+            "clock.ntp_servers",
+            "screen.schedule_wake_timeout",
         }:
             require_contains(web_template, needle, rel(WEB_TEMPLATE), errors)
             require_contains(web_text, needle, rel(WEB_APP), errors)
         else:
             require_contains(backup_docs, needle, "docs/backup.md", errors)
-    require_contains(web_template, "p.display_mode", rel(WEB_TEMPLATE), errors)
 
 
 def check_privacy_metadata(product: dict, errors: list[str]) -> None:

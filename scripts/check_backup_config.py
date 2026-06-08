@@ -21,25 +21,6 @@ UUID_LIST_RE = re.compile(
     r"(,[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})*$"
 )
 
-IMPORT_SNIPPETS = {
-    "connection": "var c = data.connection || {};",
-    "photos": "var p = data.photos || {};",
-    "frequency": "var f = data.frequency || {};",
-    "firmware_updates": "var upd = data.firmware_updates || {};",
-    "clock": "var clk = data.clock || {};",
-    "screen": "var scr = data.screen || {};",
-}
-
-IMPORT_GROUP_VARS = {
-    "connection": "c",
-    "photos": "p",
-    "frequency": "f",
-    "firmware_updates": "upd",
-    "clock": "clk",
-    "screen": "scr",
-}
-
-
 def rel(path: Path) -> str:
     return str(path.relative_to(ROOT))
 
@@ -141,13 +122,6 @@ def validate_internal_contract(
         if not isinstance(state_keys, list) or not state_keys:
             errors.append(f"Backup schema {entry['group']}.{entry['field']} must list state keys")
 
-    missing_import_groups = sorted(expected_groups - set(IMPORT_SNIPPETS))
-    extra_import_groups = sorted(set(IMPORT_SNIPPETS) - expected_groups)
-    if missing_import_groups:
-        errors.append(f"Backup checker import snippets are missing groups: {', '.join(missing_import_groups)}")
-    if extra_import_groups:
-        errors.append(f"Backup checker import snippets include unknown groups: {', '.join(extra_import_groups)}")
-
 
 def validate_fixture(
     path: Path,
@@ -223,20 +197,26 @@ def validate_web_support(product: dict[str, Any], errors: list[str]) -> None:
         require_contains(text, "buildBackupExportData", label, errors)
         require_contains(text, "BACKUP_SCHEMA.forEach", label, errors)
         require_contains(text, "normalizeScheduleWakeTimeout(S.schedule_wake_timeout)", label, errors)
+        require_contains(text, "backupImportFieldPresent", label, errors)
+        require_contains(text, "backupImportFieldValue", label, errors)
+        require_contains(text, "applyBackupImportField", label, errors)
+        require_contains(text, "backupEntryKey(entry)", label, errors)
         require_contains(text, "Settings imported successfully", label, errors)
-        for group in product["project"].get("backup_export_groups", []):
-            require_contains(text, IMPORT_SNIPPETS[str(group)], label, errors)
-        for entry in backup_schema(product):
-            group = str(entry["group"])
-            field = str(entry["field"])
-            var_name = IMPORT_GROUP_VARS.get(group)
-            if not var_name:
-                errors.append(f"Backup checker does not know import variable for group {group}")
-                continue
-            if field == "ntp_servers":
-                require_contains(text, "if (Array.isArray(clk.ntp_servers))", label, errors)
-            else:
-                require_contains(text, f"if ({var_name}.{field} !== undefined)", label, errors)
+        for special_field in (
+            "connection.immich_url",
+            "connection.api_key",
+            "photos.album_ids",
+            "photos.album_labels",
+            "photos.person_ids",
+            "photos.person_labels",
+            "firmware_updates.manifest_url",
+            "firmware_updates.beta_manifest_url",
+            "clock.timezone",
+            "clock.ntp_servers",
+            "screen.schedule_wake_timeout",
+            "screen.rotation",
+        ):
+            require_contains(text, f'case "{special_field}"', label, errors)
 
 
 def main() -> int:
