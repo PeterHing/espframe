@@ -207,24 +207,24 @@ Returns one UUID from the list. Immich’s API applies **AND** when multiple `pe
 
 Turns a comma-separated list of UUIDs (with optional spaces) into a JSON array string, e.g. `"id1, id2"` → `["id1","id2"]`.
 
-**Use when:** Building request bodies that need `albumIds` or `personIds` arrays.
+**Use when:** Building request bodies that need `albumIds`, `personIds`, or `tagIds` arrays.
 
 ```cpp
 std::string album_ids_json = build_uuid_json_array(id(album_ids_text).state);
 ```
 
-#### `build_immich_search_body(size, with_people, photo_source, album_ids, person_ids, extra)`
+#### `build_immich_search_body(size, with_people, photo_source, album_ids, person_ids, tag_ids, extra)`
 
 Builds the JSON body for Immich `POST /api/search/random`.  
-**Parameters:** `size` (requested count), `with_people` (include people in response), `photo_source` (e.g. `"Favorites"`, `"Album"`, `"Person"`), `album_ids` / `person_ids` (CSV UUIDs for Album/Person), optional `extra` JSON fragment (e.g. `"\"takenAfter\":\"2024-01-01\""`). For **`Person`**, multiple IDs in `person_ids` are resolved to **one random ID per request** (any-of behavior vs Immich’s multi-ID AND).
+**Parameters:** `size` (requested count), `with_people` (include people in response), `photo_source` (e.g. `"Favorites"`, `"Album"`, `"Person"`, `"Tag"`), `album_ids` / `person_ids` / `tag_ids` (CSV UUIDs for Album/Person/Tag), optional `extra` JSON fragment (e.g. `"\"takenAfter\":\"2024-01-01\""`). For **`Person`**, multiple IDs in `person_ids` are resolved to **one random ID per request** (any-of behavior vs Immich’s multi-ID AND).
 
 **Use when:** Building the body for random or “on this day” search requests.
 
 ```cpp
 std::string body = build_immich_search_body(1, true, id(photo_source_select).current_option(),
-  id(album_ids_text).state, id(person_ids_text).state);
+  id(album_ids_text).state, id(person_ids_text).state, id(tag_ids_text).state);
 // with optional extra for date filter:
-std::string body_memories = build_immich_search_body(1, true, "All", "", "", "\"takenAfter\":\"2024-01-01\",\"takenBefore\":\"2024-01-02\"");
+std::string body_memories = build_immich_search_body(1, true, "All", "", "", "", "\"takenAfter\":\"2024-01-01\",\"takenBefore\":\"2024-01-02\"");
 ```
 
 #### `resolve_immich_date_filter(...)`

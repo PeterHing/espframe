@@ -20,11 +20,13 @@ Under **Settings → Devices & Services → ESPHome** (device page):
 
 | Entity | Type | Description |
 |--------|------|-------------|
-| **Photos: Source** | Select | All Photos, Favorites, Album, Person, Memories — see [Photo Sources](/photo-sources) |
+| **Photos: Source** | Select | All Photos, Favorites, Album, Person, Tag, Memories — see [Photo Sources](/photo-sources) |
 | **Photos: Album IDs** | Text | Comma-separated Immich album UUIDs |
 | **Photos: Album Labels** | Text | Optional friendly labels for saved album IDs |
 | **Photos: Person IDs** | Text | Comma-separated Immich person UUIDs |
 | **Photos: Person Labels** | Text | Optional friendly labels for saved person IDs |
+| **Photos: Tag IDs** | Text | Comma-separated Immich tag UUIDs |
+| **Photos: Tag Labels** | Text | Optional friendly labels for saved tag IDs |
 | **Photos: Date Filter** | Switch | Turns photo date filtering on or off |
 | **Photos: Date Filter Mode** | Select | Fixed Range or Relative Range |
 | **Photos: Date From** | Text | Fixed range start date, in `YYYY-MM-DD` format |

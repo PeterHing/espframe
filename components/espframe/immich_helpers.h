@@ -27,7 +27,7 @@ struct ImmichAssetMeta {
 // Immich search body builder
 // ============================================================================
 // Builds the JSON POST body for /api/search/random with optional filters
-// for favorites, albums, and people. The `extra` parameter allows injecting
+// for favorites, albums, people, and tags. The `extra` parameter allows injecting
 // additional JSON fields (e.g. takenAfter/takenBefore for companion search).
 
 struct ImmichDateRange {
@@ -167,7 +167,7 @@ inline std::string build_immich_companion_date_filter_extra(const std::string &d
 }
 
 inline std::vector<std::string> split_uuid_csv(const std::string &csv) {
-  // Home Assistant text fields store album/person IDs as comma-separated text;
+  // Home Assistant text fields store source IDs as comma-separated text;
   // normalize that into individual UUID strings before building API requests.
   std::vector<std::string> out;
   size_t start = 0;
@@ -223,6 +223,7 @@ inline std::string build_immich_search_body(int size, bool with_people,
                                              const std::string &photo_source,
                                              const std::string &album_ids,
                                              const std::string &person_ids,
+                                             const std::string &tag_ids,
                                              const std::string &extra = "") {
   // Construct the small JSON request body by hand to keep this header usable
   // from ESPHome lambdas without bringing in another JSON writer.
@@ -238,6 +239,8 @@ inline std::string build_immich_search_body(int size, bool with_people,
     std::string one = pick_one_person_id_for_random_search(person_ids);
     if (!one.empty())
       body += ",\"personIds\":" + build_uuid_json_array(one);
+  } else if (photo_source == "Tag" && !tag_ids.empty()) {
+    body += ",\"tagIds\":" + build_uuid_json_array(tag_ids);
   }
   body += "}";
   return body;
@@ -253,7 +256,7 @@ inline uint32_t immich_metadata_page_for_total(uint32_t total,
 }
 
 inline bool immich_source_uses_metadata_search(const std::string &photo_source) {
-  return photo_source == "Album" || photo_source == "Person";
+  return photo_source == "Album" || photo_source == "Person" || photo_source == "Tag";
 }
 
 inline std::string build_immich_metadata_search_body(uint32_t page,
@@ -262,6 +265,7 @@ inline std::string build_immich_metadata_search_body(uint32_t page,
                                                      const std::string &photo_source,
                                                      const std::string &album_id,
                                                      const std::string &person_id,
+                                                     const std::string &tag_ids,
                                                      const std::string &extra = "") {
   if (page == 0) page = 1;
   if (size == 0) size = 1;
@@ -276,6 +280,8 @@ inline std::string build_immich_metadata_search_body(uint32_t page,
     body += ",\"albumIds\":[\"" + album_id + "\"]";
   } else if (photo_source == "Person" && !person_id.empty()) {
     body += ",\"personIds\":[\"" + person_id + "\"]";
+  } else if (photo_source == "Tag" && !tag_ids.empty()) {
+    body += ",\"tagIds\":" + build_uuid_json_array(tag_ids);
   }
   body += "}";
   return body;

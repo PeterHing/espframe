@@ -162,6 +162,24 @@
           trackBackupImportSave(saveSetting("person_labels", importPersonLabels));
         }
         return true;
+      case "photos.tag_ids":
+        var importTag = String(value).trim();
+        if (photoIdFieldTooLong(importTag)) {
+          return skipBackupImportField("Tag IDs exceed 255 characters - not imported");
+        } else if (!isValidUuidList(importTag)) {
+          return skipBackupImportField("Import skipped invalid tag IDs");
+        } else {
+          trackBackupImportSave(saveSetting("tag_ids", importTag));
+        }
+        return true;
+      case "photos.tag_labels":
+        var importTagLabels = String(value).trim();
+        if (photoLabelFieldTooLong(importTagLabels)) {
+          return skipBackupImportField("Tag labels exceed 255 characters - not imported");
+        } else {
+          trackBackupImportSave(saveSetting("tag_labels", importTagLabels));
+        }
+        return true;
       case "firmware_updates.manifest_url":
         var importManifestUrl = normalizeFirmwareManifestUrl(value);
         if (importManifestUrl && !isValidHttpUrl(importManifestUrl)) {

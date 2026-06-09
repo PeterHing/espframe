@@ -57,8 +57,8 @@ def check_photo_source_metadata(product: dict, errors: list[str]) -> None:
             (rel(WEB_TEMPLATE), web_template),
         ):
             require_contains(text, id_limit_text, label, errors)
-        if filter_yaml.count(f"max_length: {id_limit}") < 4:
-            errors.append("common/addon/immich_filter.yaml must use project.photo_source_id_limit for album/person ID and label fields")
+        if filter_yaml.count(f"max_length: {id_limit}") < 6:
+            errors.append("common/addon/immich_filter.yaml must use project.photo_source_id_limit for album/person/tag ID and label fields")
 
     for mode in photo_source_modes:
         for label, text in (
@@ -71,6 +71,7 @@ def check_photo_source_metadata(product: dict, errors: list[str]) -> None:
         "favorites",
         "specific albums",
         "specific people",
+        "specific tags",
         '"on this day" memories',
         "chosen date range",
     ):
@@ -80,11 +81,12 @@ def check_photo_source_metadata(product: dict, errors: list[str]) -> None:
         "favorites only",
         "specific albums",
         "specific people",
+        "specific tags",
         '"on this day" memories',
         "date range",
     ):
         require_contains(index_docs, needle, "docs/index.md", errors)
-    for needle in ("Album IDs", "Album Labels", "Person IDs", "Person Labels"):
+    for needle in ("Album IDs", "Album Labels", "Person IDs", "Person Labels", "Tag IDs", "Tag Labels"):
         require_contains(backup_docs, needle, "docs/backup.md", errors)
 
     for needle in (
@@ -94,10 +96,11 @@ def check_photo_source_metadata(product: dict, errors: list[str]) -> None:
         "delay: 1s",
         "Photos: Album IDs",
         "Photos: Person IDs",
+        "Photos: Tag IDs",
         "Apply Photo Source",
     ):
         require_contains(filter_yaml, needle, "common/addon/immich_filter.yaml", errors)
-    for name in ("Photos: Album IDs", "Photos: Album Labels", "Photos: Person IDs", "Photos: Person Labels"):
+    for name in ("Photos: Album IDs", "Photos: Album Labels", "Photos: Person IDs", "Photos: Person Labels", "Photos: Tag IDs", "Photos: Tag Labels"):
         require_firmware_text_entity_shape(filter_yaml, name, "common/addon/immich_filter.yaml", errors)
     for needle in (
         "immich_memory_window_offset",
@@ -114,10 +117,13 @@ def check_photo_source_metadata(product: dict, errors: list[str]) -> None:
         "schedulePhotoSourceApply",
         "Add an album",
         "Add a person",
+        "Add a tag",
         "Paste album ID from Immich URL",
         "Paste person ID from Immich URL",
+        "Paste tag ID from Immich URL",
         "Album IDs exceed 255 characters",
         "Person IDs exceed 255 characters",
+        "Tag IDs exceed 255 characters",
     ):
         require_contains(web_template, needle, rel(WEB_TEMPLATE), errors)
 

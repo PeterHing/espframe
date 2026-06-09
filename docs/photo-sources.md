@@ -1,6 +1,6 @@
 ---
 title: Espframe Photo Sources for Immich
-description: Configure which Immich photos Espframe displays, including all photos, favorites, albums, people, memories, and date filters.
+description: Configure which Immich photos Espframe displays, including all photos, favorites, albums, people, tags, memories, and date filters.
 ---
 
 # Espframe Photo Sources for Immich
@@ -10,7 +10,7 @@ Choose the **Source** in the device web UI at `http://<device-ip>/` under **Phot
 <!-- ESPFRAME:SETTINGS_TABLE source START -->
 | Setting | Default | Format | Description |
 |---------|---------|--------|-------------|
-| **Source** | All Photos | Select | Choose all photos, favorites, albums, people, or Immich memories. |
+| **Source** | All Photos | Select | Choose all photos, favorites, albums, people, tags, or Immich memories. |
 <!-- ESPFRAME:SETTINGS_TABLE source END -->
 
 | Source | Extra setup | Best for |
@@ -19,13 +19,14 @@ Choose the **Source** in the device web UI at `http://<device-ip>/` under **Phot
 | **Favorites** | Mark favorites in Immich | Curated highlights |
 | **Album** | One or more album UUIDs | Specific albums |
 | **Person** | One or more person UUIDs | Photos of specific people |
+| **Tag** | One or more tag UUIDs | Photos with specific Immich tags |
 | **Memories** | None | "On this day" from past years |
 
 ---
 
 ## All Photos
 
-Shows photos sampled across your entire Immich library. Set **Source** to **All Photos**; leave Albums and People empty.
+Shows photos sampled across your entire Immich library. Set **Source** to **All Photos**; leave Albums, People, and Tags empty.
 
 ## Favorites
 
@@ -47,9 +48,15 @@ The names are saved with the IDs so the web UI can show friendly labels later. T
 
 Person photos are sampled through paged Immich search, so large libraries are not limited to the first small batch of results.
 
-## Album and Person ID limits
+## Tag
 
-The device stores each of **Album IDs**, **Album Labels**, **Person IDs**, and **Person Labels** as a single text field with a **255 character** maximum. For IDs, that is about six full UUIDs plus commas. The web UI blocks longer lists and shows an error so values are not silently cut short.
+Shows photos assigned to one or more Immich tags. **Get the UUID:** open the tag in Immich — the URL is typically `.../tags/<uuid>`. Paste one UUID into **Tags**, then optionally add a short description in **What tag is it?**. Use **Add a tag** to add another tag if needed. Your [API key](/api-key) needs `tag.read`.
+
+Tag photos are sampled through paged Immich search, so large tag sets are not limited to the first small batch of results.
+
+## Album, Person, and Tag ID limits
+
+The device stores each of **Album IDs**, **Album Labels**, **Person IDs**, **Person Labels**, **Tag IDs**, and **Tag Labels** as a single text field with a **255 character** maximum. For IDs, that is about six full UUIDs plus commas. The web UI blocks longer lists and shows an error so values are not silently cut short.
 
 Saving multiple IDs uses an HTTP POST body for the value, so the request stays within URL length limits and avoids errors such as **414 URI Too Long**.
 

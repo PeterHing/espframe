@@ -459,6 +459,23 @@ lvgl:
                               text_color: 0xFFFFFF
                               text_font: noto_400_30_font
                     - obj:
+                        id: photo_source_tag_row
+                        width: 640
+                        height: 58
+                        bg_opa: 0%
+                        border_width: 0
+                        pad_all: 0
+                        scrollable: false
+                        widgets:
+                          - label:
+                              id: photo_source_tag_label
+                              text: "Tag"
+                              align: CENTER
+                              width: 640
+                              text_align: center
+                              text_color: 0xFFFFFF
+                              text_font: noto_400_30_font
+                    - obj:
                         id: photo_source_memories_row
                         width: 640
                         height: 58

@@ -33,6 +33,9 @@ globals:
   - id: immich_metadata_person_id
     type: std::string
     initial_value: '""'
+  - id: immich_metadata_tag_ids
+    type: std::string
+    initial_value: '""'
   - id: immich_metadata_page
     type: int
     initial_value: '1'
@@ -291,7 +294,8 @@ script:
               return id(immich_url).state.empty() ||
                      id(immich_api_key_text).state.empty() ||
                      (source == "Album" && id(immich_album_ids).state.empty()) ||
-                     (source == "Person" && id(immich_person_ids).state.empty());
+                     (source == "Person" && id(immich_person_ids).state.empty()) ||
+                     (source == "Tag" && id(immich_tag_ids).state.empty());
           then:
             - lambda: |-
                 ESP_LOGW("immich", "Metadata source selected but Immich URL, API key, or source IDs are missing");
@@ -310,6 +314,7 @@ script:
             std::string source = id(photo_source_select).current_option();
             id(immich_metadata_album_id) = source == "Album" ? pick_one_uuid_from_csv(id(immich_album_ids).state) : "";
             id(immich_metadata_person_id) = source == "Person" ? pick_one_person_id_for_random_search(id(immich_person_ids).state) : "";
+            id(immich_metadata_tag_ids) = source == "Tag" ? id(immich_tag_ids).state : "";
             auto now = id(sntp_time).now();
             ImmichDateRange range = resolve_immich_date_filter(
               id(immich_date_filter_enabled).state,
@@ -324,7 +329,7 @@ script:
             std::string extra = build_immich_date_filter_extra(range);
             return build_immich_metadata_search_body(
               1, 1, true, source, id(immich_metadata_album_id),
-              id(immich_metadata_person_id), extra);
+              id(immich_metadata_person_id), id(immich_metadata_tag_ids), extra);
           on_response:
             then:
               - lambda: |-
@@ -380,6 +385,7 @@ script:
               std::string source = id(photo_source_select).current_option();
               return (source == "Album" && id(immich_metadata_album_id).empty()) ||
                      (source == "Person" && id(immich_metadata_person_id).empty()) ||
+                     (source == "Tag" && id(immich_metadata_tag_ids).empty()) ||
                      id(immich_metadata_page) < 1 ||
                      id(immich_metadata_page_size) < 1;
           then:
@@ -412,7 +418,7 @@ script:
             return build_immich_metadata_search_body(
               id(immich_metadata_page), id(immich_metadata_page_size), true,
               id(photo_source_select).current_option(), id(immich_metadata_album_id),
-              id(immich_metadata_person_id), extra);
+              id(immich_metadata_person_id), id(immich_metadata_tag_ids), extra);
           on_response:
             then:
               - lambda: |-
@@ -596,7 +602,7 @@ script:
             }
             std::string extra = build_immich_date_filter_extra(range);
             int search_size = id(photo_orientation_filter).current_option() == "Any" ? 1 : 10;
-            return build_immich_search_body(search_size, true, id(photo_source_select).current_option(), id(immich_album_ids).state, id(immich_person_ids).state, extra);
+            return build_immich_search_body(search_size, true, id(photo_source_select).current_option(), id(immich_album_ids).state, id(immich_person_ids).state, id(immich_tag_ids).state, extra);
           on_response:
             then:
               - lambda: |-
@@ -784,7 +790,7 @@ script:
               ESP_LOGW("immich", "Relative date filter skipped for companion search because time is not valid");
             }
             std::string extra = build_immich_companion_date_filter_extra(day, range);
-            return build_immich_search_body(5, false, id(photo_source_select).current_option(), id(immich_album_ids).state, id(immich_person_ids).state, extra);
+            return build_immich_search_body(5, false, id(photo_source_select).current_option(), id(immich_album_ids).state, id(immich_person_ids).state, id(immich_tag_ids).state, extra);
           on_response:
             then:
               - lambda: |-

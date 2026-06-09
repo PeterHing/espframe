@@ -17,7 +17,7 @@ Espframe is for people who want their photos out in the room, not hidden on a ph
   The frame connects directly to your Immich server over your own network. There is no Espframe cloud service and no extra account to trust with your pictures.
 
 - **Choose what appears on the frame**  
-  Show your whole library, favorites, specific albums, specific people, "on this day" memories, or photos from a chosen date range.
+  Show your whole library, favorites, specific albums, specific people, specific tags, "on this day" memories, or photos from a chosen date range.
 
 - **Make portrait photos look better on a wide screen**  
   Espframe can pair portrait photos from the same day side-by-side, so the display feels more like a composed frame and less like a single narrow image with empty space.

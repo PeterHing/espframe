@@ -125,10 +125,10 @@ def fixture_validation_errors(data: dict[str, Any], product: dict[str, Any]) -> 
             if value is not None and str(value) not in options.get(setting_key, set()):
                 errors.append(f"photos.{backup_key} has unsupported option")
         limit = int(project.get("backup_import_photo_id_limit", 255))
-        for key in ("album_ids", "album_labels", "person_ids", "person_labels"):
+        for key in ("album_ids", "album_labels", "person_ids", "person_labels", "tag_ids", "tag_labels"):
             if len(str(photos.get(key, ""))) > limit:
                 errors.append(f"photos.{key} exceeds {limit} characters")
-        for key in ("album_ids", "person_ids"):
+        for key in ("album_ids", "person_ids", "tag_ids"):
             value = str(photos.get(key, "")).strip()
             if value and not UUID_LIST_RE.match(value):
                 errors.append(f"photos.{key} is not a UUID list")

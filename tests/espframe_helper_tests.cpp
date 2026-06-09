@@ -179,9 +179,11 @@ static void test_immich_body_helpers() {
 
   assert(build_uuid_json_array(" a, b ,, c ") == "[\"a\",\"b\",\"c\"]");
   assert(pick_one_uuid_from_csv(" a, b ,, c ") == "a");
-  assert(build_immich_search_body(1, true, "Favorites", "", "").find("\"isFavorite\":true") !=
+  assert(build_immich_search_body(1, true, "Favorites", "", "", "").find("\"isFavorite\":true") !=
          std::string::npos);
-  assert(build_immich_search_body(1, false, "Person", "", "p1,p2").find("\"personIds\":[\"p1\"]") !=
+  assert(build_immich_search_body(1, false, "Person", "", "p1,p2", "").find("\"personIds\":[\"p1\"]") !=
+         std::string::npos);
+  assert(build_immich_search_body(1, false, "Tag", "", "", "t1,t2").find("\"tagIds\":[\"t1\",\"t2\"]") !=
          std::string::npos);
   assert(immich_metadata_page_for_total(0) == 1);
   assert(immich_metadata_page_for_total(848) == 1);
@@ -190,8 +192,9 @@ static void test_immich_body_helpers() {
   assert(!immich_source_uses_metadata_search("Favorites"));
   assert(immich_source_uses_metadata_search("Album"));
   assert(immich_source_uses_metadata_search("Person"));
+  assert(immich_source_uses_metadata_search("Tag"));
   std::string album_metadata = build_immich_metadata_search_body(
-      7, 5, true, "Album", "album-a", "", "\"takenAfter\":\"2026-01-01T00:00:00.000Z\"");
+      7, 5, true, "Album", "album-a", "", "", "\"takenAfter\":\"2026-01-01T00:00:00.000Z\"");
   assert(album_metadata.find("\"page\":7") != std::string::npos);
   assert(album_metadata.find("\"size\":5") != std::string::npos);
   assert(album_metadata.find("\"visibility\":\"timeline\"") != std::string::npos);
@@ -199,12 +202,14 @@ static void test_immich_body_helpers() {
   assert(album_metadata.find("\"withPeople\":true") != std::string::npos);
   assert(album_metadata.find("\"takenAfter\":\"2026-01-01T00:00:00.000Z\"") !=
          std::string::npos);
-  assert(build_immich_metadata_search_body(2, 1, true, "All Photos", "", "")
+  assert(build_immich_metadata_search_body(2, 1, true, "All Photos", "", "", "")
              .find("\"page\":2") != std::string::npos);
-  assert(build_immich_metadata_search_body(3, 1, true, "Favorites", "", "")
+  assert(build_immich_metadata_search_body(3, 1, true, "Favorites", "", "", "")
              .find("\"isFavorite\":true") != std::string::npos);
-  assert(build_immich_metadata_search_body(1, 1, false, "Person", "", "p1")
+  assert(build_immich_metadata_search_body(1, 1, false, "Person", "", "p1", "")
              .find("\"personIds\":[\"p1\"]") != std::string::npos);
+  assert(build_immich_metadata_search_body(1, 1, false, "Tag", "", "", "t1,t2")
+             .find("\"tagIds\":[\"t1\",\"t2\"]") != std::string::npos);
 
   std::vector<ImmichTimelineBucketInfo> large_album_buckets = {
       {"2026-05-01", 848},

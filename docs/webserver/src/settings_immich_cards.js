@@ -107,12 +107,21 @@
     // Photo Source
     var srcBody = el("div");
     var photoSourceApplyTimer = null;
-    var pendingPhotoSourceSave = { source: false, album: false, albumLabel: false, person: false, personLabel: false };
+    var pendingPhotoSourceSave = {
+      source: false,
+      album: false,
+      albumLabel: false,
+      person: false,
+      personLabel: false,
+      tag: false,
+      tagLabel: false
+    };
     var fSrc = field("Source");
     var srcSel = selectFromOptions(productSettingOptions("photo_source"), S.photo_source, function (v) {
       S.photo_source = v;
       albumField.style.display = v === "Album" ? "" : "none";
       personField.style.display = v === "Person" ? "" : "none";
+      tagField.style.display = v === "Tag" ? "" : "none";
       schedulePhotoSourceApply(0, { source: true });
     });
 
@@ -212,19 +221,27 @@
     function validatePhotoSourceInputs(changes) {
       albumError.textContent = "";
       personError.textContent = "";
+      tagError.textContent = "";
       var srcVal = srcSel.value;
       var albumTrim = getAlbumIdsValue();
       var albumLabels = getAlbumLabelsValue();
       var personTrim = getPersonIdsValue();
       var personLabels = getPersonLabelsValue();
+      var tagTrim = getTagIdsValue();
+      var tagLabels = getTagLabelsValue();
       var shouldValidateAlbum = changes.album || srcVal === "Album";
       var shouldValidatePerson = changes.person || srcVal === "Person";
+      var shouldValidateTag = changes.tag || srcVal === "Tag";
       if (shouldValidateAlbum && photoIdFieldTooLong(albumTrim)) {
         albumError.textContent = PHOTO_ID_FIELD_TOO_LONG;
         return null;
       }
       if (shouldValidatePerson && photoIdFieldTooLong(personTrim)) {
         personError.textContent = PHOTO_ID_FIELD_TOO_LONG;
+        return null;
+      }
+      if (shouldValidateTag && photoIdFieldTooLong(tagTrim)) {
+        tagError.textContent = PHOTO_ID_FIELD_TOO_LONG;
         return null;
       }
       if (shouldValidateAlbum && !isValidUuidList(albumTrim)) {
@@ -243,7 +260,23 @@
         personError.textContent = PHOTO_LABEL_FIELD_TOO_LONG;
         return null;
       }
-      return { source: srcVal, albumIds: albumTrim, albumLabels: albumLabels, personIds: personTrim, personLabels: personLabels };
+      if (shouldValidateTag && !isValidUuidList(tagTrim)) {
+        tagError.textContent = "Invalid UUID format";
+        return null;
+      }
+      if (changes.tagLabel && photoLabelFieldTooLong(tagLabels)) {
+        tagError.textContent = PHOTO_LABEL_FIELD_TOO_LONG;
+        return null;
+      }
+      return {
+        source: srcVal,
+        albumIds: albumTrim,
+        albumLabels: albumLabels,
+        personIds: personTrim,
+        personLabels: personLabels,
+        tagIds: tagTrim,
+        tagLabels: tagLabels
+      };
     }
     function applyPhotoSourceInputs() {
       var changes = {
@@ -251,9 +284,19 @@
         album: pendingPhotoSourceSave.album,
         albumLabel: pendingPhotoSourceSave.albumLabel,
         person: pendingPhotoSourceSave.person,
-        personLabel: pendingPhotoSourceSave.personLabel
+        personLabel: pendingPhotoSourceSave.personLabel,
+        tag: pendingPhotoSourceSave.tag,
+        tagLabel: pendingPhotoSourceSave.tagLabel
       };
-      pendingPhotoSourceSave = { source: false, album: false, albumLabel: false, person: false, personLabel: false };
+      pendingPhotoSourceSave = {
+        source: false,
+        album: false,
+        albumLabel: false,
+        person: false,
+        personLabel: false,
+        tag: false,
+        tagLabel: false
+      };
       var vals = validatePhotoSourceInputs(changes);
       if (!vals) return;
       var requests = [];
@@ -272,9 +315,15 @@
       if (changes.personLabel) {
         requests.push(saveSetting("person_labels", vals.personLabels));
       }
+      if (changes.tag) {
+        requests.push(saveSetting("tag_ids", vals.tagIds));
+      }
+      if (changes.tagLabel) {
+        requests.push(saveSetting("tag_labels", vals.tagLabels));
+      }
       if (!requests.length) return;
       Promise.all(requests).then(function () {
-        if (changes.source || changes.album || changes.person)
+        if (changes.source || changes.album || changes.person || changes.tag)
           post(endpoints.apply_photo_source + "/press");
       });
     }
@@ -285,6 +334,8 @@
         pendingPhotoSourceSave.albumLabel = pendingPhotoSourceSave.albumLabel || !!changes.albumLabel;
         pendingPhotoSourceSave.person = pendingPhotoSourceSave.person || !!changes.person;
         pendingPhotoSourceSave.personLabel = pendingPhotoSourceSave.personLabel || !!changes.personLabel;
+        pendingPhotoSourceSave.tag = pendingPhotoSourceSave.tag || !!changes.tag;
+        pendingPhotoSourceSave.tagLabel = pendingPhotoSourceSave.tagLabel || !!changes.tagLabel;
       }
       clearTimeout(photoSourceApplyTimer);
       photoSourceApplyTimer = setTimeout(applyPhotoSourceInputs, delayMs == null ? 600 : delayMs);
@@ -354,10 +405,89 @@
     personField.appendChild(personError);
     personField.style.display = S.photo_source === "Person" ? "" : "none";
 
+    var tagField = field("Tags");
+    var tagIdList = el("div", "photo-id-list");
+    var tagInputs = [];
+    var tagLabelInputs = [];
+    var tagError = el("div", "field-error");
+    function getTagIdsValue() {
+      return tagInputs.map(function (inputEl) {
+        return inputEl.value.trim();
+      }).filter(Boolean).join(",");
+    }
+    function getTagLabelsValue() {
+      return buildPhotoLabelList(tagInputs, tagLabelInputs);
+    }
+    function refreshTagRemoveButtons() {
+      Array.prototype.forEach.call(tagIdList.querySelectorAll(".tag-id-remove"), function (btn) {
+        btn.disabled = tagInputs.length <= 1;
+      });
+    }
+    function addTagIdRow(value, labelValue) {
+      var row = el("div", "photo-id-row");
+      var fields = el("div", "photo-id-fields");
+      var tagInput = input("text", value || "", "Paste tag ID from Immich URL", MAX_PHOTO_ID_FIELD_LENGTH);
+      var tagLabelInput = input("text", labelValue || "", "What tag is it?", MAX_PHOTO_ID_FIELD_LENGTH);
+      var removeBtn = el("button", "btn btn-secondary btn-icon tag-id-remove");
+      removeBtn.type = "button";
+      removeBtn.innerHTML = removeIdIcon;
+      removeBtn.title = "Remove tag ID";
+      removeBtn.setAttribute("aria-label", "Remove tag ID");
+      removeBtn.onclick = function () {
+        if (tagInputs.length <= 1) {
+          tagInput.value = "";
+          tagLabelInput.value = "";
+          schedulePhotoSourceApply(0, { tag: true, tagLabel: true });
+          return;
+        }
+        var removeIndex = tagInputs.indexOf(tagInput);
+        tagInputs.splice(removeIndex, 1);
+        tagLabelInputs.splice(removeIndex, 1);
+        row.parentNode.removeChild(row);
+        refreshTagRemoveButtons();
+        schedulePhotoSourceApply(0, { tag: true, tagLabel: true });
+      };
+      tagInput.oninput = function () {
+        schedulePhotoSourceApply(null, { tag: true, tagLabel: true });
+      };
+      tagLabelInput.oninput = function () {
+        schedulePhotoSourceApply(null, { tagLabel: true });
+      };
+      fields.appendChild(tagInput);
+      fields.appendChild(tagLabelInput);
+      row.appendChild(fields);
+      row.appendChild(removeBtn);
+      tagIdList.appendChild(row);
+      tagInputs.push(tagInput);
+      tagLabelInputs.push(tagLabelInput);
+      refreshTagRemoveButtons();
+    }
+    var tagIds = splitPhotoIdList(S.tag_ids);
+    var tagLabels = parsePhotoLabelList(S.tag_labels);
+    for (var tagIndex = 0; tagIndex < Math.max(tagIds.length, tagLabels.length, 1); tagIndex++) {
+      addTagIdRow(tagIds[tagIndex] || "", tagLabels[tagIndex] || "");
+    }
+    var addTagRow = el("div", "photo-id-actions");
+    var addTagBtn = el("button", "btn btn-secondary");
+    addTagBtn.type = "button";
+    addTagBtn.textContent = "Add a tag";
+    addTagBtn.title = "Add a tag";
+    addTagBtn.setAttribute("aria-label", "Add a tag");
+    addTagBtn.onclick = function () {
+      addTagIdRow("", "");
+      tagInputs[tagInputs.length - 1].focus();
+    };
+    addTagRow.appendChild(addTagBtn);
+    tagField.appendChild(tagIdList);
+    tagField.appendChild(addTagRow);
+    tagField.appendChild(tagError);
+    tagField.style.display = S.photo_source === "Tag" ? "" : "none";
+
     fSrc.appendChild(srcSel);
     srcBody.appendChild(fSrc);
     srcBody.appendChild(albumField);
     srcBody.appendChild(personField);
+    srcBody.appendChild(tagField);
 
     return makeCollapsibleCard("Photo Source", srcBody, true);
 

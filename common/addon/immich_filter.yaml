@@ -6,7 +6,7 @@
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# Photo source (All / Favorites / Album / Person / Memories)
+# Photo source (All / Favorites / Album / Person / Tag / Memories)
 # -----------------------------------------------------------------------------
 select:
   - platform: template
@@ -18,6 +18,7 @@ select:
       - "Favorites"
       - "Album"
       - "Person"
+      - "Tag"
       - "Memories"
     initial_option: "All Photos"
     optimistic: true
@@ -174,7 +175,7 @@ text:
       - script.execute: auto_apply_photo_source
 
 # -----------------------------------------------------------------------------
-# Album IDs and Person IDs (used when source is Album or Person)
+# Album IDs, Person IDs, and Tag IDs
 # -----------------------------------------------------------------------------
   - platform: template
     name: "Photos: Album IDs"
@@ -252,6 +253,44 @@ text:
           global_preferences->sync();
           ESP_LOGI("immich", "Person labels configured (%d chars)", x.length());
 
+  - platform: template
+    name: "Photos: Tag IDs"
+    id: immich_tag_ids
+    internal: true
+    optimistic: false
+    restore_value: true
+    min_length: 0
+    max_length: 255
+    mode: text
+    icon: "mdi:tag-multiple"
+    web_server:
+      sorting_group_id: sg_photos
+    set_action:
+      - lambda: |-
+          std::string v = decode_url_commas(x);
+          id(immich_tag_ids).publish_state(v);
+          global_preferences->sync();
+          ESP_LOGI("immich", "Tag IDs configured (%d chars)", v.length());
+      - script.execute: auto_apply_photo_source
+
+  - platform: template
+    name: "Photos: Tag Labels"
+    id: immich_tag_labels
+    internal: true
+    optimistic: false
+    restore_value: true
+    min_length: 0
+    max_length: 255
+    mode: text
+    icon: "mdi:tag-text"
+    web_server:
+      sorting_group_id: sg_photos
+    set_action:
+      - lambda: |-
+          id(immich_tag_labels).publish_state(x);
+          global_preferences->sync();
+          ESP_LOGI("immich", "Tag labels configured (%d chars)", x.length());
+
 # -----------------------------------------------------------------------------
 # Manual apply and auto-apply (flush slots and refetch)
 # -----------------------------------------------------------------------------
@@ -269,7 +308,7 @@ button:
       - script.execute: flush_slots_and_refetch
 
 # -----------------------------------------------------------------------------
-# Delayed auto-apply after source/album/person change
+# Delayed auto-apply after source/album/person/tag change
 # -----------------------------------------------------------------------------
 script:
   - id: flush_slots_and_refetch

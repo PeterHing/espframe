@@ -128,11 +128,11 @@ def validate_fixture(
             value = photos.get(key)
             if value is not None and str(value) not in options.get(setting_key, set()):
                 errors.append(f"{label} photos.{key} has unsupported option {value!r}")
-        for key in ("album_ids", "album_labels", "person_ids", "person_labels"):
+        for key in ("album_ids", "album_labels", "person_ids", "person_labels", "tag_ids", "tag_labels"):
             value = str(photos.get(key, ""))
             if len(value) > photo_id_limit:
                 errors.append(f"{label} photos.{key} exceeds {photo_id_limit} characters")
-        for key in ("album_ids", "person_ids"):
+        for key in ("album_ids", "person_ids", "tag_ids"):
             value = str(photos.get(key, "")).strip()
             if value and not UUID_LIST_RE.match(value):
                 errors.append(f"{label} photos.{key} must be a comma-separated UUID list")
@@ -172,6 +172,8 @@ def validate_web_support(product: dict[str, Any], errors: list[str]) -> None:
             "photos.album_labels",
             "photos.person_ids",
             "photos.person_labels",
+            "photos.tag_ids",
+            "photos.tag_labels",
             "firmware_updates.manifest_url",
             "firmware_updates.beta_manifest_url",
             "clock.timezone",

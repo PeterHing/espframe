@@ -617,6 +617,7 @@ script:
           set_source_style(id(photo_source_favorites_label), "Favorites");
           set_source_style(id(photo_source_album_label), "Album");
           set_source_style(id(photo_source_person_label), "Person");
+          set_source_style(id(photo_source_tag_label), "Tag");
           set_source_style(id(photo_source_memories_label), "Memories");
           lv_obj_clear_flag(id(photo_source_menu_overlay), LV_OBJ_FLAG_HIDDEN);
 
@@ -648,6 +649,9 @@ script:
               source = "Person";
               break;
             case 4:
+              source = "Tag";
+              break;
+            case 5:
               source = "Memories";
               break;
             case 0:
@@ -669,6 +673,11 @@ script:
           }
           if (source == "Person" && !has_configured_ids(id(immich_person_ids).state)) {
             lv_label_set_text(id(photo_source_menu_message), "Set up person IDs first.");
+            lv_obj_clear_flag(id(photo_source_menu_message), LV_OBJ_FLAG_HIDDEN);
+            return;
+          }
+          if (source == "Tag" && !has_configured_ids(id(immich_tag_ids).state)) {
+            lv_label_set_text(id(photo_source_menu_message), "Set up tag IDs first.");
             lv_obj_clear_flag(id(photo_source_menu_message), LV_OBJ_FLAG_HIDDEN);
             return;
           }

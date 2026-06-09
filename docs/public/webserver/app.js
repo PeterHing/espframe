@@ -3,13 +3,13 @@
 
   var TIMEZONES = ["Pacific/Midway (GMT-11)","Pacific/Pago_Pago (GMT-11)","Pacific/Honolulu (GMT-10)","America/Adak (GMT-10)","America/Anchorage (GMT-9)","America/Juneau (GMT-9)","America/Los_Angeles (GMT-8)","America/Vancouver (GMT-8)","America/Tijuana (GMT-8)","America/Denver (GMT-7)","America/Phoenix (GMT-7)","America/Edmonton (GMT-7)","America/Boise (GMT-7)","America/Chicago (GMT-6)","America/Mexico_City (GMT-6)","America/Winnipeg (GMT-6)","America/Guatemala (GMT-6)","America/Costa_Rica (GMT-6)","America/New_York (GMT-5)","America/Toronto (GMT-5)","America/Detroit (GMT-5)","America/Havana (GMT-5)","America/Bogota (GMT-5)","America/Lima (GMT-5)","America/Jamaica (GMT-5)","America/Panama (GMT-5)","America/Halifax (GMT-4)","America/Caracas (GMT-4)","America/Santiago (GMT-4)","America/La_Paz (GMT-4)","America/Manaus (GMT-4)","America/Barbados (GMT-4)","America/Puerto_Rico (GMT-4)","America/Santo_Domingo (GMT-4)","America/St_Johns (GMT-3:30)","America/Sao_Paulo (GMT-3)","America/Argentina/Buenos_Aires (GMT-3)","America/Montevideo (GMT-3)","America/Paramaribo (GMT-3)","Atlantic/South_Georgia (GMT-2)","Atlantic/Azores (GMT-1)","Atlantic/Cape_Verde (GMT-1)","UTC (GMT+0)","Europe/London (GMT+0)","Europe/Dublin (GMT+0)","Europe/Lisbon (GMT+0)","Africa/Casablanca (GMT+1)","Africa/Accra (GMT+0)","Atlantic/Reykjavik (GMT+0)","Europe/Paris (GMT+1)","Europe/Berlin (GMT+1)","Europe/Rome (GMT+1)","Europe/Madrid (GMT+1)","Europe/Amsterdam (GMT+1)","Europe/Brussels (GMT+1)","Europe/Vienna (GMT+1)","Europe/Zurich (GMT+1)","Europe/Stockholm (GMT+1)","Europe/Oslo (GMT+1)","Europe/Copenhagen (GMT+1)","Europe/Warsaw (GMT+1)","Europe/Prague (GMT+1)","Europe/Budapest (GMT+1)","Europe/Belgrade (GMT+1)","Africa/Lagos (GMT+1)","Africa/Tunis (GMT+1)","Africa/Cairo (GMT+2)","Europe/Athens (GMT+2)","Europe/Bucharest (GMT+2)","Europe/Helsinki (GMT+2)","Europe/Kyiv (GMT+2)","Europe/Istanbul (GMT+3)","Africa/Johannesburg (GMT+2)","Africa/Nairobi (GMT+3)","Asia/Jerusalem (GMT+2)","Asia/Amman (GMT+3)","Asia/Beirut (GMT+2)","Europe/Moscow (GMT+3)","Asia/Baghdad (GMT+3)","Asia/Riyadh (GMT+3)","Asia/Kuwait (GMT+3)","Asia/Qatar (GMT+3)","Africa/Addis_Ababa (GMT+3)","Asia/Tehran (GMT+3:30)","Asia/Dubai (GMT+4)","Asia/Muscat (GMT+4)","Asia/Baku (GMT+4)","Asia/Tbilisi (GMT+4)","Indian/Mauritius (GMT+4)","Asia/Kabul (GMT+4:30)","Asia/Karachi (GMT+5)","Asia/Tashkent (GMT+5)","Asia/Yekaterinburg (GMT+5)","Asia/Kolkata (GMT+5:30)","Asia/Colombo (GMT+5:30)","Asia/Kathmandu (GMT+5:45)","Asia/Dhaka (GMT+6)","Asia/Almaty (GMT+5)","Asia/Rangoon (GMT+6:30)","Asia/Bangkok (GMT+7)","Asia/Jakarta (GMT+7)","Asia/Ho_Chi_Minh (GMT+7)","Asia/Singapore (GMT+8)","Asia/Kuala_Lumpur (GMT+8)","Asia/Shanghai (GMT+8)","Asia/Hong_Kong (GMT+8)","Asia/Taipei (GMT+8)","Asia/Manila (GMT+8)","Australia/Perth (GMT+8)","Asia/Tokyo (GMT+9)","Asia/Seoul (GMT+9)","Asia/Pyongyang (GMT+9)","Australia/Adelaide (GMT+9:30)","Australia/Darwin (GMT+9:30)","Australia/Sydney (GMT+10)","Australia/Melbourne (GMT+10)","Australia/Brisbane (GMT+10)","Australia/Hobart (GMT+10)","Pacific/Guam (GMT+10)","Pacific/Port_Moresby (GMT+10)","Asia/Vladivostok (GMT+10)","Pacific/Noumea (GMT+11)","Pacific/Norfolk (GMT+11)","Asia/Magadan (GMT+11)","Pacific/Auckland (GMT+12)","Pacific/Fiji (GMT+12)","Pacific/Chatham (GMT+12:45)","Pacific/Tongatapu (GMT+13)","Pacific/Apia (GMT+13)","Pacific/Kiritimati (GMT+14)"];
   var TIMEZONE_LABELS = {"Pacific/Midway (GMT-11)":"Pacific/Midway (GMT-11)","Pacific/Pago_Pago (GMT-11)":"Pacific/Pago_Pago (GMT-11)","Pacific/Honolulu (GMT-10)":"Pacific/Honolulu (GMT-10)","America/Adak (GMT-10)":"America/Adak (GMT-10; daylight GMT-9)","America/Anchorage (GMT-9)":"America/Anchorage (GMT-9; daylight GMT-8)","America/Juneau (GMT-9)":"America/Juneau (GMT-9; daylight GMT-8)","America/Los_Angeles (GMT-8)":"America/Los_Angeles (GMT-8; daylight GMT-7)","America/Vancouver (GMT-8)":"America/Vancouver (GMT-8; active GMT-7)","America/Tijuana (GMT-8)":"America/Tijuana (GMT-8; daylight GMT-7)","America/Denver (GMT-7)":"America/Denver (GMT-7; daylight GMT-6)","America/Phoenix (GMT-7)":"America/Phoenix (GMT-7)","America/Edmonton (GMT-7)":"America/Edmonton (GMT-7; daylight GMT-6)","America/Boise (GMT-7)":"America/Boise (GMT-7; daylight GMT-6)","America/Chicago (GMT-6)":"America/Chicago (GMT-6; daylight GMT-5)","America/Mexico_City (GMT-6)":"America/Mexico_City (GMT-6)","America/Winnipeg (GMT-6)":"America/Winnipeg (GMT-6; daylight GMT-5)","America/Guatemala (GMT-6)":"America/Guatemala (GMT-6)","America/Costa_Rica (GMT-6)":"America/Costa_Rica (GMT-6)","America/New_York (GMT-5)":"America/New_York (GMT-5; daylight GMT-4)","America/Toronto (GMT-5)":"America/Toronto (GMT-5; daylight GMT-4)","America/Detroit (GMT-5)":"America/Detroit (GMT-5; daylight GMT-4)","America/Havana (GMT-5)":"America/Havana (GMT-5; daylight GMT-4)","America/Bogota (GMT-5)":"America/Bogota (GMT-5)","America/Lima (GMT-5)":"America/Lima (GMT-5)","America/Jamaica (GMT-5)":"America/Jamaica (GMT-5)","America/Panama (GMT-5)":"America/Panama (GMT-5)","America/Halifax (GMT-4)":"America/Halifax (GMT-4; daylight GMT-3)","America/Caracas (GMT-4)":"America/Caracas (GMT-4)","America/Santiago (GMT-4)":"America/Santiago (GMT-4; daylight GMT-3)","America/La_Paz (GMT-4)":"America/La_Paz (GMT-4)","America/Manaus (GMT-4)":"America/Manaus (GMT-4)","America/Barbados (GMT-4)":"America/Barbados (GMT-4)","America/Puerto_Rico (GMT-4)":"America/Puerto_Rico (GMT-4)","America/Santo_Domingo (GMT-4)":"America/Santo_Domingo (GMT-4)","America/St_Johns (GMT-3:30)":"America/St_Johns (GMT-3:30; daylight GMT-2:30)","America/Sao_Paulo (GMT-3)":"America/Sao_Paulo (GMT-3)","America/Argentina/Buenos_Aires (GMT-3)":"America/Argentina/Buenos_Aires (GMT-3)","America/Montevideo (GMT-3)":"America/Montevideo (GMT-3)","America/Paramaribo (GMT-3)":"America/Paramaribo (GMT-3)","Atlantic/South_Georgia (GMT-2)":"Atlantic/South_Georgia (GMT-2)","Atlantic/Azores (GMT-1)":"Atlantic/Azores (GMT-1; daylight GMT+0)","Atlantic/Cape_Verde (GMT-1)":"Atlantic/Cape_Verde (GMT-1)","UTC (GMT+0)":"UTC (GMT+0)","Europe/London (GMT+0)":"Europe/London (GMT+0; daylight GMT+1)","Europe/Dublin (GMT+0)":"Europe/Dublin (GMT+0; daylight GMT+1)","Europe/Lisbon (GMT+0)":"Europe/Lisbon (GMT+0; daylight GMT+1)","Africa/Casablanca (GMT+1)":"Africa/Casablanca (GMT+1)","Africa/Accra (GMT+0)":"Africa/Accra (GMT+0)","Atlantic/Reykjavik (GMT+0)":"Atlantic/Reykjavik (GMT+0)","Europe/Paris (GMT+1)":"Europe/Paris (GMT+1; daylight GMT+2)","Europe/Berlin (GMT+1)":"Europe/Berlin (GMT+1; daylight GMT+2)","Europe/Rome (GMT+1)":"Europe/Rome (GMT+1; daylight GMT+2)","Europe/Madrid (GMT+1)":"Europe/Madrid (GMT+1; daylight GMT+2)","Europe/Amsterdam (GMT+1)":"Europe/Amsterdam (GMT+1; daylight GMT+2)","Europe/Brussels (GMT+1)":"Europe/Brussels (GMT+1; daylight GMT+2)","Europe/Vienna (GMT+1)":"Europe/Vienna (GMT+1; daylight GMT+2)","Europe/Zurich (GMT+1)":"Europe/Zurich (GMT+1; daylight GMT+2)","Europe/Stockholm (GMT+1)":"Europe/Stockholm (GMT+1; daylight GMT+2)","Europe/Oslo (GMT+1)":"Europe/Oslo (GMT+1; daylight GMT+2)","Europe/Copenhagen (GMT+1)":"Europe/Copenhagen (GMT+1; daylight GMT+2)","Europe/Warsaw (GMT+1)":"Europe/Warsaw (GMT+1; daylight GMT+2)","Europe/Prague (GMT+1)":"Europe/Prague (GMT+1; daylight GMT+2)","Europe/Budapest (GMT+1)":"Europe/Budapest (GMT+1; daylight GMT+2)","Europe/Belgrade (GMT+1)":"Europe/Belgrade (GMT+1; daylight GMT+2)","Africa/Lagos (GMT+1)":"Africa/Lagos (GMT+1)","Africa/Tunis (GMT+1)":"Africa/Tunis (GMT+1)","Africa/Cairo (GMT+2)":"Africa/Cairo (GMT+2; daylight GMT+3)","Europe/Athens (GMT+2)":"Europe/Athens (GMT+2; daylight GMT+3)","Europe/Bucharest (GMT+2)":"Europe/Bucharest (GMT+2; daylight GMT+3)","Europe/Helsinki (GMT+2)":"Europe/Helsinki (GMT+2; daylight GMT+3)","Europe/Kyiv (GMT+2)":"Europe/Kyiv (GMT+2; daylight GMT+3)","Europe/Istanbul (GMT+3)":"Europe/Istanbul (GMT+3)","Africa/Johannesburg (GMT+2)":"Africa/Johannesburg (GMT+2)","Africa/Nairobi (GMT+3)":"Africa/Nairobi (GMT+3)","Asia/Jerusalem (GMT+2)":"Asia/Jerusalem (GMT+2; daylight GMT+3)","Asia/Amman (GMT+3)":"Asia/Amman (GMT+3)","Asia/Beirut (GMT+2)":"Asia/Beirut (GMT+2; daylight GMT+3)","Europe/Moscow (GMT+3)":"Europe/Moscow (GMT+3)","Asia/Baghdad (GMT+3)":"Asia/Baghdad (GMT+3)","Asia/Riyadh (GMT+3)":"Asia/Riyadh (GMT+3)","Asia/Kuwait (GMT+3)":"Asia/Kuwait (GMT+3)","Asia/Qatar (GMT+3)":"Asia/Qatar (GMT+3)","Africa/Addis_Ababa (GMT+3)":"Africa/Addis_Ababa (GMT+3)","Asia/Tehran (GMT+3:30)":"Asia/Tehran (GMT+3:30)","Asia/Dubai (GMT+4)":"Asia/Dubai (GMT+4)","Asia/Muscat (GMT+4)":"Asia/Muscat (GMT+4)","Asia/Baku (GMT+4)":"Asia/Baku (GMT+4)","Asia/Tbilisi (GMT+4)":"Asia/Tbilisi (GMT+4)","Indian/Mauritius (GMT+4)":"Indian/Mauritius (GMT+4)","Asia/Kabul (GMT+4:30)":"Asia/Kabul (GMT+4:30)","Asia/Karachi (GMT+5)":"Asia/Karachi (GMT+5)","Asia/Tashkent (GMT+5)":"Asia/Tashkent (GMT+5)","Asia/Yekaterinburg (GMT+5)":"Asia/Yekaterinburg (GMT+5)","Asia/Kolkata (GMT+5:30)":"Asia/Kolkata (GMT+5:30)","Asia/Colombo (GMT+5:30)":"Asia/Colombo (GMT+5:30)","Asia/Kathmandu (GMT+5:45)":"Asia/Kathmandu (GMT+5:45)","Asia/Dhaka (GMT+6)":"Asia/Dhaka (GMT+6)","Asia/Almaty (GMT+5)":"Asia/Almaty (GMT+5)","Asia/Rangoon (GMT+6:30)":"Asia/Rangoon (GMT+6:30)","Asia/Bangkok (GMT+7)":"Asia/Bangkok (GMT+7)","Asia/Jakarta (GMT+7)":"Asia/Jakarta (GMT+7)","Asia/Ho_Chi_Minh (GMT+7)":"Asia/Ho_Chi_Minh (GMT+7)","Asia/Singapore (GMT+8)":"Asia/Singapore (GMT+8)","Asia/Kuala_Lumpur (GMT+8)":"Asia/Kuala_Lumpur (GMT+8)","Asia/Shanghai (GMT+8)":"Asia/Shanghai (GMT+8)","Asia/Hong_Kong (GMT+8)":"Asia/Hong_Kong (GMT+8)","Asia/Taipei (GMT+8)":"Asia/Taipei (GMT+8)","Asia/Manila (GMT+8)":"Asia/Manila (GMT+8)","Australia/Perth (GMT+8)":"Australia/Perth (GMT+8)","Asia/Tokyo (GMT+9)":"Asia/Tokyo (GMT+9)","Asia/Seoul (GMT+9)":"Asia/Seoul (GMT+9)","Asia/Pyongyang (GMT+9)":"Asia/Pyongyang (GMT+9)","Australia/Adelaide (GMT+9:30)":"Australia/Adelaide (GMT+9:30; daylight GMT+10:30)","Australia/Darwin (GMT+9:30)":"Australia/Darwin (GMT+9:30)","Australia/Sydney (GMT+10)":"Australia/Sydney (GMT+10; daylight GMT+11)","Australia/Melbourne (GMT+10)":"Australia/Melbourne (GMT+10; daylight GMT+11)","Australia/Brisbane (GMT+10)":"Australia/Brisbane (GMT+10)","Australia/Hobart (GMT+10)":"Australia/Hobart (GMT+10; daylight GMT+11)","Pacific/Guam (GMT+10)":"Pacific/Guam (GMT+10)","Pacific/Port_Moresby (GMT+10)":"Pacific/Port_Moresby (GMT+10)","Asia/Vladivostok (GMT+10)":"Asia/Vladivostok (GMT+10)","Pacific/Noumea (GMT+11)":"Pacific/Noumea (GMT+11)","Pacific/Norfolk (GMT+11)":"Pacific/Norfolk (GMT+11; daylight GMT+12)","Asia/Magadan (GMT+11)":"Asia/Magadan (GMT+11)","Pacific/Auckland (GMT+12)":"Pacific/Auckland (GMT+12; daylight GMT+13)","Pacific/Fiji (GMT+12)":"Pacific/Fiji (GMT+12)","Pacific/Chatham (GMT+12:45)":"Pacific/Chatham (GMT+12:45; daylight GMT+13:45)","Pacific/Tongatapu (GMT+13)":"Pacific/Tongatapu (GMT+13)","Pacific/Apia (GMT+13)":"Pacific/Apia (GMT+13)","Pacific/Kiritimati (GMT+14)":"Pacific/Kiritimati (GMT+14)"};
-  var PRODUCT_SETTINGS = {"photo_source":{"entity":"select/Photos: Source","domain":"select","default":"All Photos","options":["All Photos","Favorites","Album","Person","Memories"]},"date_filter_mode":{"entity":"select/Photos: Date Filter Mode","domain":"select","default":"Fixed Range","options":["Fixed Range","Relative Range"]},"relative_unit":{"entity":"select/Photos: Relative Unit","domain":"select","default":"Years","options":["Months","Years"]},"photo_orientation":{"entity":"select/Photos: Orientation","domain":"select","default":"Any","options":["Any","Portrait Only","Landscape Only"]},"display_mode":{"entity":"select/Photos: Display Mode","domain":"select","default":"Fill","options":["Fill","Fit"]},"interval":{"entity":"select/Photos: Slideshow Interval","domain":"select","default":"15 seconds","options":["10 seconds","15 seconds","20 seconds","30 seconds","45 seconds","1 minute","2 minutes","3 minutes","5 minutes","10 minutes"]},"conn_timeout":{"entity":"select/Screen: Connection Timeout","domain":"select","default":"10 minutes","options":["30 seconds","45 seconds","1 minute","2 minutes","3 minutes","5 minutes","10 minutes","15 minutes","20 minutes","30 minutes"]},"screen_rotation":{"entity":"select/Screen: Rotation","domain":"select","default":"0","options":["0","180"],"developerOptions":["90","270"]},"photo_metadata_date_format":{"entity":"select/Device: Metadata Date Format","domain":"select","default":"Date Taken","options":["Relative Date","Date Taken"]},"photo_metadata_date_taken_format":{"entity":"select/Device: Metadata Date Taken Format","domain":"select","default":"1 January, 2026","options":["1 January, 2026","January 1, 2026"]},"clock_format":{"entity":"select/Clock: Format","domain":"select","default":"24 Hour","options":["24 Hour","12 Hour"]},"update_frequency":{"entity":"select/Firmware: Update Frequency","domain":"select","default":"Daily","options":["Hourly","Daily","Weekly","Monthly"]},"auto_update":{"entity":"switch/Firmware: Auto Update","domain":"switch","default":true,"options":[]},"beta_channel":{"entity":"switch/Firmware: Beta Channel","domain":"switch","default":false,"options":[]},"firmware_manifest_url":{"entity":"text/Firmware: Manifest URL","domain":"text","default":"","options":[]},"firmware_beta_manifest_url":{"entity":"text/Firmware: Beta Manifest URL","domain":"text","default":"","options":[]},"date_filter_enabled":{"entity":"switch/Photos: Date Filter","domain":"switch","default":false,"options":[]},"date_from":{"entity":"text/Photos: Date From","domain":"text","default":"","options":[]},"date_to":{"entity":"text/Photos: Date To","domain":"text","default":"","options":[]},"relative_amount":{"entity":"number/Photos: Relative Amount","domain":"number","default":1,"options":[],"min":1,"max":120,"step":1},"schedule_enabled":{"entity":"switch/Screen: Schedule Enabled","domain":"switch","default":false,"options":[]},"schedule_on_hour":{"entity":"number/Screen: Schedule On Hour","domain":"number","default":6,"options":[],"min":0,"max":23,"step":1},"schedule_off_hour":{"entity":"number/Screen: Schedule Off Hour","domain":"number","default":23,"options":[],"min":0,"max":23,"step":1},"schedule_wake_timeout":{"entity":"number/Screen: Schedule Wake Timeout","domain":"number","default":60,"options":[],"min":10,"max":3600,"step":10},"brightness_day":{"entity":"number/Screen: Daytime Brightness","domain":"number","default":100,"options":[],"min":10,"max":100,"step":5},"brightness_night":{"entity":"number/Screen: Nighttime Brightness","domain":"number","default":75,"options":[],"min":10,"max":100,"step":5},"base_tone_enabled":{"entity":"switch/Screen: Tone Adjustment","domain":"switch","default":false,"options":[]},"base_tone":{"entity":"number/Screen: Display Tone","domain":"number","default":0,"options":[],"min":0,"max":100,"step":5},"warm_tones_enabled":{"entity":"switch/Screen: Night Tone Adjustment","domain":"switch","default":false,"options":[]},"warm_tone_intensity":{"entity":"number/Screen: Warm Tone Intensity","domain":"number","default":50,"options":[],"min":10,"max":100,"step":5},"warm_tone_override":{"entity":"switch/Screen: Warm Tone Override","domain":"switch","default":false,"options":[]},"portrait_pairing":{"entity":"switch/Photos: Portrait Pairing","domain":"switch","default":true,"options":[]},"photo_metadata_date_enabled":{"entity":"switch/Device: Metadata Date","domain":"switch","default":true,"options":[]},"photo_metadata_location_enabled":{"entity":"switch/Device: Metadata Location","domain":"switch","default":true,"options":[]}};
-  var STATIC_ENTITIES = {"firmware":{"entity":"text_sensor/Firmware: Version"},"timezone":{"entity":"select/Clock: Timezone","optionsKey":"tz_options","default":"Europe/London (GMT+0)"},"ntp_server_1":{"entity":"text/Clock: NTP Server 1","default":"0.pool.ntp.org"},"ntp_server_2":{"entity":"text/Clock: NTP Server 2","default":"1.pool.ntp.org"},"ntp_server_3":{"entity":"text/Clock: NTP Server 3","default":"2.pool.ntp.org"},"album_ids":{"entity":"text/Photos: Album IDs"},"album_labels":{"entity":"text/Photos: Album Labels"},"person_ids":{"entity":"text/Photos: Person IDs"},"person_labels":{"entity":"text/Photos: Person Labels"},"sunrise":{"entity":"text_sensor/Screen: Sunrise"},"sunset":{"entity":"text_sensor/Screen: Sunset"},"developer_features_enabled":{"entity":"switch/Developer: Features","boolFromState":true},"show_clock":{"entity":"switch/Clock: Show","boolFromState":true,"default":true}};
+  var PRODUCT_SETTINGS = {"photo_source":{"entity":"select/Photos: Source","domain":"select","default":"All Photos","options":["All Photos","Favorites","Album","Person","Tag","Memories"]},"date_filter_mode":{"entity":"select/Photos: Date Filter Mode","domain":"select","default":"Fixed Range","options":["Fixed Range","Relative Range"]},"relative_unit":{"entity":"select/Photos: Relative Unit","domain":"select","default":"Years","options":["Months","Years"]},"photo_orientation":{"entity":"select/Photos: Orientation","domain":"select","default":"Any","options":["Any","Portrait Only","Landscape Only"]},"display_mode":{"entity":"select/Photos: Display Mode","domain":"select","default":"Fill","options":["Fill","Fit"]},"interval":{"entity":"select/Photos: Slideshow Interval","domain":"select","default":"15 seconds","options":["10 seconds","15 seconds","20 seconds","30 seconds","45 seconds","1 minute","2 minutes","3 minutes","5 minutes","10 minutes"]},"conn_timeout":{"entity":"select/Screen: Connection Timeout","domain":"select","default":"10 minutes","options":["30 seconds","45 seconds","1 minute","2 minutes","3 minutes","5 minutes","10 minutes","15 minutes","20 minutes","30 minutes"]},"screen_rotation":{"entity":"select/Screen: Rotation","domain":"select","default":"0","options":["0","180"],"developerOptions":["90","270"]},"photo_metadata_date_format":{"entity":"select/Device: Metadata Date Format","domain":"select","default":"Date Taken","options":["Relative Date","Date Taken"]},"photo_metadata_date_taken_format":{"entity":"select/Device: Metadata Date Taken Format","domain":"select","default":"1 January, 2026","options":["1 January, 2026","January 1, 2026"]},"clock_format":{"entity":"select/Clock: Format","domain":"select","default":"24 Hour","options":["24 Hour","12 Hour"]},"update_frequency":{"entity":"select/Firmware: Update Frequency","domain":"select","default":"Daily","options":["Hourly","Daily","Weekly","Monthly"]},"auto_update":{"entity":"switch/Firmware: Auto Update","domain":"switch","default":true,"options":[]},"beta_channel":{"entity":"switch/Firmware: Beta Channel","domain":"switch","default":false,"options":[]},"firmware_manifest_url":{"entity":"text/Firmware: Manifest URL","domain":"text","default":"","options":[]},"firmware_beta_manifest_url":{"entity":"text/Firmware: Beta Manifest URL","domain":"text","default":"","options":[]},"date_filter_enabled":{"entity":"switch/Photos: Date Filter","domain":"switch","default":false,"options":[]},"date_from":{"entity":"text/Photos: Date From","domain":"text","default":"","options":[]},"date_to":{"entity":"text/Photos: Date To","domain":"text","default":"","options":[]},"relative_amount":{"entity":"number/Photos: Relative Amount","domain":"number","default":1,"options":[],"min":1,"max":120,"step":1},"schedule_enabled":{"entity":"switch/Screen: Schedule Enabled","domain":"switch","default":false,"options":[]},"schedule_on_hour":{"entity":"number/Screen: Schedule On Hour","domain":"number","default":6,"options":[],"min":0,"max":23,"step":1},"schedule_off_hour":{"entity":"number/Screen: Schedule Off Hour","domain":"number","default":23,"options":[],"min":0,"max":23,"step":1},"schedule_wake_timeout":{"entity":"number/Screen: Schedule Wake Timeout","domain":"number","default":60,"options":[],"min":10,"max":3600,"step":10},"brightness_day":{"entity":"number/Screen: Daytime Brightness","domain":"number","default":100,"options":[],"min":10,"max":100,"step":5},"brightness_night":{"entity":"number/Screen: Nighttime Brightness","domain":"number","default":75,"options":[],"min":10,"max":100,"step":5},"base_tone_enabled":{"entity":"switch/Screen: Tone Adjustment","domain":"switch","default":false,"options":[]},"base_tone":{"entity":"number/Screen: Display Tone","domain":"number","default":0,"options":[],"min":0,"max":100,"step":5},"warm_tones_enabled":{"entity":"switch/Screen: Night Tone Adjustment","domain":"switch","default":false,"options":[]},"warm_tone_intensity":{"entity":"number/Screen: Warm Tone Intensity","domain":"number","default":50,"options":[],"min":10,"max":100,"step":5},"warm_tone_override":{"entity":"switch/Screen: Warm Tone Override","domain":"switch","default":false,"options":[]},"portrait_pairing":{"entity":"switch/Photos: Portrait Pairing","domain":"switch","default":true,"options":[]},"photo_metadata_date_enabled":{"entity":"switch/Device: Metadata Date","domain":"switch","default":true,"options":[]},"photo_metadata_location_enabled":{"entity":"switch/Device: Metadata Location","domain":"switch","default":true,"options":[]}};
+  var STATIC_ENTITIES = {"firmware":{"entity":"text_sensor/Firmware: Version"},"timezone":{"entity":"select/Clock: Timezone","optionsKey":"tz_options","default":"Europe/London (GMT+0)"},"ntp_server_1":{"entity":"text/Clock: NTP Server 1","default":"0.pool.ntp.org"},"ntp_server_2":{"entity":"text/Clock: NTP Server 2","default":"1.pool.ntp.org"},"ntp_server_3":{"entity":"text/Clock: NTP Server 3","default":"2.pool.ntp.org"},"album_ids":{"entity":"text/Photos: Album IDs"},"album_labels":{"entity":"text/Photos: Album Labels"},"person_ids":{"entity":"text/Photos: Person IDs"},"person_labels":{"entity":"text/Photos: Person Labels"},"tag_ids":{"entity":"text/Photos: Tag IDs"},"tag_labels":{"entity":"text/Photos: Tag Labels"},"sunrise":{"entity":"text_sensor/Screen: Sunrise"},"sunset":{"entity":"text_sensor/Screen: Sunset"},"developer_features_enabled":{"entity":"switch/Developer: Features","boolFromState":true},"show_clock":{"entity":"switch/Clock: Show","boolFromState":true,"default":true}};
   var MANUAL_ENTITIES = {"immich_url":{"entity":"text/Connection: Server URL"},"api_key":{"entity":"text/Connection: API Key"},"backlight":{"entity":"light/Screen: Backlight"},"update":{"entity":"update/Firmware: Update"},"update_beta":{"entity":"update/Firmware: Update Beta"},"apply_photo_source":{"entity":"button/Apply Photo Source"},"firmware_check":{"entity":"button/Firmware: Check for Update"}};
   var MANUAL_STATE_KEYS = ["immich_url","api_key"];
   var ENTITY_ALIASES = {"schedule_enabled":[{"entity":"switch/Screen: Schedule","boolFromState":true}],"schedule_on_hour":[{"entity":"number/Screen: Schedule On","default":6,"number":true}],"schedule_off_hour":[{"entity":"number/Screen: Schedule Off","default":23,"number":true}]};
   var BACKUP_CONFIG_VERSION = 1;
-  var BACKUP_SCHEMA = [{"group":"connection","field":"immich_url","state_keys":["immich_url"]},{"group":"connection","field":"api_key","state_keys":["api_key"]},{"group":"photos","field":"source","state_keys":["photo_source"]},{"group":"photos","field":"album_ids","state_keys":["album_ids"]},{"group":"photos","field":"album_labels","state_keys":["album_labels"]},{"group":"photos","field":"person_ids","state_keys":["person_ids"]},{"group":"photos","field":"person_labels","state_keys":["person_labels"]},{"group":"photos","field":"date_filter_enabled","state_keys":["date_filter_enabled"]},{"group":"photos","field":"date_filter_mode","state_keys":["date_filter_mode"]},{"group":"photos","field":"date_from","state_keys":["date_from"]},{"group":"photos","field":"date_to","state_keys":["date_to"]},{"group":"photos","field":"relative_amount","state_keys":["relative_amount"]},{"group":"photos","field":"relative_unit","state_keys":["relative_unit"]},{"group":"photos","field":"orientation","state_keys":["photo_orientation"]},{"group":"photos","field":"portrait_pairing","state_keys":["portrait_pairing"]},{"group":"photos","field":"display_mode","state_keys":["display_mode"]},{"group":"frequency","field":"interval","state_keys":["interval"]},{"group":"frequency","field":"conn_timeout","state_keys":["conn_timeout"]},{"group":"firmware_updates","field":"auto_update","state_keys":["auto_update"]},{"group":"firmware_updates","field":"beta_channel","state_keys":["beta_channel"]},{"group":"firmware_updates","field":"update_frequency","state_keys":["update_frequency"]},{"group":"firmware_updates","field":"manifest_url","state_keys":["firmware_manifest_url"]},{"group":"firmware_updates","field":"beta_manifest_url","state_keys":["firmware_beta_manifest_url"]},{"group":"clock","field":"show","state_keys":["show_clock"]},{"group":"clock","field":"format","state_keys":["clock_format"]},{"group":"clock","field":"timezone","state_keys":["timezone"]},{"group":"clock","field":"ntp_servers","state_keys":["ntp_server_1","ntp_server_2","ntp_server_3"]},{"group":"screen","field":"brightness_day","state_keys":["brightness_day"]},{"group":"screen","field":"brightness_night","state_keys":["brightness_night"]},{"group":"screen","field":"schedule_enabled","state_keys":["schedule_enabled"]},{"group":"screen","field":"schedule_on_hour","state_keys":["schedule_on_hour"]},{"group":"screen","field":"schedule_off_hour","state_keys":["schedule_off_hour"]},{"group":"screen","field":"schedule_wake_timeout","state_keys":["schedule_wake_timeout"]},{"group":"screen","field":"base_tone_enabled","state_keys":["base_tone_enabled"]},{"group":"screen","field":"base_tone","state_keys":["base_tone"]},{"group":"screen","field":"warm_tones_enabled","state_keys":["warm_tones_enabled"]},{"group":"screen","field":"warm_tone_intensity","state_keys":["warm_tone_intensity"]},{"group":"screen","field":"warm_tone_override","state_keys":["warm_tone_override"]},{"group":"screen","field":"rotation","state_keys":["screen_rotation"]}];
+  var BACKUP_SCHEMA = [{"group":"connection","field":"immich_url","state_keys":["immich_url"]},{"group":"connection","field":"api_key","state_keys":["api_key"]},{"group":"photos","field":"source","state_keys":["photo_source"]},{"group":"photos","field":"album_ids","state_keys":["album_ids"]},{"group":"photos","field":"album_labels","state_keys":["album_labels"]},{"group":"photos","field":"person_ids","state_keys":["person_ids"]},{"group":"photos","field":"person_labels","state_keys":["person_labels"]},{"group":"photos","field":"tag_ids","state_keys":["tag_ids"]},{"group":"photos","field":"tag_labels","state_keys":["tag_labels"]},{"group":"photos","field":"date_filter_enabled","state_keys":["date_filter_enabled"]},{"group":"photos","field":"date_filter_mode","state_keys":["date_filter_mode"]},{"group":"photos","field":"date_from","state_keys":["date_from"]},{"group":"photos","field":"date_to","state_keys":["date_to"]},{"group":"photos","field":"relative_amount","state_keys":["relative_amount"]},{"group":"photos","field":"relative_unit","state_keys":["relative_unit"]},{"group":"photos","field":"orientation","state_keys":["photo_orientation"]},{"group":"photos","field":"portrait_pairing","state_keys":["portrait_pairing"]},{"group":"photos","field":"display_mode","state_keys":["display_mode"]},{"group":"frequency","field":"interval","state_keys":["interval"]},{"group":"frequency","field":"conn_timeout","state_keys":["conn_timeout"]},{"group":"firmware_updates","field":"auto_update","state_keys":["auto_update"]},{"group":"firmware_updates","field":"beta_channel","state_keys":["beta_channel"]},{"group":"firmware_updates","field":"update_frequency","state_keys":["update_frequency"]},{"group":"firmware_updates","field":"manifest_url","state_keys":["firmware_manifest_url"]},{"group":"firmware_updates","field":"beta_manifest_url","state_keys":["firmware_beta_manifest_url"]},{"group":"clock","field":"show","state_keys":["show_clock"]},{"group":"clock","field":"format","state_keys":["clock_format"]},{"group":"clock","field":"timezone","state_keys":["timezone"]},{"group":"clock","field":"ntp_servers","state_keys":["ntp_server_1","ntp_server_2","ntp_server_3"]},{"group":"screen","field":"brightness_day","state_keys":["brightness_day"]},{"group":"screen","field":"brightness_night","state_keys":["brightness_night"]},{"group":"screen","field":"schedule_enabled","state_keys":["schedule_enabled"]},{"group":"screen","field":"schedule_on_hour","state_keys":["schedule_on_hour"]},{"group":"screen","field":"schedule_off_hour","state_keys":["schedule_off_hour"]},{"group":"screen","field":"schedule_wake_timeout","state_keys":["schedule_wake_timeout"]},{"group":"screen","field":"base_tone_enabled","state_keys":["base_tone_enabled"]},{"group":"screen","field":"base_tone","state_keys":["base_tone"]},{"group":"screen","field":"warm_tones_enabled","state_keys":["warm_tones_enabled"]},{"group":"screen","field":"warm_tone_intensity","state_keys":["warm_tone_intensity"]},{"group":"screen","field":"warm_tone_override","state_keys":["warm_tone_override"]},{"group":"screen","field":"rotation","state_keys":["screen_rotation"]}];
   var LIVE_RENDER_STATE_KEYS = ["screen_rotation","portrait_pairing","developer_features_enabled","beta_channel"];
   var LIVE_RENDER_STATE_PREFIXES = ["photo_metadata_","schedule_"];
   var FIRMWARE_MANIFEST_URLS = {"stable":"https://jtenniswood.github.io/espframe/firmware/manifest.json","beta":"https://jtenniswood.github.io/espframe/firmware/beta/manifest.json"};
@@ -39,6 +39,8 @@
     album_labels: "",
     person_ids: "",
     person_labels: "",
+    tag_ids: "",
+    tag_labels: "",
     developer_features_enabled: false,
   };
 
@@ -341,7 +343,7 @@
     });
   }
 
-  // Matches the ESPHome template text max_length for album/person ID and label lists.
+  // Matches the ESPHome template text max_length for album/person/tag ID and label lists.
   var MAX_PHOTO_ID_FIELD_LENGTH = 255;
   var MAX_NTP_SERVER_LENGTH = 253;
   var MAX_FIRMWARE_URL_LENGTH = 255;
@@ -427,6 +429,7 @@
     "photo_source",
     "album_ids",
     "person_ids",
+    "tag_ids",
     "date_filter_enabled",
     "date_filter_mode",
     "date_from",
@@ -919,7 +922,7 @@ if (typeof module !== "undefined") {
   }
 
   // Generated from product metadata plus status-only fields; KEY_TO_ENTITY_ID derived from ENTITY_STATE_MAP.
-  var INITIAL_FETCH_KEYS = ["firmware","photo_source","date_filter_mode","relative_unit","photo_orientation","display_mode","interval","conn_timeout","screen_rotation","photo_metadata_date_format","photo_metadata_date_taken_format","clock_format","update_frequency","auto_update","beta_channel","firmware_manifest_url","firmware_beta_manifest_url","date_filter_enabled","date_from","date_to","relative_amount","schedule_enabled","schedule_on_hour","schedule_off_hour","schedule_wake_timeout","brightness_day","brightness_night","base_tone_enabled","base_tone","warm_tones_enabled","warm_tone_intensity","warm_tone_override","portrait_pairing","photo_metadata_date_enabled","photo_metadata_location_enabled","timezone","ntp_server_1","ntp_server_2","ntp_server_3","album_ids","album_labels","person_ids","person_labels","sunrise","sunset","developer_features_enabled"];
+  var INITIAL_FETCH_KEYS = ["firmware","photo_source","date_filter_mode","relative_unit","photo_orientation","display_mode","interval","conn_timeout","screen_rotation","photo_metadata_date_format","photo_metadata_date_taken_format","clock_format","update_frequency","auto_update","beta_channel","firmware_manifest_url","firmware_beta_manifest_url","date_filter_enabled","date_from","date_to","relative_amount","schedule_enabled","schedule_on_hour","schedule_off_hour","schedule_wake_timeout","brightness_day","brightness_night","base_tone_enabled","base_tone","warm_tones_enabled","warm_tone_intensity","warm_tone_override","portrait_pairing","photo_metadata_date_enabled","photo_metadata_location_enabled","timezone","ntp_server_1","ntp_server_2","ntp_server_3","album_ids","album_labels","person_ids","person_labels","tag_ids","tag_labels","sunrise","sunset","developer_features_enabled"];
   function getEntityIdForStateKey(key) {
     var productSpec = PRODUCT_SETTINGS && PRODUCT_SETTINGS[key];
     if (productSpec && typeof productSpec.entity === "string") return productSpec.entity;
@@ -1305,12 +1308,21 @@ if (typeof module !== "undefined") {
     // Photo Source
     var srcBody = el("div");
     var photoSourceApplyTimer = null;
-    var pendingPhotoSourceSave = { source: false, album: false, albumLabel: false, person: false, personLabel: false };
+    var pendingPhotoSourceSave = {
+      source: false,
+      album: false,
+      albumLabel: false,
+      person: false,
+      personLabel: false,
+      tag: false,
+      tagLabel: false
+    };
     var fSrc = field("Source");
     var srcSel = selectFromOptions(productSettingOptions("photo_source"), S.photo_source, function (v) {
       S.photo_source = v;
       albumField.style.display = v === "Album" ? "" : "none";
       personField.style.display = v === "Person" ? "" : "none";
+      tagField.style.display = v === "Tag" ? "" : "none";
       schedulePhotoSourceApply(0, { source: true });
     });
 
@@ -1410,19 +1422,27 @@ if (typeof module !== "undefined") {
     function validatePhotoSourceInputs(changes) {
       albumError.textContent = "";
       personError.textContent = "";
+      tagError.textContent = "";
       var srcVal = srcSel.value;
       var albumTrim = getAlbumIdsValue();
       var albumLabels = getAlbumLabelsValue();
       var personTrim = getPersonIdsValue();
       var personLabels = getPersonLabelsValue();
+      var tagTrim = getTagIdsValue();
+      var tagLabels = getTagLabelsValue();
       var shouldValidateAlbum = changes.album || srcVal === "Album";
       var shouldValidatePerson = changes.person || srcVal === "Person";
+      var shouldValidateTag = changes.tag || srcVal === "Tag";
       if (shouldValidateAlbum && photoIdFieldTooLong(albumTrim)) {
         albumError.textContent = PHOTO_ID_FIELD_TOO_LONG;
         return null;
       }
       if (shouldValidatePerson && photoIdFieldTooLong(personTrim)) {
         personError.textContent = PHOTO_ID_FIELD_TOO_LONG;
+        return null;
+      }
+      if (shouldValidateTag && photoIdFieldTooLong(tagTrim)) {
+        tagError.textContent = PHOTO_ID_FIELD_TOO_LONG;
         return null;
       }
       if (shouldValidateAlbum && !isValidUuidList(albumTrim)) {
@@ -1441,7 +1461,23 @@ if (typeof module !== "undefined") {
         personError.textContent = PHOTO_LABEL_FIELD_TOO_LONG;
         return null;
       }
-      return { source: srcVal, albumIds: albumTrim, albumLabels: albumLabels, personIds: personTrim, personLabels: personLabels };
+      if (shouldValidateTag && !isValidUuidList(tagTrim)) {
+        tagError.textContent = "Invalid UUID format";
+        return null;
+      }
+      if (changes.tagLabel && photoLabelFieldTooLong(tagLabels)) {
+        tagError.textContent = PHOTO_LABEL_FIELD_TOO_LONG;
+        return null;
+      }
+      return {
+        source: srcVal,
+        albumIds: albumTrim,
+        albumLabels: albumLabels,
+        personIds: personTrim,
+        personLabels: personLabels,
+        tagIds: tagTrim,
+        tagLabels: tagLabels
+      };
     }
     function applyPhotoSourceInputs() {
       var changes = {
@@ -1449,9 +1485,19 @@ if (typeof module !== "undefined") {
         album: pendingPhotoSourceSave.album,
         albumLabel: pendingPhotoSourceSave.albumLabel,
         person: pendingPhotoSourceSave.person,
-        personLabel: pendingPhotoSourceSave.personLabel
+        personLabel: pendingPhotoSourceSave.personLabel,
+        tag: pendingPhotoSourceSave.tag,
+        tagLabel: pendingPhotoSourceSave.tagLabel
       };
-      pendingPhotoSourceSave = { source: false, album: false, albumLabel: false, person: false, personLabel: false };
+      pendingPhotoSourceSave = {
+        source: false,
+        album: false,
+        albumLabel: false,
+        person: false,
+        personLabel: false,
+        tag: false,
+        tagLabel: false
+      };
       var vals = validatePhotoSourceInputs(changes);
       if (!vals) return;
       var requests = [];
@@ -1470,9 +1516,15 @@ if (typeof module !== "undefined") {
       if (changes.personLabel) {
         requests.push(saveSetting("person_labels", vals.personLabels));
       }
+      if (changes.tag) {
+        requests.push(saveSetting("tag_ids", vals.tagIds));
+      }
+      if (changes.tagLabel) {
+        requests.push(saveSetting("tag_labels", vals.tagLabels));
+      }
       if (!requests.length) return;
       Promise.all(requests).then(function () {
-        if (changes.source || changes.album || changes.person)
+        if (changes.source || changes.album || changes.person || changes.tag)
           post(endpoints.apply_photo_source + "/press");
       });
     }
@@ -1483,6 +1535,8 @@ if (typeof module !== "undefined") {
         pendingPhotoSourceSave.albumLabel = pendingPhotoSourceSave.albumLabel || !!changes.albumLabel;
         pendingPhotoSourceSave.person = pendingPhotoSourceSave.person || !!changes.person;
         pendingPhotoSourceSave.personLabel = pendingPhotoSourceSave.personLabel || !!changes.personLabel;
+        pendingPhotoSourceSave.tag = pendingPhotoSourceSave.tag || !!changes.tag;
+        pendingPhotoSourceSave.tagLabel = pendingPhotoSourceSave.tagLabel || !!changes.tagLabel;
       }
       clearTimeout(photoSourceApplyTimer);
       photoSourceApplyTimer = setTimeout(applyPhotoSourceInputs, delayMs == null ? 600 : delayMs);
@@ -1552,10 +1606,89 @@ if (typeof module !== "undefined") {
     personField.appendChild(personError);
     personField.style.display = S.photo_source === "Person" ? "" : "none";
 
+    var tagField = field("Tags");
+    var tagIdList = el("div", "photo-id-list");
+    var tagInputs = [];
+    var tagLabelInputs = [];
+    var tagError = el("div", "field-error");
+    function getTagIdsValue() {
+      return tagInputs.map(function (inputEl) {
+        return inputEl.value.trim();
+      }).filter(Boolean).join(",");
+    }
+    function getTagLabelsValue() {
+      return buildPhotoLabelList(tagInputs, tagLabelInputs);
+    }
+    function refreshTagRemoveButtons() {
+      Array.prototype.forEach.call(tagIdList.querySelectorAll(".tag-id-remove"), function (btn) {
+        btn.disabled = tagInputs.length <= 1;
+      });
+    }
+    function addTagIdRow(value, labelValue) {
+      var row = el("div", "photo-id-row");
+      var fields = el("div", "photo-id-fields");
+      var tagInput = input("text", value || "", "Paste tag ID from Immich URL", MAX_PHOTO_ID_FIELD_LENGTH);
+      var tagLabelInput = input("text", labelValue || "", "What tag is it?", MAX_PHOTO_ID_FIELD_LENGTH);
+      var removeBtn = el("button", "btn btn-secondary btn-icon tag-id-remove");
+      removeBtn.type = "button";
+      removeBtn.innerHTML = removeIdIcon;
+      removeBtn.title = "Remove tag ID";
+      removeBtn.setAttribute("aria-label", "Remove tag ID");
+      removeBtn.onclick = function () {
+        if (tagInputs.length <= 1) {
+          tagInput.value = "";
+          tagLabelInput.value = "";
+          schedulePhotoSourceApply(0, { tag: true, tagLabel: true });
+          return;
+        }
+        var removeIndex = tagInputs.indexOf(tagInput);
+        tagInputs.splice(removeIndex, 1);
+        tagLabelInputs.splice(removeIndex, 1);
+        row.parentNode.removeChild(row);
+        refreshTagRemoveButtons();
+        schedulePhotoSourceApply(0, { tag: true, tagLabel: true });
+      };
+      tagInput.oninput = function () {
+        schedulePhotoSourceApply(null, { tag: true, tagLabel: true });
+      };
+      tagLabelInput.oninput = function () {
+        schedulePhotoSourceApply(null, { tagLabel: true });
+      };
+      fields.appendChild(tagInput);
+      fields.appendChild(tagLabelInput);
+      row.appendChild(fields);
+      row.appendChild(removeBtn);
+      tagIdList.appendChild(row);
+      tagInputs.push(tagInput);
+      tagLabelInputs.push(tagLabelInput);
+      refreshTagRemoveButtons();
+    }
+    var tagIds = splitPhotoIdList(S.tag_ids);
+    var tagLabels = parsePhotoLabelList(S.tag_labels);
+    for (var tagIndex = 0; tagIndex < Math.max(tagIds.length, tagLabels.length, 1); tagIndex++) {
+      addTagIdRow(tagIds[tagIndex] || "", tagLabels[tagIndex] || "");
+    }
+    var addTagRow = el("div", "photo-id-actions");
+    var addTagBtn = el("button", "btn btn-secondary");
+    addTagBtn.type = "button";
+    addTagBtn.textContent = "Add a tag";
+    addTagBtn.title = "Add a tag";
+    addTagBtn.setAttribute("aria-label", "Add a tag");
+    addTagBtn.onclick = function () {
+      addTagIdRow("", "");
+      tagInputs[tagInputs.length - 1].focus();
+    };
+    addTagRow.appendChild(addTagBtn);
+    tagField.appendChild(tagIdList);
+    tagField.appendChild(addTagRow);
+    tagField.appendChild(tagError);
+    tagField.style.display = S.photo_source === "Tag" ? "" : "none";
+
     fSrc.appendChild(srcSel);
     srcBody.appendChild(fSrc);
     srcBody.appendChild(albumField);
     srcBody.appendChild(personField);
+    srcBody.appendChild(tagField);
 
     return makeCollapsibleCard("Photo Source", srcBody, true);
 
@@ -2837,6 +2970,24 @@ if (typeof module !== "undefined") {
           return skipBackupImportField("Person labels exceed 255 characters - not imported");
         } else {
           trackBackupImportSave(saveSetting("person_labels", importPersonLabels));
+        }
+        return true;
+      case "photos.tag_ids":
+        var importTag = String(value).trim();
+        if (photoIdFieldTooLong(importTag)) {
+          return skipBackupImportField("Tag IDs exceed 255 characters - not imported");
+        } else if (!isValidUuidList(importTag)) {
+          return skipBackupImportField("Import skipped invalid tag IDs");
+        } else {
+          trackBackupImportSave(saveSetting("tag_ids", importTag));
+        }
+        return true;
+      case "photos.tag_labels":
+        var importTagLabels = String(value).trim();
+        if (photoLabelFieldTooLong(importTagLabels)) {
+          return skipBackupImportField("Tag labels exceed 255 characters - not imported");
+        } else {
+          trackBackupImportSave(saveSetting("tag_labels", importTagLabels));
         }
         return true;
       case "firmware_updates.manifest_url":

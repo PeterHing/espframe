@@ -27,6 +27,8 @@ const validBackupFixture = {
     album_labels: "Family",
     person_ids: "22222222-2222-4222-8222-222222222222",
     person_labels: "Alex",
+    tag_ids: "33333333-3333-4333-8333-333333333333",
+    tag_labels: "Espframe",
     date_filter_enabled: true,
     date_filter_mode: "Relative Range",
     relative_amount: 3,
@@ -199,6 +201,8 @@ function browserScriptForScenario(scenario) {
       "Photos: Album Labels": "Family",
       "Photos: Person IDs": "22222222-2222-4222-8222-222222222222",
       "Photos: Person Labels": "Alex",
+      "Photos: Tag IDs": "33333333-3333-4333-8333-333333333333",
+      "Photos: Tag Labels": "Espframe",
       "Photos: Date Filter": true,
       "Photos: Date Filter Mode": "Fixed Range",
       "Photos: Date From": "2024-01-01",
@@ -351,7 +355,7 @@ function smokeAssertionsForScenario(scenario) {
       }
       function requirePhotoSourceModes() {
         const sourceSelect = selectByLabel("Source");
-        ["All Photos", "Favorites", "Album", "Person", "Memories"].forEach((mode) => {
+        ["All Photos", "Favorites", "Album", "Person", "Tag", "Memories"].forEach((mode) => {
           if (!Array.from(sourceSelect.options).some((option) => option.value === mode)) {
             throw new Error("Missing photo source mode: " + mode);
           }
@@ -360,6 +364,8 @@ function smokeAssertionsForScenario(scenario) {
         requireText("Add an album");
         setSelect("Source", "Person");
         requireText("Add a person");
+        setSelect("Source", "Tag");
+        requireText("Add a tag");
       }
 
       try {

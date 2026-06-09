@@ -48,10 +48,10 @@ def check_backup_metadata(product: dict, errors: list[str]) -> None:
         require_contains(backup_docs, partial_behavior, "docs/backup.md", errors)
     if invalid_photo_id_behavior:
         require_contains(backup_docs, invalid_photo_id_behavior, "docs/backup.md", errors)
-        for label in ("Album IDs", "Album labels", "Person IDs", "Person labels"):
+        for label in ("Album IDs", "Album labels", "Person IDs", "Person labels", "Tag IDs", "Tag labels"):
             require_contains(web_template, f"{label} exceed {photo_id_limit} characters - not imported", rel(WEB_TEMPLATE), errors)
             require_contains(web_text, f"{label} exceed {photo_id_limit} characters - not imported", rel(WEB_APP), errors)
-        for label in ("album IDs", "person IDs"):
+        for label in ("album IDs", "person IDs", "tag IDs"):
             require_contains(web_template, f"Import skipped invalid {label}", rel(WEB_TEMPLATE), errors)
             require_contains(web_text, f"Import skipped invalid {label}", rel(WEB_APP), errors)
     for message in (
@@ -75,6 +75,7 @@ def check_backup_metadata(product: dict, errors: list[str]) -> None:
         "applyBackupImportField",
         "backupEntryKey(entry)",
         "photos.album_ids",
+        "photos.tag_ids",
         "firmware_updates.manifest_url",
         "clock.ntp_servers",
         "screen.schedule_wake_timeout",
@@ -90,6 +91,7 @@ def check_backup_metadata(product: dict, errors: list[str]) -> None:
             "applyBackupImportField",
             "backupEntryKey(entry)",
             "photos.album_ids",
+            "photos.tag_ids",
             "firmware_updates.manifest_url",
             "clock.ntp_servers",
             "screen.schedule_wake_timeout",

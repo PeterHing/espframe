@@ -39,6 +39,8 @@
     album_labels: "",
     person_ids: "",
     person_labels: "",
+    tag_ids: "",
+    tag_labels: "",
     developer_features_enabled: false,
   };
 
@@ -112,7 +114,7 @@
 
   __ESPFRAME_WEB_ENDPOINTS__
 
-  // Matches the ESPHome template text max_length for album/person ID and label lists.
+  // Matches the ESPHome template text max_length for album/person/tag ID and label lists.
   var MAX_PHOTO_ID_FIELD_LENGTH = 255;
   var MAX_NTP_SERVER_LENGTH = 253;
   var MAX_FIRMWARE_URL_LENGTH = 255;
@@ -198,6 +200,7 @@
     "photo_source",
     "album_ids",
     "person_ids",
+    "tag_ids",
     "date_filter_enabled",
     "date_filter_mode",
     "date_from",

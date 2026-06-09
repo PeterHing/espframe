@@ -18,7 +18,7 @@ The export captures all user-facing settings from the current session:
 | Category | Settings |
 |----------|----------|
 | **Connection** | Immich server URL, API key |
-| **Photos** | Source, album IDs, album labels, person IDs, person labels, date filter settings, orientation, portrait pairing, display mode |
+| **Photos** | Source, album IDs, album labels, person IDs, person labels, tag IDs, tag labels, date filter settings, orientation, portrait pairing, display mode |
 | **Frequency** | Slideshow interval, connection timeout |
 | **Firmware Updates** | Auto update, beta channel, update frequency, custom manifest URLs |
 | **Clock** | Show clock, format, timezone |
@@ -38,7 +38,7 @@ Firmware version, update status, sunrise/sunset, and current brightness are **no
 
 Partial config files work — only settings present in the file are applied; everything else stays unchanged.
 
-Album IDs, Album Labels, Person IDs, and Person Labels each must be 255 characters or fewer after trimming, which matches the device storage limit. If an import file exceeds that for any of those fields, the web UI reports the skipped setting and keeps importing other valid fields.
+Album IDs, Album Labels, Person IDs, Person Labels, Tag IDs, and Tag Labels each must be 255 characters or fewer after trimming, which matches the device storage limit. If an import file exceeds that for any of those fields, the web UI reports the skipped setting and keeps importing other valid fields.
 
 ## File Format
 
@@ -55,6 +55,8 @@ The export is a standard JSON file with a `version` field and grouped settings:
     "album_labels": "",
     "person_ids": "",
     "person_labels": "",
+    "tag_ids": "",
+    "tag_labels": "",
     "date_filter_enabled": false,
     "date_filter_mode": "Fixed Range",
     "date_from": "",
