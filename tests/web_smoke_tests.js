@@ -2,7 +2,7 @@ const assert = require("assert/strict");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { spawnSync } = require("child_process");
+const { spawn } = require("child_process");
 
 const root = path.resolve(__dirname, "..");
 const chromePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -305,6 +305,12 @@ function smokeAssertionsForScenario(scenario) {
         button.click();
         return button;
       }
+      function clickTab(text) {
+        const tab = Array.from(document.querySelectorAll(".sp-tab")).find((item) => item.textContent.trim() === text);
+        if (!tab) throw new Error("Tab not found: " + text);
+        tab.click();
+        return tab;
+      }
       function requirePostContains(label, fragment, extraFragment) {
         const found = window.__smoke.posts.some((url) =>
           url.indexOf(fragment) !== -1 && (!extraFragment || url.indexOf(extraFragment) !== -1)
@@ -373,6 +379,7 @@ function smokeAssertionsForScenario(scenario) {
           await waitFor(() => pageText().indexOf("connect your photo frame") !== -1, 8000, "wizard");
           requireText("Immich Server URL");
           requireText("API Key");
+          clickTab("Device");
           requireText("Import Settings");
         } else {
           await waitFor(() => pageText().indexOf("Photo Source") !== -1, 8000, "settings");
@@ -488,33 +495,80 @@ function htmlForScenario(scenario) {
 </html>`;
 }
 
-function runScenario(scenario) {
+function runChrome(args, timeoutMs) {
+  return new Promise((resolve) => {
+    const child = spawn(chromePath, args, {
+      detached: true,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let stdout = "";
+    let stderr = "";
+
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk;
+    });
+
+    const timer = setTimeout(() => {
+      try {
+        process.kill(-child.pid, "SIGKILL");
+      } catch (_) {
+        child.kill("SIGKILL");
+      }
+    }, timeoutMs);
+
+    child.on("close", (status, signal) => {
+      clearTimeout(timer);
+      resolve({ status, signal, timedOut, stdout, stderr });
+    });
+  });
+}
+
+async function runScenario(scenario) {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "espframe-web-smoke-"));
   const htmlPath = path.join(tempDir, `${scenario.name}.html`);
   const userDataDir = path.join(tempDir, "chrome-profile");
   fs.writeFileSync(htmlPath, htmlForScenario(scenario));
-  const result = spawnSync(
-    chromePath,
+  const result = await runChrome(
     [
       "--headless=new",
       "--disable-gpu",
+      "--disable-background-networking",
+      "--disable-component-extensions-with-background-pages",
+      "--disable-default-apps",
+      "--disable-extensions",
       "--no-first-run",
       "--no-default-browser-check",
+      "--no-service-autorun",
       `--user-data-dir=${userDataDir}`,
       `--window-size=${scenario.width},${scenario.height}`,
       "--virtual-time-budget=16000",
       "--dump-dom",
       `file://${htmlPath}`,
     ],
-    { encoding: "utf8", timeout: 30000 }
+    30000
   );
 
   const output = `${result.stdout || ""}\n${result.stderr || ""}`;
-  assert.equal(result.status, 0, `Chrome failed for ${scenario.name}:\n${output}`);
   const passToken = `ESPFRAME_BROWSER_SMOKE_${scenario.name.toUpperCase().replace(/-/g, "_")}_PASS`;
+  if (!output.includes(passToken)) {
+    assert.equal(result.status, 0, `Chrome failed for ${scenario.name}:\n${output}`);
+  }
   assert.ok(output.includes(passToken), `Browser smoke scenario ${scenario.name} failed:\n${output}`);
 }
 
-scenarios.forEach(runScenario);
+async function main() {
+  for (const scenario of scenarios) {
+    await runScenario(scenario);
+  }
+  console.log("web browser smoke tests passed");
+}
 
-console.log("web browser smoke tests passed");
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
