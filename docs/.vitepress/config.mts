@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitepress'
 
-const hostname = 'https://jtenniswood.github.io/espframe/'
+const hostname = 'https://peterhing.github.io/espframe/'
 
 export default defineConfig({
   title: 'Espframe for Immich',
@@ -135,7 +135,7 @@ export default defineConfig({
     nav: [
       { text: 'Install', link: '/install' },
       { text: 'Docs', link: '/' },
-      { text: 'GitHub', link: 'https://github.com/jtenniswood/espframe' },
+      { text: 'GitHub', link: 'https://github.com/PeterHing/espframe' },
     ],
 
     sidebar: [
@@ -181,12 +181,12 @@ export default defineConfig({
     ],
 
     editLink: {
-      pattern: 'https://github.com/jtenniswood/espframe/edit/main/docs/:path',
+      pattern: 'https://github.com/PeterHing/espframe/edit/main/docs/:path',
       text: 'Edit this page on GitHub',
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/jtenniswood/espframe' },
+      { icon: 'github', link: 'https://github.com/PeterHing/espframe' },
     ],
 
     search: {

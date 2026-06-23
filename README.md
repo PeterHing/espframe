@@ -55,7 +55,7 @@ Currently documented hardware:
 
 The easiest way to install Espframe is with the web installer. You do not need to install developer tools or build firmware yourself.
 
-**[Open the Web Installer](https://jtenniswood.github.io/espframe/install)**
+**[Open the Web Installer](https://peterhing.github.io/espframe/install)**
 
 You will need:
 
@@ -67,7 +67,7 @@ You will need:
 
 The full setup guide is here:
 
-**[jtenniswood.github.io/espframe](https://jtenniswood.github.io/espframe/)**
+**[peterhing.github.io/espframe](https://peterhing.github.io/espframe/)**
 
 ## Everyday Controls
 

@@ -74,4 +74,4 @@ Add controls to customize frame settings from the screen rather than the web ser
 
 ---
 
-Have a feature request? [Open an issue on GitHub.](https://github.com/jtenniswood/espframe/issues)
+Have a feature request? [Open an issue on GitHub.](https://github.com/PeterHing/espframe/issues)

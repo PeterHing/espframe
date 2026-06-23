@@ -15,4 +15,4 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://jtenniswood.github.io/espframe/sitemap.xml
+Sitemap: https://peterhing.github.io/espframe/sitemap.xml

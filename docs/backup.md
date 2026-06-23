@@ -72,8 +72,8 @@ The export is a standard JSON file with a `version` field and grouped settings:
     "auto_update": true,
     "beta_channel": false,
     "update_frequency": "Daily",
-    "manifest_url": "https://jtenniswood.github.io/espframe/firmware/manifest.json",
-    "beta_manifest_url": "https://jtenniswood.github.io/espframe/firmware/beta/manifest.json"
+    "manifest_url": "https://peterhing.github.io/espframe/firmware/manifest.json",
+    "beta_manifest_url": "https://peterhing.github.io/espframe/firmware/beta/manifest.json"
   },
   "clock": { "show": true, "format": "24 Hour", "timezone": "..." },
   "screen": {

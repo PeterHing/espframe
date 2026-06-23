@@ -438,10 +438,10 @@
     "owner_name": "jtenniswood",
     "owner_url": "https://github.com/jtenniswood",
     "package_name": "jtenniswood.immich-frame",
-    "repository_url": "https://github.com/jtenniswood/espframe",
+    "repository_url": "https://github.com/PeterHing/espframe",
     "github_default_branch": "main",
-    "public_base_url": "https://jtenniswood.github.io/espframe",
-    "release_url_base": "https://github.com/jtenniswood/espframe/releases/tag/",
+    "public_base_url": "https://peterhing.github.io/espframe",
+    "release_url_base": "https://github.com/PeterHing/espframe/releases/tag/",
     "release_workflow_actions": {
       "checkout": "actions/checkout@v6",
       "cache": "actions/cache@v5",
@@ -837,8 +837,8 @@
         "screen_rotation_180": "270",
         "screen_rotation_270": "0",
         "captive_portal_ip": "192.168.4.1",
-        "firmware_manifest_url": "https://jtenniswood.github.io/espframe/firmware/manifest.json",
-        "firmware_beta_manifest_url": "https://jtenniswood.github.io/espframe/firmware/beta/manifest.json"
+        "firmware_manifest_url": "https://peterhing.github.io/espframe/firmware/manifest.json",
+        "firmware_beta_manifest_url": "https://peterhing.github.io/espframe/firmware/beta/manifest.json"
       },
       "font_assets": [
         { "id": "noto_325_150_font", "file": "gfonts://Noto Sans@325", "size": 150, "bpp": 4 },

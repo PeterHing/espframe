@@ -22,7 +22,7 @@ wifi:
 
 packages:
   espframe:
-    url: https://github.com/jtenniswood/espframe
+    url: https://github.com/PeterHing/espframe
     files: [devices/guition-esp32-p4-jc8012p4a1/packages.yaml]
     ref: main
     refresh: 1s
