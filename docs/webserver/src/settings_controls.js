@@ -21,6 +21,7 @@
     immichApp.appendChild(immichWrap);
 
     appendCards(wrap, [
+      makeDeviceWifiCard(),
       makeScreenBrightnessCard(),
       makeScreenToneCard(),
       makeNightScheduleCard(),

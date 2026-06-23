@@ -297,3 +297,183 @@
     return makeCollapsibleCard("Clock", clkBody, true, clockBadge);
 
   }
+
+
+  function makeDeviceWifiCard() {
+    // WiFi reconfiguration. Lets the user change networks from the running UI
+    // instead of having to forget and re-enter the captive-portal AP.
+    var body = el("div");
+
+    var current = el("div", "field");
+    var currentLabel = document.createElement("label");
+    currentLabel.textContent = "Current Network";
+    current.appendChild(currentLabel);
+    var currentValue = document.createElement("div");
+    currentValue.className = "key-mask";
+    currentValue.style.textAlign = "left";
+    currentValue.textContent = S.wifi_current_ssid || "(disconnected)";
+    current.appendChild(currentValue);
+    body.appendChild(current);
+
+    var ssidField = field("New SSID");
+    var ssidInput = input("text", "", S.wifi_current_ssid || "My Home WiFi", 32);
+    ssidInput.setAttribute("aria-label", "New WiFi SSID");
+    ssidInput.autocomplete = "off";
+    ssidInput.spellcheck = false;
+    ssidField.appendChild(ssidInput);
+    body.appendChild(ssidField);
+
+    var pwField = field("Password");
+    var pwGroup = el("div", "input-group");
+    var pwInput = input("password", "", "WiFi password (blank for open networks)", 63);
+    pwInput.setAttribute("aria-label", "New WiFi password");
+    pwInput.autocomplete = "new-password";
+    pwGroup.appendChild(pwInput);
+    var showBtn = el("button", "btn btn-secondary");
+    showBtn.textContent = "Show";
+    showBtn.type = "button";
+    showBtn.onclick = function () {
+      var isPass = pwInput.type === "password";
+      pwInput.type = isPass ? "text" : "password";
+      showBtn.textContent = isPass ? "Hide" : "Show";
+    };
+    pwGroup.appendChild(showBtn);
+    pwField.appendChild(pwGroup);
+    body.appendChild(pwField);
+
+    // Scan networks --------------------------------------------------------
+    var scanField = field("Nearby Networks");
+    var scanRow = el("div", "input-group");
+    var scanBtn = el("button", "btn btn-secondary");
+    scanBtn.type = "button";
+    scanBtn.textContent = "Scan";
+    var scanStatus = el("div");
+    scanStatus.className = "key-mask";
+    scanStatus.style.textAlign = "left";
+    scanStatus.textContent = S.wifi_scan_results || "Tap Scan to list nearby networks.";
+    scanRow.appendChild(scanBtn);
+    scanField.appendChild(scanRow);
+    scanField.appendChild(scanStatus);
+    body.appendChild(scanField);
+
+    function renderScanResults(raw) {
+      scanStatus.innerHTML = "";
+      var text = String(raw || "").trim();
+      if (!text || text === "(no networks found)") {
+        scanStatus.textContent = text || "(no networks found)";
+        return;
+      }
+      if (text === "Scanning...") {
+        scanStatus.textContent = "Scanning...";
+        return;
+      }
+      var lines = text.split("\n");
+      lines.forEach(function (line) {
+        var row = document.createElement("div");
+        row.style.cursor = "pointer";
+        row.style.padding = "4px 0";
+        row.textContent = line;
+        // Strip trailing " (-NN dBm)" to extract just the SSID for click-to-fill.
+        var match = line.match(/^(.*) \(-?\d+ dBm\)$/);
+        var ssid = match ? match[1] : line;
+        row.onclick = function () {
+          ssidInput.value = ssid;
+          pwInput.focus();
+        };
+        scanStatus.appendChild(row);
+      });
+    }
+
+    scanBtn.onclick = function () {
+      if (!endpoints.wifi_scan_networks) return;
+      scanBtn.disabled = true;
+      var originalText = scanBtn.textContent;
+      scanBtn.textContent = "Scanning...";
+      scanStatus.textContent = "Scanning...";
+      post(endpoints.wifi_scan_networks + "/press").then(function () {
+        // Firmware scan takes ~5s; poll the results sensor for up to 12s.
+        var attempts = 0;
+        function poll() {
+          attempts++;
+          safeGet(endpoints.wifi_scan_results).then(function (resp) {
+            var value = resp && (resp.value || resp.state);
+            if (value && value !== "Scanning...") {
+              renderScanResults(value);
+              scanBtn.disabled = false;
+              scanBtn.textContent = originalText;
+              return;
+            }
+            if (attempts >= 12) {
+              scanBtn.disabled = false;
+              scanBtn.textContent = originalText;
+              scanStatus.textContent = "Scan timed out. Try again.";
+              return;
+            }
+            setTimeout(poll, 1000);
+          });
+        }
+        setTimeout(poll, 1500);
+      });
+    };
+
+    // Save & reconnect -----------------------------------------------------
+    var saveRow = el("div", "backup-row");
+    var saveBtn = el("button", "btn btn-primary");
+    saveBtn.type = "button";
+    saveBtn.textContent = "Save and Reconnect";
+
+    // Forget current WiFi --------------------------------------------------
+    var forgetBtn = el("button", "btn btn-secondary");
+    forgetBtn.type = "button";
+    forgetBtn.textContent = "Forget WiFi";
+    forgetBtn.title = "Clears saved WiFi credentials and reboots into the captive-portal setup AP.";
+
+    saveBtn.onclick = function () {
+      var ssidValue = (ssidInput.value || "").trim();
+      if (!ssidValue) {
+        showBanner("Enter a WiFi SSID before saving.", "error");
+        ssidInput.focus();
+        return;
+      }
+      if (!endpoints.wifi_new_ssid || !endpoints.wifi_new_password || !endpoints.wifi_save_and_reconnect) {
+        showBanner("WiFi reconfig endpoints are not available on this firmware.", "error");
+        return;
+      }
+      saveBtn.disabled = true;
+      forgetBtn.disabled = true;
+      showBanner("Saving WiFi credentials. Device will reboot \u2014 reconnect this browser to the same WiFi (or the setup AP if connection fails) and reload in ~30s.", "success");
+      Promise.resolve()
+        .then(function () { return postTextValueSet(endpoints.wifi_new_ssid + "/set", ssidValue); })
+        .then(function () { return postTextValueSet(endpoints.wifi_new_password + "/set", pwInput.value || ""); })
+        .then(function () { return delayMs(600); })
+        .then(function () { return post(endpoints.wifi_save_and_reconnect + "/press"); })
+        .catch(function () {
+          saveBtn.disabled = false;
+          forgetBtn.disabled = false;
+          showBanner("Failed to save WiFi credentials. Try again.", "error");
+        });
+    };
+
+    forgetBtn.onclick = function () {
+      if (!endpoints.wifi_forget_and_restart_setup) return;
+      var confirmed = window.confirm(
+        "Forget the current WiFi network?\n\nThe device will reboot into the captive-portal setup AP. " +
+          "You will need to connect to the device's WiFi hotspot to reconfigure it."
+      );
+      if (!confirmed) return;
+      saveBtn.disabled = true;
+      forgetBtn.disabled = true;
+      showBanner("Forgetting WiFi. Device will reboot into the setup AP.", "success");
+      post(endpoints.wifi_forget_and_restart_setup + "/press").catch(function () {
+        saveBtn.disabled = false;
+        forgetBtn.disabled = false;
+        showBanner("Failed to forget WiFi. Try again.", "error");
+      });
+    };
+
+    saveRow.appendChild(saveBtn);
+    saveRow.appendChild(forgetBtn);
+    body.appendChild(saveRow);
+
+    return makeCollapsibleCard("WiFi Network", body, true);
+  }

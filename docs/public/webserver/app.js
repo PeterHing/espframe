@@ -5,8 +5,8 @@
   var TIMEZONE_LABELS = {"Pacific/Midway (GMT-11)":"Pacific/Midway (GMT-11)","Pacific/Pago_Pago (GMT-11)":"Pacific/Pago_Pago (GMT-11)","Pacific/Honolulu (GMT-10)":"Pacific/Honolulu (GMT-10)","America/Adak (GMT-10)":"America/Adak (GMT-10; daylight GMT-9)","America/Anchorage (GMT-9)":"America/Anchorage (GMT-9; daylight GMT-8)","America/Juneau (GMT-9)":"America/Juneau (GMT-9; daylight GMT-8)","America/Los_Angeles (GMT-8)":"America/Los_Angeles (GMT-8; daylight GMT-7)","America/Vancouver (GMT-8)":"America/Vancouver (GMT-8; active GMT-7)","America/Tijuana (GMT-8)":"America/Tijuana (GMT-8; daylight GMT-7)","America/Denver (GMT-7)":"America/Denver (GMT-7; daylight GMT-6)","America/Phoenix (GMT-7)":"America/Phoenix (GMT-7)","America/Edmonton (GMT-7)":"America/Edmonton (GMT-7; daylight GMT-6)","America/Boise (GMT-7)":"America/Boise (GMT-7; daylight GMT-6)","America/Chicago (GMT-6)":"America/Chicago (GMT-6; daylight GMT-5)","America/Mexico_City (GMT-6)":"America/Mexico_City (GMT-6)","America/Winnipeg (GMT-6)":"America/Winnipeg (GMT-6; daylight GMT-5)","America/Guatemala (GMT-6)":"America/Guatemala (GMT-6)","America/Costa_Rica (GMT-6)":"America/Costa_Rica (GMT-6)","America/New_York (GMT-5)":"America/New_York (GMT-5; daylight GMT-4)","America/Toronto (GMT-5)":"America/Toronto (GMT-5; daylight GMT-4)","America/Detroit (GMT-5)":"America/Detroit (GMT-5; daylight GMT-4)","America/Havana (GMT-5)":"America/Havana (GMT-5; daylight GMT-4)","America/Bogota (GMT-5)":"America/Bogota (GMT-5)","America/Lima (GMT-5)":"America/Lima (GMT-5)","America/Jamaica (GMT-5)":"America/Jamaica (GMT-5)","America/Panama (GMT-5)":"America/Panama (GMT-5)","America/Halifax (GMT-4)":"America/Halifax (GMT-4; daylight GMT-3)","America/Caracas (GMT-4)":"America/Caracas (GMT-4)","America/Santiago (GMT-4)":"America/Santiago (GMT-4; daylight GMT-3)","America/La_Paz (GMT-4)":"America/La_Paz (GMT-4)","America/Manaus (GMT-4)":"America/Manaus (GMT-4)","America/Barbados (GMT-4)":"America/Barbados (GMT-4)","America/Puerto_Rico (GMT-4)":"America/Puerto_Rico (GMT-4)","America/Santo_Domingo (GMT-4)":"America/Santo_Domingo (GMT-4)","America/St_Johns (GMT-3:30)":"America/St_Johns (GMT-3:30; daylight GMT-2:30)","America/Sao_Paulo (GMT-3)":"America/Sao_Paulo (GMT-3)","America/Argentina/Buenos_Aires (GMT-3)":"America/Argentina/Buenos_Aires (GMT-3)","America/Montevideo (GMT-3)":"America/Montevideo (GMT-3)","America/Paramaribo (GMT-3)":"America/Paramaribo (GMT-3)","Atlantic/South_Georgia (GMT-2)":"Atlantic/South_Georgia (GMT-2)","Atlantic/Azores (GMT-1)":"Atlantic/Azores (GMT-1; daylight GMT+0)","Atlantic/Cape_Verde (GMT-1)":"Atlantic/Cape_Verde (GMT-1)","UTC (GMT+0)":"UTC (GMT+0)","Europe/London (GMT+0)":"Europe/London (GMT+0; daylight GMT+1)","Europe/Dublin (GMT+0)":"Europe/Dublin (GMT+0; daylight GMT+1)","Europe/Lisbon (GMT+0)":"Europe/Lisbon (GMT+0; daylight GMT+1)","Africa/Casablanca (GMT+1)":"Africa/Casablanca (GMT+1)","Africa/Accra (GMT+0)":"Africa/Accra (GMT+0)","Atlantic/Reykjavik (GMT+0)":"Atlantic/Reykjavik (GMT+0)","Europe/Paris (GMT+1)":"Europe/Paris (GMT+1; daylight GMT+2)","Europe/Berlin (GMT+1)":"Europe/Berlin (GMT+1; daylight GMT+2)","Europe/Rome (GMT+1)":"Europe/Rome (GMT+1; daylight GMT+2)","Europe/Madrid (GMT+1)":"Europe/Madrid (GMT+1; daylight GMT+2)","Europe/Amsterdam (GMT+1)":"Europe/Amsterdam (GMT+1; daylight GMT+2)","Europe/Brussels (GMT+1)":"Europe/Brussels (GMT+1; daylight GMT+2)","Europe/Vienna (GMT+1)":"Europe/Vienna (GMT+1; daylight GMT+2)","Europe/Zurich (GMT+1)":"Europe/Zurich (GMT+1; daylight GMT+2)","Europe/Stockholm (GMT+1)":"Europe/Stockholm (GMT+1; daylight GMT+2)","Europe/Oslo (GMT+1)":"Europe/Oslo (GMT+1; daylight GMT+2)","Europe/Copenhagen (GMT+1)":"Europe/Copenhagen (GMT+1; daylight GMT+2)","Europe/Warsaw (GMT+1)":"Europe/Warsaw (GMT+1; daylight GMT+2)","Europe/Prague (GMT+1)":"Europe/Prague (GMT+1; daylight GMT+2)","Europe/Budapest (GMT+1)":"Europe/Budapest (GMT+1; daylight GMT+2)","Europe/Belgrade (GMT+1)":"Europe/Belgrade (GMT+1; daylight GMT+2)","Africa/Lagos (GMT+1)":"Africa/Lagos (GMT+1)","Africa/Tunis (GMT+1)":"Africa/Tunis (GMT+1)","Africa/Cairo (GMT+2)":"Africa/Cairo (GMT+2; daylight GMT+3)","Europe/Athens (GMT+2)":"Europe/Athens (GMT+2; daylight GMT+3)","Europe/Bucharest (GMT+2)":"Europe/Bucharest (GMT+2; daylight GMT+3)","Europe/Helsinki (GMT+2)":"Europe/Helsinki (GMT+2; daylight GMT+3)","Europe/Kyiv (GMT+2)":"Europe/Kyiv (GMT+2; daylight GMT+3)","Europe/Istanbul (GMT+3)":"Europe/Istanbul (GMT+3)","Africa/Johannesburg (GMT+2)":"Africa/Johannesburg (GMT+2)","Africa/Nairobi (GMT+3)":"Africa/Nairobi (GMT+3)","Asia/Jerusalem (GMT+2)":"Asia/Jerusalem (GMT+2; daylight GMT+3)","Asia/Amman (GMT+3)":"Asia/Amman (GMT+3)","Asia/Beirut (GMT+2)":"Asia/Beirut (GMT+2; daylight GMT+3)","Europe/Moscow (GMT+3)":"Europe/Moscow (GMT+3)","Asia/Baghdad (GMT+3)":"Asia/Baghdad (GMT+3)","Asia/Riyadh (GMT+3)":"Asia/Riyadh (GMT+3)","Asia/Kuwait (GMT+3)":"Asia/Kuwait (GMT+3)","Asia/Qatar (GMT+3)":"Asia/Qatar (GMT+3)","Africa/Addis_Ababa (GMT+3)":"Africa/Addis_Ababa (GMT+3)","Asia/Tehran (GMT+3:30)":"Asia/Tehran (GMT+3:30)","Asia/Dubai (GMT+4)":"Asia/Dubai (GMT+4)","Asia/Muscat (GMT+4)":"Asia/Muscat (GMT+4)","Asia/Baku (GMT+4)":"Asia/Baku (GMT+4)","Asia/Tbilisi (GMT+4)":"Asia/Tbilisi (GMT+4)","Indian/Mauritius (GMT+4)":"Indian/Mauritius (GMT+4)","Asia/Kabul (GMT+4:30)":"Asia/Kabul (GMT+4:30)","Asia/Karachi (GMT+5)":"Asia/Karachi (GMT+5)","Asia/Tashkent (GMT+5)":"Asia/Tashkent (GMT+5)","Asia/Yekaterinburg (GMT+5)":"Asia/Yekaterinburg (GMT+5)","Asia/Kolkata (GMT+5:30)":"Asia/Kolkata (GMT+5:30)","Asia/Colombo (GMT+5:30)":"Asia/Colombo (GMT+5:30)","Asia/Kathmandu (GMT+5:45)":"Asia/Kathmandu (GMT+5:45)","Asia/Dhaka (GMT+6)":"Asia/Dhaka (GMT+6)","Asia/Almaty (GMT+5)":"Asia/Almaty (GMT+5)","Asia/Rangoon (GMT+6:30)":"Asia/Rangoon (GMT+6:30)","Asia/Bangkok (GMT+7)":"Asia/Bangkok (GMT+7)","Asia/Jakarta (GMT+7)":"Asia/Jakarta (GMT+7)","Asia/Ho_Chi_Minh (GMT+7)":"Asia/Ho_Chi_Minh (GMT+7)","Asia/Singapore (GMT+8)":"Asia/Singapore (GMT+8)","Asia/Kuala_Lumpur (GMT+8)":"Asia/Kuala_Lumpur (GMT+8)","Asia/Shanghai (GMT+8)":"Asia/Shanghai (GMT+8)","Asia/Hong_Kong (GMT+8)":"Asia/Hong_Kong (GMT+8)","Asia/Taipei (GMT+8)":"Asia/Taipei (GMT+8)","Asia/Manila (GMT+8)":"Asia/Manila (GMT+8)","Australia/Perth (GMT+8)":"Australia/Perth (GMT+8)","Asia/Tokyo (GMT+9)":"Asia/Tokyo (GMT+9)","Asia/Seoul (GMT+9)":"Asia/Seoul (GMT+9)","Asia/Pyongyang (GMT+9)":"Asia/Pyongyang (GMT+9)","Australia/Adelaide (GMT+9:30)":"Australia/Adelaide (GMT+9:30; daylight GMT+10:30)","Australia/Darwin (GMT+9:30)":"Australia/Darwin (GMT+9:30)","Australia/Sydney (GMT+10)":"Australia/Sydney (GMT+10; daylight GMT+11)","Australia/Melbourne (GMT+10)":"Australia/Melbourne (GMT+10; daylight GMT+11)","Australia/Brisbane (GMT+10)":"Australia/Brisbane (GMT+10)","Australia/Hobart (GMT+10)":"Australia/Hobart (GMT+10; daylight GMT+11)","Pacific/Guam (GMT+10)":"Pacific/Guam (GMT+10)","Pacific/Port_Moresby (GMT+10)":"Pacific/Port_Moresby (GMT+10)","Asia/Vladivostok (GMT+10)":"Asia/Vladivostok (GMT+10)","Pacific/Noumea (GMT+11)":"Pacific/Noumea (GMT+11)","Pacific/Norfolk (GMT+11)":"Pacific/Norfolk (GMT+11; daylight GMT+12)","Asia/Magadan (GMT+11)":"Asia/Magadan (GMT+11)","Pacific/Auckland (GMT+12)":"Pacific/Auckland (GMT+12; daylight GMT+13)","Pacific/Fiji (GMT+12)":"Pacific/Fiji (GMT+12)","Pacific/Chatham (GMT+12:45)":"Pacific/Chatham (GMT+12:45; daylight GMT+13:45)","Pacific/Tongatapu (GMT+13)":"Pacific/Tongatapu (GMT+13)","Pacific/Apia (GMT+13)":"Pacific/Apia (GMT+13)","Pacific/Kiritimati (GMT+14)":"Pacific/Kiritimati (GMT+14)"};
   var PRODUCT_SETTINGS = {"photo_source":{"entity":"select/Photos: Source","domain":"select","default":"All Photos","options":["All Photos","Favorites","Album","Person","Tag","Memories"]},"date_filter_mode":{"entity":"select/Photos: Date Filter Mode","domain":"select","default":"Fixed Range","options":["Fixed Range","Relative Range"]},"relative_unit":{"entity":"select/Photos: Relative Unit","domain":"select","default":"Years","options":["Months","Years"]},"photo_orientation":{"entity":"select/Photos: Orientation","domain":"select","default":"Any","options":["Any","Portrait Only","Landscape Only"]},"display_mode":{"entity":"select/Photos: Display Mode","domain":"select","default":"Fill","options":["Fill","Fit"]},"interval":{"entity":"select/Photos: Slideshow Interval","domain":"select","default":"15 seconds","options":["10 seconds","15 seconds","20 seconds","30 seconds","45 seconds","1 minute","2 minutes","3 minutes","5 minutes","10 minutes"]},"conn_timeout":{"entity":"select/Screen: Connection Timeout","domain":"select","default":"10 minutes","options":["30 seconds","45 seconds","1 minute","2 minutes","3 minutes","5 minutes","10 minutes","15 minutes","20 minutes","30 minutes"]},"screen_rotation":{"entity":"select/Screen: Rotation","domain":"select","default":"0","options":["0","180"],"developerOptions":["90","270"]},"photo_metadata_date_format":{"entity":"select/Device: Metadata Date Format","domain":"select","default":"Date Taken","options":["Relative Date","Date Taken"]},"photo_metadata_date_taken_format":{"entity":"select/Device: Metadata Date Taken Format","domain":"select","default":"1 January, 2026","options":["1 January, 2026","January 1, 2026"]},"clock_format":{"entity":"select/Clock: Format","domain":"select","default":"24 Hour","options":["24 Hour","12 Hour"]},"update_frequency":{"entity":"select/Firmware: Update Frequency","domain":"select","default":"Daily","options":["Hourly","Daily","Weekly","Monthly"]},"auto_update":{"entity":"switch/Firmware: Auto Update","domain":"switch","default":true,"options":[]},"beta_channel":{"entity":"switch/Firmware: Beta Channel","domain":"switch","default":false,"options":[]},"firmware_manifest_url":{"entity":"text/Firmware: Manifest URL","domain":"text","default":"","options":[]},"firmware_beta_manifest_url":{"entity":"text/Firmware: Beta Manifest URL","domain":"text","default":"","options":[]},"date_filter_enabled":{"entity":"switch/Photos: Date Filter","domain":"switch","default":false,"options":[]},"date_from":{"entity":"text/Photos: Date From","domain":"text","default":"","options":[]},"date_to":{"entity":"text/Photos: Date To","domain":"text","default":"","options":[]},"relative_amount":{"entity":"number/Photos: Relative Amount","domain":"number","default":1,"options":[],"min":1,"max":120,"step":1},"schedule_enabled":{"entity":"switch/Screen: Schedule Enabled","domain":"switch","default":false,"options":[]},"schedule_on_hour":{"entity":"number/Screen: Schedule On Hour","domain":"number","default":6,"options":[],"min":0,"max":23,"step":1},"schedule_off_hour":{"entity":"number/Screen: Schedule Off Hour","domain":"number","default":23,"options":[],"min":0,"max":23,"step":1},"schedule_wake_timeout":{"entity":"number/Screen: Schedule Wake Timeout","domain":"number","default":60,"options":[],"min":10,"max":3600,"step":10},"brightness_day":{"entity":"number/Screen: Daytime Brightness","domain":"number","default":100,"options":[],"min":10,"max":100,"step":5},"brightness_night":{"entity":"number/Screen: Nighttime Brightness","domain":"number","default":75,"options":[],"min":10,"max":100,"step":5},"base_tone_enabled":{"entity":"switch/Screen: Tone Adjustment","domain":"switch","default":false,"options":[]},"base_tone":{"entity":"number/Screen: Display Tone","domain":"number","default":0,"options":[],"min":0,"max":100,"step":5},"warm_tones_enabled":{"entity":"switch/Screen: Night Tone Adjustment","domain":"switch","default":false,"options":[]},"warm_tone_intensity":{"entity":"number/Screen: Warm Tone Intensity","domain":"number","default":50,"options":[],"min":10,"max":100,"step":5},"warm_tone_override":{"entity":"switch/Screen: Warm Tone Override","domain":"switch","default":false,"options":[]},"portrait_pairing":{"entity":"switch/Photos: Portrait Pairing","domain":"switch","default":true,"options":[]},"photo_metadata_date_enabled":{"entity":"switch/Device: Metadata Date","domain":"switch","default":true,"options":[]},"photo_metadata_location_enabled":{"entity":"switch/Device: Metadata Location","domain":"switch","default":true,"options":[]}};
   var STATIC_ENTITIES = {"firmware":{"entity":"text_sensor/Firmware: Version"},"timezone":{"entity":"select/Clock: Timezone","optionsKey":"tz_options","default":"Europe/London (GMT+0)"},"ntp_server_1":{"entity":"text/Clock: NTP Server 1","default":"0.pool.ntp.org"},"ntp_server_2":{"entity":"text/Clock: NTP Server 2","default":"1.pool.ntp.org"},"ntp_server_3":{"entity":"text/Clock: NTP Server 3","default":"2.pool.ntp.org"},"album_ids":{"entity":"text/Photos: Album IDs"},"album_labels":{"entity":"text/Photos: Album Labels"},"person_ids":{"entity":"text/Photos: Person IDs"},"person_labels":{"entity":"text/Photos: Person Labels"},"tag_ids":{"entity":"text/Photos: Tag IDs"},"tag_labels":{"entity":"text/Photos: Tag Labels"},"sunrise":{"entity":"text_sensor/Screen: Sunrise"},"sunset":{"entity":"text_sensor/Screen: Sunset"},"developer_features_enabled":{"entity":"switch/Developer: Features","boolFromState":true},"show_clock":{"entity":"switch/Clock: Show","boolFromState":true,"default":true}};
-  var MANUAL_ENTITIES = {"immich_url":{"entity":"text/Connection: Server URL"},"api_key":{"entity":"text/Connection: API Key"},"backlight":{"entity":"light/Screen: Backlight"},"update":{"entity":"update/Firmware: Update"},"update_beta":{"entity":"update/Firmware: Update Beta"},"apply_photo_source":{"entity":"button/Apply Photo Source"},"firmware_check":{"entity":"button/Firmware: Check for Update"}};
-  var MANUAL_STATE_KEYS = ["immich_url","api_key"];
+  var MANUAL_ENTITIES = {"immich_url":{"entity":"text/Connection: Server URL"},"api_key":{"entity":"text/Connection: API Key"},"backlight":{"entity":"light/Screen: Backlight"},"update":{"entity":"update/Firmware: Update"},"update_beta":{"entity":"update/Firmware: Update Beta"},"apply_photo_source":{"entity":"button/Apply Photo Source"},"firmware_check":{"entity":"button/Firmware: Check for Update"},"wifi_current_ssid":{"entity":"text_sensor/WiFi: Current SSID"},"wifi_new_ssid":{"entity":"text/WiFi: New SSID"},"wifi_new_password":{"entity":"text/WiFi: New Password"},"wifi_scan_results":{"entity":"text_sensor/WiFi: Scan Results"},"wifi_scan_networks":{"entity":"button/WiFi: Scan Networks"},"wifi_save_and_reconnect":{"entity":"button/WiFi: Save and Reconnect"},"wifi_forget_and_restart_setup":{"entity":"button/WiFi: Forget and Restart Setup"}};
+  var MANUAL_STATE_KEYS = ["immich_url","api_key","wifi_current_ssid","wifi_scan_results"];
   var ENTITY_ALIASES = {"schedule_enabled":[{"entity":"switch/Screen: Schedule","boolFromState":true}],"schedule_on_hour":[{"entity":"number/Screen: Schedule On","default":6,"number":true}],"schedule_off_hour":[{"entity":"number/Screen: Schedule Off","default":23,"number":true}]};
   var BACKUP_CONFIG_VERSION = 1;
   var BACKUP_SCHEMA = [{"group":"connection","field":"immich_url","state_keys":["immich_url"]},{"group":"connection","field":"api_key","state_keys":["api_key"]},{"group":"photos","field":"source","state_keys":["photo_source"]},{"group":"photos","field":"album_ids","state_keys":["album_ids"]},{"group":"photos","field":"album_labels","state_keys":["album_labels"]},{"group":"photos","field":"person_ids","state_keys":["person_ids"]},{"group":"photos","field":"person_labels","state_keys":["person_labels"]},{"group":"photos","field":"tag_ids","state_keys":["tag_ids"]},{"group":"photos","field":"tag_labels","state_keys":["tag_labels"]},{"group":"photos","field":"date_filter_enabled","state_keys":["date_filter_enabled"]},{"group":"photos","field":"date_filter_mode","state_keys":["date_filter_mode"]},{"group":"photos","field":"date_from","state_keys":["date_from"]},{"group":"photos","field":"date_to","state_keys":["date_to"]},{"group":"photos","field":"relative_amount","state_keys":["relative_amount"]},{"group":"photos","field":"relative_unit","state_keys":["relative_unit"]},{"group":"photos","field":"orientation","state_keys":["photo_orientation"]},{"group":"photos","field":"portrait_pairing","state_keys":["portrait_pairing"]},{"group":"photos","field":"display_mode","state_keys":["display_mode"]},{"group":"frequency","field":"interval","state_keys":["interval"]},{"group":"frequency","field":"conn_timeout","state_keys":["conn_timeout"]},{"group":"firmware_updates","field":"auto_update","state_keys":["auto_update"]},{"group":"firmware_updates","field":"beta_channel","state_keys":["beta_channel"]},{"group":"firmware_updates","field":"update_frequency","state_keys":["update_frequency"]},{"group":"firmware_updates","field":"manifest_url","state_keys":["firmware_manifest_url"]},{"group":"firmware_updates","field":"beta_manifest_url","state_keys":["firmware_beta_manifest_url"]},{"group":"clock","field":"show","state_keys":["show_clock"]},{"group":"clock","field":"format","state_keys":["clock_format"]},{"group":"clock","field":"timezone","state_keys":["timezone"]},{"group":"clock","field":"ntp_servers","state_keys":["ntp_server_1","ntp_server_2","ntp_server_3"]},{"group":"screen","field":"brightness_day","state_keys":["brightness_day"]},{"group":"screen","field":"brightness_night","state_keys":["brightness_night"]},{"group":"screen","field":"schedule_enabled","state_keys":["schedule_enabled"]},{"group":"screen","field":"schedule_on_hour","state_keys":["schedule_on_hour"]},{"group":"screen","field":"schedule_off_hour","state_keys":["schedule_off_hour"]},{"group":"screen","field":"schedule_wake_timeout","state_keys":["schedule_wake_timeout"]},{"group":"screen","field":"base_tone_enabled","state_keys":["base_tone_enabled"]},{"group":"screen","field":"base_tone","state_keys":["base_tone"]},{"group":"screen","field":"warm_tones_enabled","state_keys":["warm_tones_enabled"]},{"group":"screen","field":"warm_tone_intensity","state_keys":["warm_tone_intensity"]},{"group":"screen","field":"warm_tone_override","state_keys":["warm_tone_override"]},{"group":"screen","field":"rotation","state_keys":["screen_rotation"]}];
@@ -2270,6 +2270,186 @@ if (typeof module !== "undefined") {
 
   }
 
+
+  function makeDeviceWifiCard() {
+    // WiFi reconfiguration. Lets the user change networks from the running UI
+    // instead of having to forget and re-enter the captive-portal AP.
+    var body = el("div");
+
+    var current = el("div", "field");
+    var currentLabel = document.createElement("label");
+    currentLabel.textContent = "Current Network";
+    current.appendChild(currentLabel);
+    var currentValue = document.createElement("div");
+    currentValue.className = "key-mask";
+    currentValue.style.textAlign = "left";
+    currentValue.textContent = S.wifi_current_ssid || "(disconnected)";
+    current.appendChild(currentValue);
+    body.appendChild(current);
+
+    var ssidField = field("New SSID");
+    var ssidInput = input("text", "", S.wifi_current_ssid || "My Home WiFi", 32);
+    ssidInput.setAttribute("aria-label", "New WiFi SSID");
+    ssidInput.autocomplete = "off";
+    ssidInput.spellcheck = false;
+    ssidField.appendChild(ssidInput);
+    body.appendChild(ssidField);
+
+    var pwField = field("Password");
+    var pwGroup = el("div", "input-group");
+    var pwInput = input("password", "", "WiFi password (blank for open networks)", 63);
+    pwInput.setAttribute("aria-label", "New WiFi password");
+    pwInput.autocomplete = "new-password";
+    pwGroup.appendChild(pwInput);
+    var showBtn = el("button", "btn btn-secondary");
+    showBtn.textContent = "Show";
+    showBtn.type = "button";
+    showBtn.onclick = function () {
+      var isPass = pwInput.type === "password";
+      pwInput.type = isPass ? "text" : "password";
+      showBtn.textContent = isPass ? "Hide" : "Show";
+    };
+    pwGroup.appendChild(showBtn);
+    pwField.appendChild(pwGroup);
+    body.appendChild(pwField);
+
+    // Scan networks --------------------------------------------------------
+    var scanField = field("Nearby Networks");
+    var scanRow = el("div", "input-group");
+    var scanBtn = el("button", "btn btn-secondary");
+    scanBtn.type = "button";
+    scanBtn.textContent = "Scan";
+    var scanStatus = el("div");
+    scanStatus.className = "key-mask";
+    scanStatus.style.textAlign = "left";
+    scanStatus.textContent = S.wifi_scan_results || "Tap Scan to list nearby networks.";
+    scanRow.appendChild(scanBtn);
+    scanField.appendChild(scanRow);
+    scanField.appendChild(scanStatus);
+    body.appendChild(scanField);
+
+    function renderScanResults(raw) {
+      scanStatus.innerHTML = "";
+      var text = String(raw || "").trim();
+      if (!text || text === "(no networks found)") {
+        scanStatus.textContent = text || "(no networks found)";
+        return;
+      }
+      if (text === "Scanning...") {
+        scanStatus.textContent = "Scanning...";
+        return;
+      }
+      var lines = text.split("\n");
+      lines.forEach(function (line) {
+        var row = document.createElement("div");
+        row.style.cursor = "pointer";
+        row.style.padding = "4px 0";
+        row.textContent = line;
+        // Strip trailing " (-NN dBm)" to extract just the SSID for click-to-fill.
+        var match = line.match(/^(.*) \(-?\d+ dBm\)$/);
+        var ssid = match ? match[1] : line;
+        row.onclick = function () {
+          ssidInput.value = ssid;
+          pwInput.focus();
+        };
+        scanStatus.appendChild(row);
+      });
+    }
+
+    scanBtn.onclick = function () {
+      if (!endpoints.wifi_scan_networks) return;
+      scanBtn.disabled = true;
+      var originalText = scanBtn.textContent;
+      scanBtn.textContent = "Scanning...";
+      scanStatus.textContent = "Scanning...";
+      post(endpoints.wifi_scan_networks + "/press").then(function () {
+        // Firmware scan takes ~5s; poll the results sensor for up to 12s.
+        var attempts = 0;
+        function poll() {
+          attempts++;
+          safeGet(endpoints.wifi_scan_results).then(function (resp) {
+            var value = resp && (resp.value || resp.state);
+            if (value && value !== "Scanning...") {
+              renderScanResults(value);
+              scanBtn.disabled = false;
+              scanBtn.textContent = originalText;
+              return;
+            }
+            if (attempts >= 12) {
+              scanBtn.disabled = false;
+              scanBtn.textContent = originalText;
+              scanStatus.textContent = "Scan timed out. Try again.";
+              return;
+            }
+            setTimeout(poll, 1000);
+          });
+        }
+        setTimeout(poll, 1500);
+      });
+    };
+
+    // Save & reconnect -----------------------------------------------------
+    var saveRow = el("div", "backup-row");
+    var saveBtn = el("button", "btn btn-primary");
+    saveBtn.type = "button";
+    saveBtn.textContent = "Save and Reconnect";
+
+    // Forget current WiFi --------------------------------------------------
+    var forgetBtn = el("button", "btn btn-secondary");
+    forgetBtn.type = "button";
+    forgetBtn.textContent = "Forget WiFi";
+    forgetBtn.title = "Clears saved WiFi credentials and reboots into the captive-portal setup AP.";
+
+    saveBtn.onclick = function () {
+      var ssidValue = (ssidInput.value || "").trim();
+      if (!ssidValue) {
+        showBanner("Enter a WiFi SSID before saving.", "error");
+        ssidInput.focus();
+        return;
+      }
+      if (!endpoints.wifi_new_ssid || !endpoints.wifi_new_password || !endpoints.wifi_save_and_reconnect) {
+        showBanner("WiFi reconfig endpoints are not available on this firmware.", "error");
+        return;
+      }
+      saveBtn.disabled = true;
+      forgetBtn.disabled = true;
+      showBanner("Saving WiFi credentials. Device will reboot \u2014 reconnect this browser to the same WiFi (or the setup AP if connection fails) and reload in ~30s.", "success");
+      Promise.resolve()
+        .then(function () { return postTextValueSet(endpoints.wifi_new_ssid + "/set", ssidValue); })
+        .then(function () { return postTextValueSet(endpoints.wifi_new_password + "/set", pwInput.value || ""); })
+        .then(function () { return delayMs(600); })
+        .then(function () { return post(endpoints.wifi_save_and_reconnect + "/press"); })
+        .catch(function () {
+          saveBtn.disabled = false;
+          forgetBtn.disabled = false;
+          showBanner("Failed to save WiFi credentials. Try again.", "error");
+        });
+    };
+
+    forgetBtn.onclick = function () {
+      if (!endpoints.wifi_forget_and_restart_setup) return;
+      var confirmed = window.confirm(
+        "Forget the current WiFi network?\n\nThe device will reboot into the captive-portal setup AP. " +
+          "You will need to connect to the device's WiFi hotspot to reconfigure it."
+      );
+      if (!confirmed) return;
+      saveBtn.disabled = true;
+      forgetBtn.disabled = true;
+      showBanner("Forgetting WiFi. Device will reboot into the setup AP.", "success");
+      post(endpoints.wifi_forget_and_restart_setup + "/press").catch(function () {
+        saveBtn.disabled = false;
+        forgetBtn.disabled = false;
+        showBanner("Failed to forget WiFi. Try again.", "error");
+      });
+    };
+
+    saveRow.appendChild(saveBtn);
+    saveRow.appendChild(forgetBtn);
+    body.appendChild(saveRow);
+
+    return makeCollapsibleCard("WiFi Network", body, true);
+  }
+
     function makeFirmwareCard() {
     // Firmware
     var fwBody = el("div", "fw-body");
@@ -2527,6 +2707,7 @@ if (typeof module !== "undefined") {
     immichApp.appendChild(immichWrap);
 
     appendCards(wrap, [
+      makeDeviceWifiCard(),
       makeScreenBrightnessCard(),
       makeScreenToneCard(),
       makeNightScheduleCard(),

@@ -29,6 +29,8 @@ If you do not see the frame on your network:
 - Look again for the **immich-frame-10inch** hotspot from a phone or laptop.
 - Reboot the frame and wait for the setup screen to appear.
 
+If the frame is already on WiFi but you want to move it to a different network, open the frame web UI, switch to the **Device** tab, and use the **WiFi Network** card. Scan nearby networks, enter the new SSID and password, and tap **Save and Reconnect**. The frame stores the new credentials and reboots. If the new credentials fail, the frame falls back to the **immich-frame-10inch** setup hotspot. **Forget WiFi** clears the saved network and reboots straight into the setup hotspot.
+
 ## Immich Connection Problems
 
 The Immich server URL must include `http://` or `https://`. Local IP addresses and domain names both work, for example:

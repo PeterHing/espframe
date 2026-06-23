@@ -55,8 +55,9 @@ packages:
   immich_slide:    !include ../../common/addon/immich_slideshow.yaml
   screen_slide:    !include device/screen_slideshow.yaml
   # ---------------------------------------------------------------------------
-  # Shared addons: firmware update and network diagnostics
+  # Shared addons: firmware update, network diagnostics, runtime WiFi reconfig
   # ---------------------------------------------------------------------------
   fw_update:       !include ../../common/addon/firmware_update.yaml
   dev_features:    !include ../../common/addon/developer_features.yaml
   network:         !include ../../common/addon/network.yaml
+  wifi_settings:   !include ../../common/addon/wifi_settings.yaml

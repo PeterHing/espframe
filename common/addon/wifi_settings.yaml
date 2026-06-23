@@ -1,0 +1,158 @@
+# =============================================================================
+# WIFI RECONFIGURATION - Change WiFi network from the Device settings page
+# =============================================================================
+# Exposes WiFi reconfig entities so the network can be changed from the running
+# device's web UI without going back to the captive-portal AP. Values are
+# committed via ESPHome's wifi component (`save_wifi_sta`) and a safe_reboot
+# applies them. If the new credentials fail, the device falls back to AP mode
+# on next boot (see captive_portal in connectivity.yaml).
+#
+# Surface (Device tab in the web UI):
+#   - Current SSID (read-only text sensor from wifi_info)
+#   - New SSID + new Password text inputs (transient, not persisted in NVS)
+#   - "Scan networks" button       -> populates Scan Results text sensor
+#   - "Scan Results" text sensor   -> newline-delimited "<ssid> (<rssi> dBm)"
+#   - "Save and Reconnect" button  -> persists creds and safe_reboot
+#   - "Forget and Restart Setup"   -> clears creds and safe_reboot into AP
+#
+# The button labels intentionally name the action so the contract check picks
+# them up against product/espframe.json::web_manual_entities.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Current SSID (read-only) - in addition to the diagnostic wifi_info IP sensor
+# already defined in network.yaml.
+# -----------------------------------------------------------------------------
+text_sensor:
+  - platform: wifi_info
+    ssid:
+      name: "WiFi: Current SSID"
+      id: wifi_current_ssid
+      icon: "mdi:wifi-marker"
+      entity_category: diagnostic
+
+  - platform: template
+    name: "WiFi: Scan Results"
+    id: wifi_scan_results
+    icon: "mdi:wifi-sync"
+    entity_category: diagnostic
+    update_interval: never
+
+# -----------------------------------------------------------------------------
+# New SSID / password input fields.
+# Transient: restore_value:false so the password is not kept in NVS. The
+# wifi component persists the *accepted* credentials separately when
+# save_wifi_sta() is called from the Save button below.
+# -----------------------------------------------------------------------------
+text:
+  - platform: template
+    name: "WiFi: New SSID"
+    id: wifi_new_ssid
+    internal: true
+    entity_category: config
+    optimistic: true
+    restore_value: false
+    initial_value: ""
+    min_length: 0
+    max_length: 32
+    mode: text
+    icon: "mdi:wifi"
+    web_server:
+      sorting_group_id: sg_device
+
+  - platform: template
+    name: "WiFi: New Password"
+    id: wifi_new_password
+    internal: true
+    entity_category: config
+    optimistic: true
+    restore_value: false
+    initial_value: ""
+    min_length: 0
+    max_length: 63
+    mode: password
+    icon: "mdi:form-textbox-password"
+    web_server:
+      sorting_group_id: sg_device
+
+# -----------------------------------------------------------------------------
+# Scan / Save / Forget buttons.
+# All three are exposed in the Device sorting group on the web UI.
+# -----------------------------------------------------------------------------
+button:
+  - platform: template
+    name: "WiFi: Scan Networks"
+    id: wifi_scan_networks
+    icon: "mdi:wifi-refresh"
+    entity_category: config
+    web_server:
+      sorting_group_id: sg_device
+    on_press:
+      - lambda: |-
+          ESP_LOGI("wifi_cfg", "Manual WiFi scan triggered");
+          id(wifi_scan_results).publish_state("Scanning...");
+          wifi::global_wifi_component->start_scanning();
+      - delay: 6s
+      - lambda: |-
+          auto &results = wifi::global_wifi_component->get_scan_result();
+          std::vector<std::string> seen;
+          std::string out;
+          for (auto &r : results) {
+            const std::string &s = r.get_ssid();
+            if (s.empty()) continue;
+            bool dup = false;
+            for (auto &existing : seen) {
+              if (existing == s) { dup = true; break; }
+            }
+            if (dup) continue;
+            seen.push_back(s);
+            char buf[24];
+            snprintf(buf, sizeof(buf), " (%d dBm)", (int) r.get_rssi());
+            if (!out.empty()) out += "\n";
+            out += s;
+            out += buf;
+            if (out.size() > 800) break;
+          }
+          if (out.empty()) out = "(no networks found)";
+          id(wifi_scan_results).publish_state(out);
+          ESP_LOGI("wifi_cfg", "WiFi scan complete: %d unique SSIDs", (int) seen.size());
+
+  - platform: template
+    name: "WiFi: Save and Reconnect"
+    id: wifi_save_and_reconnect
+    icon: "mdi:wifi-check"
+    entity_category: config
+    web_server:
+      sorting_group_id: sg_device
+    on_press:
+      - lambda: |-
+          std::string ssid = id(wifi_new_ssid).state;
+          std::string pass = id(wifi_new_password).state;
+          // Trim trailing whitespace which sneaks in via copy/paste.
+          while (!ssid.empty() && (ssid.back() == ' ' || ssid.back() == '\r' || ssid.back() == '\n')) ssid.pop_back();
+          while (!pass.empty() && (pass.back() == ' ' || pass.back() == '\r' || pass.back() == '\n')) pass.pop_back();
+          if (ssid.empty()) {
+            ESP_LOGW("wifi_cfg", "Save requested with empty SSID; ignoring");
+            return;
+          }
+          ESP_LOGI("wifi_cfg", "Persisting new WiFi credentials (SSID=%s, password=%d chars); device will reboot",
+                   ssid.c_str(), (int) pass.size());
+          wifi::global_wifi_component->save_wifi_sta(ssid, pass);
+          global_preferences->sync();
+      - delay: 1500ms
+      - lambda: 'App.safe_reboot();'
+
+  - platform: template
+    name: "WiFi: Forget and Restart Setup"
+    id: wifi_forget_and_restart_setup
+    icon: "mdi:wifi-off"
+    entity_category: config
+    web_server:
+      sorting_group_id: sg_device
+    on_press:
+      - lambda: |-
+          ESP_LOGW("wifi_cfg", "Clearing stored WiFi credentials; rebooting into setup AP");
+          wifi::global_wifi_component->save_wifi_sta("", "");
+          global_preferences->sync();
+      - delay: 1500ms
+      - lambda: 'App.safe_reboot();'
