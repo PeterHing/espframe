@@ -10,6 +10,10 @@
 static constexpr uint16_t ZOOM_IDENTITY = 256;
 static constexpr uint16_t IMMICH_ALBUM_PAGE_SIZE = 16;
 static constexpr uint16_t IMMICH_METADATA_PAGE_SIZE = 5;
+// Sample size for the single-shot random-pick metadata search.
+// Sized so the request body fits in 64 kB of HTTP response buffer for typical
+// assets (~25 * ~1.5 kB after Filter-based deserialization).
+static constexpr uint16_t IMMICH_METADATA_RANDOM_SAMPLE_SIZE = 25;
 
 struct ImmichAssetMeta {
   // Normalized subset of the Immich asset response used by the slideshow UI.
@@ -454,13 +458,47 @@ inline std::string parse_immich_asset_object(JsonObject asset,
   return img_url;
 }
 
+// ArduinoJson Filter that limits parsed heap to the fields the slot UI actually
+// reads. Used for both `/api/search/random` (top-level array) and single-asset
+// detail (top-level object) responses. Without this, parsing a single asset
+// with extensive EXIF + people metadata can balloon to 30-50 kB of heap and
+// abort on a fragmented ESP32-P4 SRAM (root cause of #87 and the remaining
+// symptoms in #94).
+inline JsonDocument immich_asset_field_filter() {
+  JsonDocument filter;
+  // Allow either array-of-assets or single-asset response shapes.
+  filter[0]["id"] = true;
+  filter[0]["localDateTime"] = true;
+  filter[0]["exifInfo"]["city"] = true;
+  filter[0]["exifInfo"]["country"] = true;
+  filter[0]["exifInfo"]["dateTimeOriginal"] = true;
+  filter[0]["exifInfo"]["exifImageWidth"] = true;
+  filter[0]["exifInfo"]["exifImageHeight"] = true;
+  filter[0]["exifInfo"]["orientation"] = true;
+  filter[0]["people"][0]["name"] = true;
+  filter["id"] = true;
+  filter["localDateTime"] = true;
+  filter["exifInfo"]["city"] = true;
+  filter["exifInfo"]["country"] = true;
+  filter["exifInfo"]["dateTimeOriginal"] = true;
+  filter["exifInfo"]["exifImageWidth"] = true;
+  filter["exifInfo"]["exifImageHeight"] = true;
+  filter["exifInfo"]["orientation"] = true;
+  filter["people"][0]["name"] = true;
+  return filter;
+}
+
 inline std::string parse_immich_asset(const std::string &body,
                                       const std::string &base_url,
                                       ImmichAssetMeta *out_meta,
                                       const std::string &orientation_filter = "Any") {
   if (out_meta == nullptr) return "";
-  auto doc = esphome::json::parse_json(body);
-  if (doc.isNull()) return "";
+
+  JsonDocument filter = immich_asset_field_filter();
+  JsonDocument doc;
+  DeserializationError err = deserializeJson(
+      doc, body.c_str(), DeserializationOption::Filter(filter));
+  if (err) return "";
 
   if (doc.is<JsonArray>()) {
     JsonArray arr = doc.as<JsonArray>();
@@ -486,6 +524,12 @@ inline std::string parse_immich_asset(const std::string &body,
   return "";
 }
 
+// DEPRECATED: Immich's /api/search/metadata response does not expose the true
+// total of matching assets in `assets.total` or `assets.count`. Both fields are
+// populated with the items count of the current page, so this helper always
+// returned 1 for size=1 probes. Kept in-tree only for backward compatibility
+// with the old two-step probe in immich_api.yaml; new code uses the single
+// random-sample fetch via pick_random_immich_metadata_asset. See #100.
 inline uint32_t parse_immich_metadata_total(const std::string &body) {
   auto doc = esphome::json::parse_json(body);
   if (doc.isNull() || !doc.is<JsonObject>()) return 0;
@@ -503,40 +547,75 @@ inline uint32_t parse_immich_metadata_total(const std::string &body) {
   return total > 0 ? static_cast<uint32_t>(total) : 0;
 }
 
+// Filter for /api/search/metadata responses. Mirrors immich_asset_field_filter
+// but rooted inside `assets.items[*]` since that response wraps assets in an
+// envelope.
+inline JsonDocument immich_metadata_asset_field_filter() {
+  JsonDocument filter;
+  filter["assets"]["items"][0]["id"] = true;
+  filter["assets"]["items"][0]["localDateTime"] = true;
+  filter["assets"]["items"][0]["exifInfo"]["city"] = true;
+  filter["assets"]["items"][0]["exifInfo"]["country"] = true;
+  filter["assets"]["items"][0]["exifInfo"]["dateTimeOriginal"] = true;
+  filter["assets"]["items"][0]["exifInfo"]["exifImageWidth"] = true;
+  filter["assets"]["items"][0]["exifInfo"]["exifImageHeight"] = true;
+  filter["assets"]["items"][0]["exifInfo"]["orientation"] = true;
+  filter["assets"]["items"][0]["people"][0]["name"] = true;
+  return filter;
+}
+
+// Pick one asset at random from a `/api/search/metadata` response, honoring the
+// orientation filter. Returns the image URL on success, empty string on no
+// match. Uses ArduinoJson's Filter option so heap stays bounded regardless of
+// response size — required to safely run with size=IMMICH_METADATA_RANDOM_SAMPLE_SIZE.
+// Fixes #100 (only-newest), #87 (large-album reboot), and the asset-detail leg of #94.
+inline std::string pick_random_immich_metadata_asset(
+    const std::string &body, const std::string &base_url,
+    ImmichAssetMeta *out_meta, const std::string &orientation_filter = "Any") {
+  if (out_meta == nullptr) return "";
+
+  JsonDocument filter = immich_metadata_asset_field_filter();
+  JsonDocument doc;
+  DeserializationError err = deserializeJson(
+      doc, body.c_str(), DeserializationOption::Filter(filter));
+  if (err || !doc.is<JsonObject>()) return "";
+
+  JsonObject assets = doc["assets"].as<JsonObject>();
+  if (assets.isNull() || !assets["items"].is<JsonArray>()) return "";
+  JsonArray items = assets["items"].as<JsonArray>();
+  if (items.size() == 0) return "";
+
+  // Two-pass: first index every item that satisfies the orientation filter,
+  // then pick one of those at random. This is uniform over matches regardless
+  // of where they appear in the (already-randomized) server response.
+  std::vector<uint16_t> matches;
+  matches.reserve(items.size());
+  for (size_t i = 0; i < items.size(); i++) {
+    ImmichAssetMeta probe;
+    std::string img_url = parse_immich_asset_object(items[i].as<JsonObject>(), base_url, &probe);
+    if (img_url.empty()) continue;
+    if (!photo_orientation_matches(probe, orientation_filter)) continue;
+    matches.push_back(static_cast<uint16_t>(i));
+  }
+  if (matches.empty()) return "";
+
+  uint16_t chosen_index = matches[esp_random() % matches.size()];
+  ImmichAssetMeta chosen;
+  std::string img_url = parse_immich_asset_object(
+      items[chosen_index].as<JsonObject>(), base_url, &chosen);
+  if (img_url.empty()) return "";
+  *out_meta = chosen;
+  return img_url;
+}
+
+// Routes to pick_random_immich_metadata_asset — the legacy YAML still calls
+// this name but it now performs a single random-pick parse. Bridging here
+// keeps the YAML diff small. See #100.
 inline std::string parse_immich_metadata_asset(const std::string &body,
                                                const std::string &base_url,
                                                ImmichAssetMeta *out_meta,
                                                const std::string &orientation_filter = "Any") {
-  if (out_meta == nullptr) return "";
-  auto doc = esphome::json::parse_json(body);
-  if (doc.isNull()) return "";
-
-  if (doc.is<JsonArray>()) {
-    return parse_immich_asset(body, base_url, out_meta, orientation_filter);
-  }
-
-  if (!doc.is<JsonObject>()) return "";
-
-  JsonObject root = doc.as<JsonObject>();
-  JsonObject assets = root["assets"].as<JsonObject>();
-  if (assets.isNull()) return "";
-
-  JsonArray items = assets["items"].as<JsonArray>();
-  if (items.isNull() && assets["assets"].is<JsonArray>()) {
-    items = assets["assets"].as<JsonArray>();
-  }
-  if (items.isNull()) return "";
-
-  for (size_t i = 0; i < items.size(); i++) {
-    ImmichAssetMeta candidate;
-    std::string img_url = parse_immich_asset_object(items[i].as<JsonObject>(), base_url, &candidate);
-    if (img_url.empty()) continue;
-    if (!photo_orientation_matches(candidate, orientation_filter)) continue;
-    *out_meta = candidate;
-    return img_url;
-  }
-
-  return "";
+  return pick_random_immich_metadata_asset(body, base_url, out_meta, orientation_filter);
 }
 
 inline ImmichTimelineBucketChoice pick_immich_timeline_bucket(
@@ -599,8 +678,18 @@ inline std::string pick_immich_timeline_asset_id(const std::string &body,
 inline std::string find_immich_portrait_companion_url(const std::string &body,
                                                       const std::string &base_url,
                                                       const std::string &primary_asset_id) {
-  auto doc = esphome::json::parse_json(body);
-  if (doc.isNull() || !doc.is<JsonArray>()) return "";
+  // Filtered parse — companion search can return up to 5 candidates with full
+  // EXIF+people; keep heap bounded. See #94/#87.
+  JsonDocument filter;
+  filter[0]["id"] = true;
+  filter[0]["exifInfo"]["exifImageWidth"] = true;
+  filter[0]["exifInfo"]["exifImageHeight"] = true;
+  filter[0]["exifInfo"]["orientation"] = true;
+
+  JsonDocument doc;
+  DeserializationError err = deserializeJson(
+      doc, body.c_str(), DeserializationOption::Filter(filter));
+  if (err || !doc.is<JsonArray>()) return "";
 
   JsonArray arr = doc.as<JsonArray>();
   for (size_t i = 0; i < arr.size(); i++) {

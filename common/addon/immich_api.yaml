@@ -268,11 +268,23 @@ script:
               - script.execute: immich_fetch_into_slot
 
   # ---------------------------------------------------------------------------
-  # Fetch a random asset from Album and Person sources using paged metadata search.
+  # Fetch a random asset from Album / Person / Tag sources via a single
+  # paged metadata search request.
   #
-  # Metadata search is stable and supports page/size; the frame first reads the
-  # total, then asks for one small random page so large libraries are not limited
-  # to a tiny repeated random-search batch.
+  # We request a moderate random sample (IMMICH_METADATA_RANDOM_SAMPLE_SIZE,
+  # currently 25) with `randomize:true` and pick one matching asset client-side.
+  # The previous two-step paged metadata search ("probe total -> random page")
+  # approach was broken
+  # because Immich's /api/search/metadata does not expose the true total of
+  # matching assets in `assets.total` or `assets.count` - both fields report
+  # only the number of items in the current page. With size=1 that always
+  # returned 1, so the random page was always page=1 = the newest photo. See #100.
+  #
+  # The response is parsed with an ArduinoJson Filter (see
+  # pick_random_immich_metadata_asset in immich_helpers.h) so heap stays
+  # bounded regardless of how much EXIF / people metadata each asset carries.
+  # This also closes the OOM paths behind #87 (large-album reboot) and the
+  # asset-detail leg of #94.
   # ---------------------------------------------------------------------------
   - id: immich_fetch_metadata_into_slot
     mode: single
@@ -305,7 +317,7 @@ script:
           id: http_req
           url: !lambda 'return id(immich_url).state + "/api/search/metadata";'
           capture_response: true
-          max_response_buffer_size: 24kB
+          max_response_buffer_size: 64kB
           request_headers:
             Content-Type: application/json
             Accept: application/json
@@ -328,13 +340,14 @@ script:
             }
             std::string extra = build_immich_date_filter_extra(range);
             return build_immich_metadata_search_body(
-              1, 1, true, source, id(immich_metadata_album_id),
-              id(immich_metadata_person_id), id(immich_metadata_tag_ids), extra);
+              1, IMMICH_METADATA_RANDOM_SAMPLE_SIZE, true, source,
+              id(immich_metadata_album_id), id(immich_metadata_person_id),
+              id(immich_metadata_tag_ids), extra);
           on_response:
             then:
               - lambda: |-
                   if (response->status_code != 200) {
-                    ESP_LOGW("immich", "Metadata count HTTP %d", response->status_code);
+                    ESP_LOGW("immich", "Metadata search HTTP %d", response->status_code);
                     clear_slot_fetch_in_flight(id(target_slot), id(slot_flags));
                     id(immich_last_http_status) = response->status_code;
                     id(immich_retry_cooldown_until_ms) = millis() + 30000;
@@ -342,93 +355,6 @@ script:
                   }
                   id(immich_fetch_started) = true;
                   id(immich_last_http_status) = 0;
-                  uint32_t total = parse_immich_metadata_total(body);
-                  if (total == 0) {
-                    clear_slot_fetch_in_flight(id(target_slot), id(slot_flags));
-                    ESP_LOGW("immich", "Metadata source has no matching images");
-                    id(immich_api_retries) = 0;
-                    id(immich_retry_cooldown_until_ms) = millis() + 30000;
-                    return;
-                  }
-                  std::string orientation = id(photo_orientation_filter).current_option();
-                  id(immich_metadata_page_size) = orientation == "Any" ? 1 : IMMICH_METADATA_PAGE_SIZE;
-                  id(immich_metadata_page) = immich_metadata_page_for_total(
-                    total, id(immich_metadata_page_size));
-                  ESP_LOGD("immich", "Metadata source selected: page %d size %d of %u images",
-                           id(immich_metadata_page), id(immich_metadata_page_size), (unsigned) total);
-                  id(immich_fetch_metadata_page).execute();
-          on_error:
-            then:
-              - lambda: |-
-                  id(immich_api_retries)++;
-                  ESP_LOGW("immich", "Metadata count request error for slot %d (attempt %d)", id(target_slot), id(immich_api_retries));
-                  clear_slot_fetch_in_flight(id(target_slot), id(slot_flags));
-                  id(immich_diag_reason) = "metadata count request error";
-                  id(log_immich_diag).execute();
-              - if:
-                  condition:
-                    lambda: 'return id(immich_api_retries) < MAX_ERROR_RETRIES;'
-                  then:
-                    - script.execute: immich_fetch_retry
-                  else:
-                    - lambda: |-
-                        id(immich_api_retries) = 0;
-                        id(immich_retry_cooldown_until_ms) = millis() + 30000;
-                        ESP_LOGW("immich", "Metadata retries exhausted; pausing Immich fetches for 30s");
-
-  - id: immich_fetch_metadata_page
-    mode: single
-    then:
-      - if:
-          condition:
-            lambda: |-
-              std::string source = id(photo_source_select).current_option();
-              return (source == "Album" && id(immich_metadata_album_id).empty()) ||
-                     (source == "Person" && id(immich_metadata_person_id).empty()) ||
-                     (source == "Tag" && id(immich_metadata_tag_ids).empty()) ||
-                     id(immich_metadata_page) < 1 ||
-                     id(immich_metadata_page_size) < 1;
-          then:
-            - lambda: |-
-                ESP_LOGW("immich", "Metadata page fetch missing source ID or page");
-                clear_slot_fetch_in_flight(id(target_slot), id(slot_flags));
-            - script.stop: immich_fetch_metadata_page
-      - http_request.post:
-          id: http_req
-          url: !lambda 'return id(immich_url).state + "/api/search/metadata";'
-          capture_response: true
-          max_response_buffer_size: 24kB
-          request_headers:
-            Content-Type: application/json
-            Accept: application/json
-            x-api-key: !lambda 'return id(immich_api_key_text).state.c_str();'
-          body: !lambda |-
-            auto now = id(sntp_time).now();
-            ImmichDateRange range = resolve_immich_date_filter(
-              id(immich_date_filter_enabled).state,
-              id(immich_date_filter_mode).current_option(),
-              (int) (id(immich_relative_amount).state + 0.5f),
-              id(immich_relative_unit).current_option(),
-              now.is_valid(), now.year, now.month, now.day_of_month,
-              id(immich_date_from).state, id(immich_date_to).state);
-            if (range.relative_skipped_for_invalid_time) {
-              ESP_LOGW("immich", "Relative date filter skipped because time is not valid");
-            }
-            std::string extra = build_immich_date_filter_extra(range);
-            return build_immich_metadata_search_body(
-              id(immich_metadata_page), id(immich_metadata_page_size), true,
-              id(photo_source_select).current_option(), id(immich_metadata_album_id),
-              id(immich_metadata_person_id), id(immich_metadata_tag_ids), extra);
-          on_response:
-            then:
-              - lambda: |-
-                  if (response->status_code != 200) {
-                    ESP_LOGW("immich", "Metadata page HTTP %d", response->status_code);
-                    clear_slot_fetch_in_flight(id(target_slot), id(slot_flags));
-                    id(immich_last_http_status) = response->status_code;
-                    id(immich_retry_cooldown_until_ms) = millis() + 30000;
-                    return;
-                  }
                   std::string orientation = id(photo_orientation_filter).current_option();
                   std::string img_url = parse_immich_metadata_asset_and_fill_slot(
                     body, id(immich_url).state, id(target_slot), id(slot0), id(slot1), id(slot2),
@@ -437,14 +363,15 @@ script:
                     clear_slot_fetch_in_flight(id(target_slot), id(slot_flags));
                     if (orientation != "Any" && id(immich_api_retries) < MAX_ERROR_RETRIES) {
                       id(immich_api_retries)++;
-                      ESP_LOGW("immich", "No %s image in metadata page; retrying", orientation.c_str());
+                      ESP_LOGW("immich", "No %s image in metadata sample; retrying", orientation.c_str());
                       id(immich_fetch_retry).execute();
                       return;
                     }
-                    ESP_LOGW("immich", "Metadata page asset parse failed");
-                    id(immich_diag_reason) = "metadata page asset parse failed";
+                    ESP_LOGW("immich", "Metadata source returned no matching images");
+                    id(immich_api_retries) = 0;
+                    id(immich_diag_reason) = "metadata sample had no matching asset";
                     id(log_immich_diag).execute();
-                    id(immich_register_fetch_failure).execute();
+                    id(immich_retry_cooldown_until_ms) = millis() + 30000;
                     return;
                   }
                   id(immich_api_retries) = 0;
@@ -471,9 +398,9 @@ script:
             then:
               - lambda: |-
                   id(immich_api_retries)++;
-                  ESP_LOGW("immich", "Metadata page request error for slot %d (attempt %d)", id(target_slot), id(immich_api_retries));
+                  ESP_LOGW("immich", "Metadata search request error for slot %d (attempt %d)", id(target_slot), id(immich_api_retries));
                   clear_slot_fetch_in_flight(id(target_slot), id(slot_flags));
-                  id(immich_diag_reason) = "metadata page request error";
+                  id(immich_diag_reason) = "metadata search request error";
                   id(log_immich_diag).execute();
               - if:
                   condition:
