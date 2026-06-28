@@ -66,6 +66,13 @@ api:
 
 logger:
   level: ${log_level}
+  # Force logger output to UART0 so it comes out the CP2102 USB-UART
+  # bridge on the flashing port (the only externally accessible serial
+  # path on the Guition JC8012P4A1's exposed USB-C connector). The
+  # ESP32-P4 default is USB_CDC, which is not wired to any of the
+  # frame's USB ports on this enclosure.
+  hardware_uart: UART0
+  baud_rate: 115200
   logs:
     component: WARN
     remote_image: WARN
